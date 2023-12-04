@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 # ISLR2
+if(!require("ISLR2")) install.packages("ISLR2")
 ```
 
 
@@ -212,5 +213,37 @@ dim(Auto)
 ```{r}
 Auto
 names(Auto)
+rm(Auto)
 ```
+
+```{r}
+# Loading ISLR2 to use the appropriate data:
+library(ISLR2)
+Auto <- ISLR2::Auto
+```
+
+
+```{r}
+# Attaching variables:
+plot(Auto$cylinders, Auto$mpg)
+attach(Auto)
+plot(cylinders, mpg)
+```
+
+```{r}
+# Identify points using the R-Console:
+# Type the following into the R-Console before clicking on any point in the interactive window & pressing 'escape':
+plot(horsepower, mpg)
+identify(horsepower, mpg, name)
+```
+
+
+```{r}
+# Summarise the variables in the dataset "Auto":
+summary(Auto)
+```
+```{r}
+
+```
+
 
