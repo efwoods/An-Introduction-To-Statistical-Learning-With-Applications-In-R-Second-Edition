@@ -1,6 +1,7 @@
 .DS_Store
 *.png
 *.pdf
+Chapter_2_Lab_Introduction_to_R/Lab_2_Introduction_to_R_Exercises_files/figure-gfm/*.png
 
 # History files
 .Rhistory
