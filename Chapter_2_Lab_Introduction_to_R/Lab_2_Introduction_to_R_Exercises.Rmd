@@ -386,39 +386,115 @@ names(Auto)
 ```
 
 ```{r}
-plot_quantitative_summary_hist_freq_box <- function(df, titles, x_axis_titles) {
+# ???
+plot_quantitative_summary_hist_freq_box <- function(df, titles, x_axis_titles, custom_scale, sample_point, sample_df) {
   for (i in seq_along(df)) {
     # print(i)
     current_var_name <- names(df[i])
     current_var <- df[[i]]
+    # print(current_var_name)
     if(is.numeric(current_var)) {
-      summary_plot <- ggplot(df) + 
-        geom_histogram(aes(current_var), color = "white", fill = "lightblue", bins = 25) + 
-        geom_freqpoly(aes(current_var), color = "darkblue", bins = 25) + 
-        theme_linedraw() + 
-        geom_boxplot(aes(current_var), color = "darkblue", fill = "lightblue") + 
-        labs(
-          title = titles[[i]], 
-          x = x_axis_titles[[i]], 
-          subtitle = sprintf("Min:%0.2f\nQ1: %0.2f\nIQR: %0.2f\nQ3: %0.2f\nMax: %0.2f\nMedian: %0.2f\nμ: %0.2f\nσ: %0.2f\n", 
-                             summary(current_var)["Min."], 
-                             summary(current_var)["1st Qu."], 
-                             IQR(current_var),
-                             summary(current_var)["3rd Qu."], 
-                             summary(current_var)["Max."],
-                             median(current_var),
-                             median(current_var),
-                             sd(current_var)
-                             )) +
-        scale_x_continuous(breaks = seq(min(current_var), max(current_var), by = round(sd(current_var)))) + 
-        theme(plot.subtitle = element_text(size = 6))
+        if (custom_scale && !sample_point) {
+            summary_plot <- ggplot(df) + 
+                geom_histogram(aes(current_var), color = "white", fill = "lightblue", bins = 25) + 
+                geom_freqpoly(aes(current_var), color = "darkblue", bins = 25) + 
+                theme_linedraw() + 
+                geom_boxplot(aes(current_var), color = "darkblue", fill = "lightblue") + 
+                labs(
+                  title = titles[[i]], 
+                  x = x_axis_titles[[i]], 
+                  subtitle = sprintf("Min:%0.2f\nQ1: %0.2f\nIQR: %0.2f\nQ3: %0.2f\nMax: %0.2f\nMedian: %0.2f\nμ: %0.2f\nσ: %0.2f\n", 
+                                     summary(current_var)["Min."], 
+                                     summary(current_var)["1st Qu."], 
+                                     IQR(current_var),
+                                     summary(current_var)["3rd Qu."], 
+                                     summary(current_var)["Max."],
+                                     median(current_var),
+                                     median(current_var),
+                                     sd(current_var)
+                                     )) +
+                scale_x_continuous(breaks = seq(min(current_var), max(current_var), by = round(sd(current_var)))) + 
+                theme(plot.subtitle = element_text(size = 6))
+        } else if(!custom_scale & !sample_point) {
+            summary_plot <- ggplot(df) + 
+                geom_histogram(aes(current_var), color = "white", fill = "lightblue", bins = 25) + 
+                geom_freqpoly(aes(current_var), color = "darkblue", bins = 25) + 
+                theme_linedraw() + 
+                geom_boxplot(aes(current_var), color = "darkblue", fill = "lightblue") + 
+                labs(
+                  title = titles[[i]], 
+                  x = x_axis_titles[[i]], 
+                  subtitle = sprintf("Min:%0.2f\nQ1: %0.2f\nIQR: %0.2f\nQ3: %0.2f\nMax: %0.2f\nMedian: %0.2f\nμ: %0.2f\nσ: %0.2f\n", 
+                                     summary(current_var)["Min."], 
+                                     summary(current_var)["1st Qu."], 
+                                     IQR(current_var),
+                                     summary(current_var)["3rd Qu."], 
+                                     summary(current_var)["Max."],
+                                     median(current_var),
+                                     median(current_var),
+                                     sd(current_var)
+                                     )) +
+                theme(plot.subtitle = element_text(size = 6))
+        } else if(sample_point & !custom_scale) {
+            current_sample_var <- sample_df[[i]]
+            current_sample_var_name <- names(sample_df[i])
+            summary_plot <- ggplot(df) + 
+                geom_histogram(aes(current_var), color = "white", fill = "lightblue", bins = 25) + 
+                geom_freqpoly(aes(current_var), color = "darkblue", bins = 25) + 
+                theme_linedraw() + 
+                geom_boxplot(aes(current_var), color = "darkblue", fill = "lightblue") + 
+                geom_point(aes(current_sample_var, 0), color = "red") +
+                labs(
+                  title = titles[[i]], 
+                  x = x_axis_titles[[i]], 
+                  subtitle = sprintf("Sample Point Value: %0.2f\nMin:%0.2f\nQ1: %0.2f\nIQR: %0.2f\nQ3: %0.2f\nMax: %0.2f\nMedian: %0.2f\nμ: %0.2f\nσ: %0.2f\n", 
+                                     current_sample_var,
+                                     summary(current_var)["Min."], 
+                                     summary(current_var)["1st Qu."], 
+                                     IQR(current_var),
+                                     summary(current_var)["3rd Qu."], 
+                                     summary(current_var)["Max."],
+                                     median(current_var),
+                                     median(current_var),
+                                     sd(current_var)
+                                     )) +
+                theme(plot.subtitle = element_text(size = 6))
+        } else if(sample_point & custom_scale) {
+            current_sample_var <- sample_df[[i]]
+            current_sample_var_name <- names(sample_df[i])
+            summary_plot <- ggplot(df) + 
+                geom_histogram(aes(current_var), color = "white", fill = "lightblue", bins = 25) + 
+                geom_freqpoly(aes(current_var), color = "darkblue", bins = 25) + 
+                theme_linedraw() + 
+                geom_boxplot(aes(current_var), color = "darkblue", fill = "lightblue") + 
+                geom_point(aes(current_sample_var, 0), color = "red") +
+                labs(
+                  title = titles[[i]], 
+                  x = x_axis_titles[[i]], 
+                  subtitle = sprintf("Sample Point Value: %0.2f\nMin:%0.2f\nQ1: %0.2f\nIQR: %0.2f\nQ3: %0.2f\nMax: %0.2f\nMedian: %0.2f\nμ: %0.2f\nσ: %0.2f\n", 
+                                     current_sample_var,
+                                     summary(current_var)["Min."], 
+                                     summary(current_var)["1st Qu."], 
+                                     IQR(current_var),
+                                     summary(current_var)["3rd Qu."], 
+                                     summary(current_var)["Max."],
+                                     median(current_var),
+                                     median(current_var),
+                                     sd(current_var)
+                                     )) +
+                scale_x_continuous(breaks = seq(min(current_var), max(current_var), by = round(sd(current_var)))) + 
+                theme(plot.subtitle = element_text(size = 6))
+        } else {
+            print("Error with sample_point & custom_scale selection")
+        }
+
       print(summary_plot)
     }
   }
 }
 titles = c("Miles Per Gallon", "Cylinders", "Displacement", "Horsepower", "Weight", "Acceleration", "Year")
 x_axis_titles = c("Miles Per Gallon", "Number of Cylinders", "Displacement", "Horsepower", "Weight", "Acceleration", "Year")
-plot_quantitative_summary_hist_freq_box(Auto[,1:7], titles, x_axis_titles)
+plot_quantitative_summary_hist_freq_box(Auto[,1:7], titles, x_axis_titles, custom_scale = TRUE, sample_point = FALSE, sample_df = NULL)
 ```
 
 ```{r include = FALSE}
@@ -442,7 +518,7 @@ plot_quantitative_correlation_point <- function(df, titles, x_axis_titles, y_axi
       current_correlation <- correlate(current_var, dependent_var_data)
       summary_plot <- ggplot(df) + 
         geom_point(aes(current_var, dependent_var_data)) +
-        geom_smooth(aes(current_var, dependent_var_data), color = "darkblue", se = FALSE) + 
+        geom_smooth(aes(current_var, dependent_var_data), color = "darkred", se = FALSE) + 
         theme_linedraw() + 
         labs(
           title = titles[[i]], 
@@ -470,12 +546,13 @@ names(auto)
 * **Question 9-f**: Suppose that you wish to predict gase mileage (mpg) on the basis of the other variables. Do your plots suggest that any of the other variables might be useful in predicting mpg? Justify your answer.
   * **Answer**: There is a strong negative correlation between the predictors weight and displacement and the response variable miles per gallon. There is a positive correlation between miles per gallon and year. These plots suggest that the engines may be more efficient over time or the weight of the cars may be lighter over time which have an effect on the miles per gallon. Furthermore, the engines may be less powerful (i.e. have less cylinders and less horsepower) over the years and therefore have less displacement and weight. This may yield more efficient engines that have higher efficiencies with respect to miles per gallon.
 
-### Question 10: This exercise involve the Boston housing data set.
+### Question 10: 
+This exercise involve the Boston housing data set.
 
 * **Question 10-a**: To begin, load in the Boston data set. The Boston data set is
 part of the ISLR2 *library*. How many rows are in this data set? How many columns? What
 do the rows and columns represent?
-  * **Answer**: There are 506 rows and 13 columns in the dataset. Each row represents one house. The columns include per capita crime rate by town, proportion of residential land zoned for lots over 25,000 sq.ft., the proportion of non-business acres per town, an indicator variable if 'tract' bounds the Charles River, the parts per 10 million of nitrogen oxides concentration, the average number of rooms per dwelling, the proportion of owner occupied units built prior to 1940. The weighted mean distances to five Boston employment centers, the index of accessibility to radial highways, the full-value property tax rate per $10,000, the pupil-teacher ratio by town, the percent of the lower status of the population, and the median value of owner-occupied homes in the $1000s. 
+  * **Answer**: There are 506 rows and 13 columns in the dataset. Each row represents one suburb of Boston. The columns include per capita crime rate by town, proportion of residential land zoned for lots over 25,000 sq.ft., the proportion of non-business acres per town, an indicator variable if 'tract' bounds the Charles River, the parts per 10 million of nitrogen oxides concentration, the average number of rooms per dwelling, the proportion of owner occupied units built prior to 1940. The weighted mean distances to five Boston employment centers, the index of accessibility to radial highways, the full-value property tax rate per $10,000, the pupil-teacher ratio by town, the percent of the lower status of the population, and the median value of owner-occupied homes in the $1000s. 
   
 ```{r results = "hide"}
 library(ISLR2)
@@ -490,7 +567,7 @@ print(sprintf("Number of columns: %0.0f" , ncol(Boston)))
 
 
 * **Question 10-b**: Make pairwise scatterplots of the predictors (columns) in this data set. Describe your findings. 
-  * **Answer**:
+  * **Answer**: Per capita crime rate tends to increase with an increase in the percent of the lower status of the population and with an increase in higher proportions of homes built before 1940. Per capita crime rate also tends to increase with decreases in the median value of owner-occupied homes, the weighted mean distance to employment centers, and the average number of rooms per dwelling. Furthermore, there are impulses of increased crime rates with pupil-teacher ratios of approximately 20%, Full-value property tax rates per $10,000 of approximately 675, with a proportion of non-retail business acres per town of approximately 18%, and nitrogen oxide concentrations of approximately 0.7.
   
 ```{r include = FALSE}
 head(Boston)
@@ -505,10 +582,231 @@ length(boston_sm_formatted)
 
 
 ```{r warnings = FALSE, message=FALSE}
-
-titles = c("", "Crime Rate Vs. Proportion of Non-Retail Business Acres Per Town", "Crime Rate Vs. Nitrogen Oxide Concentration", "Crime Rate Vs. Average Number of Rooms Per Dwelling", "Crime Rate Vs. Proportion of Owner-Occupied Units Built Before 1940", "Crime Rate Vs. Weighted Mean Distance to Employment Centers", "Crime Rate Vs. Full-Value Property Tax Rate Per $10,000", "Crime Rate Vs. Pupil-Teacher Ratio by Town", "Crime Rate Vs. Percent of Lower Status of the Population", "Crime Rate Vs. Median Value of Owner-Occupied Homes in $1000s")
+titles = c("", "Crime Rate Vs. Proportion of Non-Retail Business Acres Per Town", "Crime Rate Vs. Nitrogen Oxide Concentration", "Crime Rate Vs. Average Number of Rooms Per Dwelling", "Crime Rate Vs. Age of Home", "Crime Rate Vs. Weighted Mean Distance to Employment Centers", "Crime Rate Vs. Full-Value Property Tax Rate Per $10,000", "Crime Rate Vs. Pupil-Teacher Ratio by Town", "Crime Rate Vs. Percent of Lower Status of the Population", "Crime Rate Vs. Median Value of Owner-Occupied Homes in $1000s")
 x_axis_titles = c("", "Proportion of Non-Retail Business Acres Per Town", "Nitrogen Oxide Concentration", "Average Number of Rooms Per Dwelling", "Proportion of Owner-Occupied Units Built Before 1940", "Weighted Mean Distance to Employment Centers", "Full-Value Property Tax Rate Per $10,000", "Pupil-Teacher Ratio by Town", "Percent of Lower Status of the Population", "Median Value of Owner-Occupied Homes in $1000s")
 y_axis_title = c("Per Capita Crime Rate By Town")
 plot_quantitative_correlation_point(boston_sm_formatted, titles, x_axis_titles, y_axis_title, "crim")
 ```
 
+* **Question 10-c**: Are any of the predictors associated with per capita crime rate? If so, explain the relationship.
+  * **Answer**: Per capita crime rate appears to associate with the median value of owner-occupied homes, the percent of lower status of the population, the weighted mean distance to employment centers, the proportion of owner-occupied units built before 1940, and the average number of rooms per dwelling. It appears that larger groups of lower status populations, homes that have less rooms, are less expensive, are closer to employment centers, and are older in age tend to have a trend with increased crime rates per capita. 
+  
+* **Question 10-d**: Do any of the census tracts of Boston appear to have particularly
+high crime rates? Tax Rates? Pupil-teacher ratios? Comment on the range of each predictor. 
+  * **Answer**: There are two suburbs that are greater than 3 standard deviations above the mean crime rate. There is a suburb that is greater than 3 standard deviations above the mean full-value property-tax rate per $10,000. There are no extreme outliers from the mean with respect to pupil-teacher ratios. The crime rates per capita range from 0.02% to 8.98%. The tax-rates range from 198 to 666. The pupil-teacher ratios range from 13.60 to 20.20.
+
+```{r}
+boston_sm_tract_crime_rate <- Boston %>% filter(chas == 1)
+
+plot_quantitative_summary_hist_freq_box_singular <- function(df, var_name, title, x_axis_title) {
+    current_var_name <- names(df[var_name])
+    current_var <- df[[var_name]]
+    summary_plot <- ggplot(df) + 
+        geom_histogram(aes(current_var), color = "white", fill = "lightblue", bins = 25) + 
+        geom_freqpoly(aes(current_var), color = "darkblue", bins = 25) + 
+        theme_linedraw() + 
+        geom_boxplot(aes(current_var), color = "darkblue", fill = "lightblue") + 
+        labs(
+          title = title, 
+          x = x_axis_title, 
+          subtitle = sprintf("Min:%0.2f\nQ1: %0.2f\nIQR: %0.2f\nQ3: %0.2f\nMax: %0.2f\nMedian: %0.2f\nμ: %0.2f\nσ: %0.2f\n", 
+                             summary(current_var)["Min."], 
+                             summary(current_var)["1st Qu."], 
+                             IQR(current_var),
+                             summary(current_var)["3rd Qu."], 
+                             summary(current_var)["Max."],
+                             median(current_var),
+                             median(current_var),
+                             sd(current_var)
+                             )) +
+        theme(plot.subtitle = element_text(size = 6))
+    print(summary_plot)
+}
+```
+
+
+```{r echo=FALSE}
+plot_quantitative_summary_hist_freq_box_singular(boston_sm_tract_crime_rate, "crim", title = "Crime Rates Per Capita When Tract Bounds Charles River", x_axis_title = "Crime Rates Per Capita")
+```
+
+```{r echo=FALSE}
+plot_quantitative_summary_hist_freq_box_singular(boston_sm_tract_crime_rate, "tax", title = "Full-Value Property-Tax Rate When Tract Bounds Charles River", x_axis_title = "Full-Value Property-Tax Rate Per $10,000")
+```
+```{r echo=FALSE}
+plot_quantitative_summary_hist_freq_box_singular(boston_sm_tract_crime_rate, "ptratio", title = "Pupil-Teacher Ratio When Tract Bounds Charles River", x_axis_title = "Pupil-Teacher Ratio By")
+```
+
+* **Question 10-e**: How many of the census tracts in this data set bound the Charles river?
+  * **Answer**: 
+  
+```{r}
+print(sprintf("%0.0f tracts in this data set bound the Charles river.", nrow(boston_sm_tract_crime_rate)))
+```
+
+* **Question 10-f**: What is the median pupil-teacher ratio among the towns in this data set?
+  * **Answer**: 
+```{r}
+print(sprintf("%0.0f is the median pupil-teacher ratio among the towns in this data set.", median(Boston$ptratio)))
+```
+
+* **Question 10-g**: Which census tract of Boston has lowest median value of owner-
+occupied homes? What are the values of the other predictors
+for that census tract, and how do those values compare to the
+overall ranges for those predictors? Comment on your findings.
+  * **Answer**: 
+
+The tract that has the lowest median value of owner-occupied homes has a per capita crime rate that is greater than the minimum per capita crime rate, but less than Q1 of the IQR of the per capita crime rate overall. 
+
+This tract is in alignment with the most frequent (0) proportion of residential land zoned for lots over 25,000 sq. ft.
+
+This tract is greater than the 3rd Quartile of the IQR of the overall proportion of non-retail business acres per town. This tract is less than the maximum of this overall proportion. 
+
+This tract is the greatest nitrogen oxide concentration of the overall nitrogen oxide concentrations. 
+
+This tract is midway between lower limit of 1.5 times the IQR and the 1st quartile with respect to the overall average number of rooms per dwelling. 
+
+This tract is grouped with the largest proportion of owner-occupied units built before 1940.
+
+This tract is grouped with the penultimate closest weighted mean distance to employment centers. 
+
+This tract is within one standard deviation of the mean of the Full-Property Tax Rate Per $10,000. It is binned with at least 50 other suburbs. 
+
+This tract is amongst the lowest pupil teacher ratios at 14.7. The overall values of pupil teacher ratios extend from a minimum of 12.6 to a maximum of 22.
+
+This tract is among the larger percent of lower status of the population with a value of 26.82%. Overall values range from a minimum of 1.73% to a maximum of 37.97%. 
+
+This tract is among the least expensive owner-occupied homes with a value of 13.4 thousand dollars. The overall minimum and maximum of the median value of owner-occupied homes in the $1000s are 5 and 50 respectively. 
+  
+The following plots show the suburb with the lowest median value of owner-occupied homes. 
+  
+```{r include = FALSE}
+boston_sm_tracts_only <- Boston %>% filter(chas == 1)
+boston_sm_tracts_only
+lowest_median_tract <- boston_sm_tracts_only %>% filter(medv == min(boston_sm_tracts_only$medv))
+```
+  
+```{r include = FALSE}
+boston_formatted <- Boston %>% select(everything(), -chas, -rad)
+lowest_median_tract_formatted <- lowest_median_tract %>% select(everything(), -chas, -rad)
+```
+
+
+```{r echo = FALSE}
+x_axis_titles <- c(
+  "Per Capita Crime Rate By Town", 
+  "Proportion of Residential Land Zoned For Lots Over 25,000 sq.ft.", 
+  "Proportion of Non-Retail Business Acres Per Town", 
+  "Nitrogen Oxide Concentration", 
+  "Average Number of Rooms Per Dwelling", 
+  "Proportion of Owner-Occupied Units Built Before 1940", 
+  "Weighted Mean Distance to Employment Centers",
+  "Full-Value Property Tax Rate Per $10,000", 
+  "Pupil-Teacher Ratio by Town", 
+  "Percent of Lower Status of the Population", 
+  "Median Value of Owner-Occupied Homes in $1000s")
+
+titles <- c(
+  "Lowest Median Tract: Per Capita Crime Rate By Town", 
+  "Lowest Median Tract: Proportion of Residential Land", 
+  "Lowest Median Tract: Proportion of Non-Retail Business Acres", 
+  "Lowest Median Tract: Nitrogen Oxide Concentration", 
+  "Lowest Median Tract: Average Number of Rooms Per Dwelling", 
+  "Lowest Median Tract: Age of Homes", 
+  "Lowest Median Tract: Mean Distance to Employment Centers",
+  "Lowest Median Tract: Full-Value Property Tax Rate", 
+  "Lowest Median Tract: Pupil-Teacher Ratio", 
+  "Lowest Median Tract: Percent of Lower Status of Population", 
+  "Lowest Median Tract: Median Value of Owner-Occupied Homes")
+plot_quantitative_summary_hist_freq_box(boston_formatted, titles = titles, x_axis_titles = x_axis_titles, custom_scale = FALSE, sample_point = TRUE, sample_df = lowest_median_tract_formatted)
+```
+
+* **Question 10-h**: In this data set, how many of the census tracts average more than seven rooms per dwelling? More than eight rooms per dwelling? Comment on the census tracts that average more than eight rooms per dwelling. 
+  * **Answer**: 
+  
+```{r echo = FALSE}
+print(sprintf("In this data set, there are %0.0f census tracts that average more than 7 rooms per dwelling", nrow(Boston %>% filter(chas == 1 & rm > 7))))
+print(sprintf("In this data set, there are %0.0f census tracts that average more than 8 rooms per dwelling", nrow(Boston %>% filter(chas == 1 & rm > 8))))
+```
+
+Both tracts are greater than the averages for the proportion of non-retail business acres per town, nitrogen oxygen concentration, average number of rooms per dwelling, the proportion of owner-occupied units built before 1940, the full-value property tax rate per $10,000, and the median value of owner-occupied homes in the $1000s. 
+
+Similarly, both tracts are less than the averages for the per capita crime rate by town, the proportion of residential land zoned for lots over 25,000 sq.ft., the weighted mean distance to employment centers, and the percent of lower status of the population.
+
+The tracts only differ with respect to the overall average of the pupil-teacher ratio by town where one tract is less than average and the other tract is greater. 
+
+Plots of the individual tracts with respect to the overall data in the Boston data set are viewable below.   
+
+
+```{r include = FALSE}
+more_than_8_rooms <- Boston %>% filter(chas == 1 & rm > 8)
+(more_than_8_rooms)
+more_than_8_rooms_tract1_formatted <- more_than_8_rooms[1,] %>% select(everything(), -chas, -rad)
+more_than_8_rooms_tract2_formatted <- more_than_8_rooms[2,] %>% select(everything(), -chas, -rad)
+```
+
+```{r}
+# Plots Referring To The First Tract Greater Than 8 Rooms:
+```
+
+```{r echo=FALSE}
+x_axis_titles <- c(
+  "Per Capita Crime Rate By Town", 
+  "Proportion of Residential Land Zoned For Lots Over 25,000 sq.ft.", 
+  "Proportion of Non-Retail Business Acres Per Town", 
+  "Nitrogen Oxide Concentration", 
+  "Average Number of Rooms Per Dwelling", 
+  "Proportion of Owner-Occupied Units Built Before 1940", 
+  "Weighted Mean Distance to Employment Centers",
+  "Full-Value Property Tax Rate Per $10,000", 
+  "Pupil-Teacher Ratio by Town", 
+  "Percent of Lower Status of the Population", 
+  "Median Value of Owner-Occupied Homes in $1000s")
+
+titles <- c(
+  "1st Tract > 8 Rooms: Per Capita Crime Rate By Town", 
+  "1st Tract > 8 Rooms: Proportion of Residential Land", 
+  "1st Tract > 8 Rooms: Proportion of Non-Retail Business Acres", 
+  "1st Tract > 8 Rooms: Nitrogen Oxide Concentration", 
+  "1st Tract > 8 Rooms: Average Number of Rooms Per Dwelling", 
+  "1st Tract > 8 Rooms: Age of Homes", 
+  "1st Tract > 8 Rooms: Mean Distance to Employment Centers",
+  "1st Tract > 8 Rooms: Full-Value Property Tax Rate", 
+  "1st Tract > 8 Rooms: Pupil-Teacher Ratio", 
+  "1st Tract > 8 Rooms: Percent of Lower Status of Population", 
+  "1st Tract > 8 Rooms: Median Value of Owner-Occupied Homes")
+plot_quantitative_summary_hist_freq_box(boston_formatted, titles = titles, x_axis_titles = x_axis_titles, custom_scale = FALSE, sample_point = TRUE, sample_df = more_than_8_rooms_tract1_formatted)
+```
+
+```{r}
+# Plots Referring To The Second Tract Greater Than 8 Rooms:
+```
+
+```{r echo=FALSE}
+x_axis_titles <- c(
+  "Per Capita Crime Rate By Town", 
+  "Proportion of Residential Land Zoned For Lots Over 25,000 sq.ft.", 
+  "Proportion of Non-Retail Business Acres Per Town", 
+  "Nitrogen Oxide Concentration", 
+  "Average Number of Rooms Per Dwelling", 
+  "Proportion of Owner-Occupied Units Built Before 1940", 
+  "Weighted Mean Distance to Employment Centers",
+  "Full-Value Property Tax Rate Per $10,000", 
+  "Pupil-Teacher Ratio by Town", 
+  "Percent of Lower Status of the Population", 
+  "Median Value of Owner-Occupied Homes in $1000s")
+
+titles <- c(
+  "2nd Tract > 8 Rooms: Per Capita Crime Rate By Town", 
+  "2nd Tract > 8 Rooms: Proportion of Residential Land", 
+  "2nd Tract > 8 Rooms: Proportion of Non-Retail Business Acres", 
+  "2nd Tract > 8 Rooms: Nitrogen Oxide Concentration", 
+  "2nd Tract > 8 Rooms: Average Number of Rooms Per Dwelling", 
+  "2nd Tract > 8 Rooms: Age of Homes", 
+  "2nd Tract > 8 Rooms: Mean Distance to Employment Centers",
+  "2nd Tract > 8 Rooms: Full-Value Property Tax Rate", 
+  "2nd Tract > 8 Rooms: Pupil-Teacher Ratio", 
+  "2nd Tract > 8 Rooms: Percent of Lower Status of Population", 
+  "2nd Tract > 8 Rooms: Median Value of Owner-Occupied Homes")
+plot_quantitative_summary_hist_freq_box(boston_formatted, titles = titles, x_axis_titles = x_axis_titles, custom_scale = FALSE, sample_point = TRUE, sample_df = more_than_8_rooms_tract2_formatted)
+```
+  

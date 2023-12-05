@@ -588,39 +588,115 @@ The weakest absolute value correlation is between miles per gallon and
 acceleration.
 
 ``` r
-plot_quantitative_summary_hist_freq_box <- function(df, titles, x_axis_titles) {
+# ???
+plot_quantitative_summary_hist_freq_box <- function(df, titles, x_axis_titles, custom_scale, sample_point, sample_df) {
   for (i in seq_along(df)) {
     # print(i)
     current_var_name <- names(df[i])
     current_var <- df[[i]]
+    # print(current_var_name)
     if(is.numeric(current_var)) {
-      summary_plot <- ggplot(df) + 
-        geom_histogram(aes(current_var), color = "white", fill = "lightblue", bins = 25) + 
-        geom_freqpoly(aes(current_var), color = "darkblue", bins = 25) + 
-        theme_linedraw() + 
-        geom_boxplot(aes(current_var), color = "darkblue", fill = "lightblue") + 
-        labs(
-          title = titles[[i]], 
-          x = x_axis_titles[[i]], 
-          subtitle = sprintf("Min:%0.2f\nQ1: %0.2f\nIQR: %0.2f\nQ3: %0.2f\nMax: %0.2f\nMedian: %0.2f\nμ: %0.2f\nσ: %0.2f\n", 
-                             summary(current_var)["Min."], 
-                             summary(current_var)["1st Qu."], 
-                             IQR(current_var),
-                             summary(current_var)["3rd Qu."], 
-                             summary(current_var)["Max."],
-                             median(current_var),
-                             median(current_var),
-                             sd(current_var)
-                             )) +
-        scale_x_continuous(breaks = seq(min(current_var), max(current_var), by = round(sd(current_var)))) + 
-        theme(plot.subtitle = element_text(size = 6))
+        if (custom_scale && !sample_point) {
+            summary_plot <- ggplot(df) + 
+                geom_histogram(aes(current_var), color = "white", fill = "lightblue", bins = 25) + 
+                geom_freqpoly(aes(current_var), color = "darkblue", bins = 25) + 
+                theme_linedraw() + 
+                geom_boxplot(aes(current_var), color = "darkblue", fill = "lightblue") + 
+                labs(
+                  title = titles[[i]], 
+                  x = x_axis_titles[[i]], 
+                  subtitle = sprintf("Min:%0.2f\nQ1: %0.2f\nIQR: %0.2f\nQ3: %0.2f\nMax: %0.2f\nMedian: %0.2f\nμ: %0.2f\nσ: %0.2f\n", 
+                                     summary(current_var)["Min."], 
+                                     summary(current_var)["1st Qu."], 
+                                     IQR(current_var),
+                                     summary(current_var)["3rd Qu."], 
+                                     summary(current_var)["Max."],
+                                     median(current_var),
+                                     median(current_var),
+                                     sd(current_var)
+                                     )) +
+                scale_x_continuous(breaks = seq(min(current_var), max(current_var), by = round(sd(current_var)))) + 
+                theme(plot.subtitle = element_text(size = 6))
+        } else if(!custom_scale & !sample_point) {
+            summary_plot <- ggplot(df) + 
+                geom_histogram(aes(current_var), color = "white", fill = "lightblue", bins = 25) + 
+                geom_freqpoly(aes(current_var), color = "darkblue", bins = 25) + 
+                theme_linedraw() + 
+                geom_boxplot(aes(current_var), color = "darkblue", fill = "lightblue") + 
+                labs(
+                  title = titles[[i]], 
+                  x = x_axis_titles[[i]], 
+                  subtitle = sprintf("Min:%0.2f\nQ1: %0.2f\nIQR: %0.2f\nQ3: %0.2f\nMax: %0.2f\nMedian: %0.2f\nμ: %0.2f\nσ: %0.2f\n", 
+                                     summary(current_var)["Min."], 
+                                     summary(current_var)["1st Qu."], 
+                                     IQR(current_var),
+                                     summary(current_var)["3rd Qu."], 
+                                     summary(current_var)["Max."],
+                                     median(current_var),
+                                     median(current_var),
+                                     sd(current_var)
+                                     )) +
+                theme(plot.subtitle = element_text(size = 6))
+        } else if(sample_point & !custom_scale) {
+            current_sample_var <- sample_df[[i]]
+            current_sample_var_name <- names(sample_df[i])
+            summary_plot <- ggplot(df) + 
+                geom_histogram(aes(current_var), color = "white", fill = "lightblue", bins = 25) + 
+                geom_freqpoly(aes(current_var), color = "darkblue", bins = 25) + 
+                theme_linedraw() + 
+                geom_boxplot(aes(current_var), color = "darkblue", fill = "lightblue") + 
+                geom_point(aes(current_sample_var, 0), color = "red") +
+                labs(
+                  title = titles[[i]], 
+                  x = x_axis_titles[[i]], 
+                  subtitle = sprintf("Sample Point Value: %0.2f\nMin:%0.2f\nQ1: %0.2f\nIQR: %0.2f\nQ3: %0.2f\nMax: %0.2f\nMedian: %0.2f\nμ: %0.2f\nσ: %0.2f\n", 
+                                     current_sample_var,
+                                     summary(current_var)["Min."], 
+                                     summary(current_var)["1st Qu."], 
+                                     IQR(current_var),
+                                     summary(current_var)["3rd Qu."], 
+                                     summary(current_var)["Max."],
+                                     median(current_var),
+                                     median(current_var),
+                                     sd(current_var)
+                                     )) +
+                theme(plot.subtitle = element_text(size = 6))
+        } else if(sample_point & custom_scale) {
+            current_sample_var <- sample_df[[i]]
+            current_sample_var_name <- names(sample_df[i])
+            summary_plot <- ggplot(df) + 
+                geom_histogram(aes(current_var), color = "white", fill = "lightblue", bins = 25) + 
+                geom_freqpoly(aes(current_var), color = "darkblue", bins = 25) + 
+                theme_linedraw() + 
+                geom_boxplot(aes(current_var), color = "darkblue", fill = "lightblue") + 
+                geom_point(aes(current_sample_var, 0), color = "red") +
+                labs(
+                  title = titles[[i]], 
+                  x = x_axis_titles[[i]], 
+                  subtitle = sprintf("Sample Point Value: %0.2f\nMin:%0.2f\nQ1: %0.2f\nIQR: %0.2f\nQ3: %0.2f\nMax: %0.2f\nMedian: %0.2f\nμ: %0.2f\nσ: %0.2f\n", 
+                                     current_sample_var,
+                                     summary(current_var)["Min."], 
+                                     summary(current_var)["1st Qu."], 
+                                     IQR(current_var),
+                                     summary(current_var)["3rd Qu."], 
+                                     summary(current_var)["Max."],
+                                     median(current_var),
+                                     median(current_var),
+                                     sd(current_var)
+                                     )) +
+                scale_x_continuous(breaks = seq(min(current_var), max(current_var), by = round(sd(current_var)))) + 
+                theme(plot.subtitle = element_text(size = 6))
+        } else {
+            print("Error with sample_point & custom_scale selection")
+        }
+
       print(summary_plot)
     }
   }
 }
 titles = c("Miles Per Gallon", "Cylinders", "Displacement", "Horsepower", "Weight", "Acceleration", "Year")
 x_axis_titles = c("Miles Per Gallon", "Number of Cylinders", "Displacement", "Horsepower", "Weight", "Acceleration", "Year")
-plot_quantitative_summary_hist_freq_box(Auto[,1:7], titles, x_axis_titles)
+plot_quantitative_summary_hist_freq_box(Auto[,1:7], titles, x_axis_titles, custom_scale = TRUE, sample_point = FALSE, sample_df = NULL)
 ```
 
 <img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-21-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-21-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-21-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-21-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-21-5.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-21-6.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-21-7.png" width="70%" style="display: block; margin: auto;" />
@@ -639,7 +715,7 @@ plot_quantitative_correlation_point <- function(df, titles, x_axis_titles, y_axi
       current_correlation <- correlate(current_var, dependent_var_data)
       summary_plot <- ggplot(df) + 
         geom_point(aes(current_var, dependent_var_data)) +
-        geom_smooth(aes(current_var, dependent_var_data), color = "darkblue", se = FALSE) + 
+        geom_smooth(aes(current_var, dependent_var_data), color = "darkred", se = FALSE) + 
         theme_linedraw() + 
         labs(
           title = titles[[i]], 
@@ -676,18 +752,20 @@ plot_quantitative_correlation_point(Auto[,1:7], titles, x_axis_titles, y_axis_ti
     yield more efficient engines that have higher efficiencies with
     respect to miles per gallon.
 
-### Question 10: This exercise involve the Boston housing data set.
+### Question 10:
+
+This exercise involve the Boston housing data set.
 
 - **Question 10-a**: To begin, load in the Boston data set. The Boston
   data set is part of the ISLR2 *library*. How many rows are in this
   data set? How many columns? What do the rows and columns represent?
   - **Answer**: There are 506 rows and 13 columns in the dataset. Each
-    row represents one house. The columns include per capita crime rate
-    by town, proportion of residential land zoned for lots over 25,000
-    sq.ft., the proportion of non-business acres per town, an indicator
-    variable if ‘tract’ bounds the Charles River, the parts per 10
-    million of nitrogen oxides concentration, the average number of
-    rooms per dwelling, the proportion of owner occupied units built
+    row represents one suburb of Boston. The columns include per capita
+    crime rate by town, proportion of residential land zoned for lots
+    over 25,000 sq.ft., the proportion of non-business acres per town,
+    an indicator variable if ‘tract’ bounds the Charles River, the parts
+    per 10 million of nitrogen oxides concentration, the average number
+    of rooms per dwelling, the proportion of owner occupied units built
     prior to 1940. The weighted mean distances to five Boston employment
     centers, the index of accessibility to radial highways, the
     full-value property tax rate per \$10,000, the pupil-teacher ratio
@@ -714,13 +792,192 @@ print(sprintf("Number of columns: %0.0f" , ncol(Boston)))
 
 - **Question 10-b**: Make pairwise scatterplots of the predictors
   (columns) in this data set. Describe your findings.
-  - **Answer**:
+  - **Answer**: Per capita crime rate tends to increase with an increase
+    in the percent of the lower status of the population and with an
+    increase in higher proportions of homes built before 1940. Per
+    capita crime rate also tends to increase with decreases in the
+    median value of owner-occupied homes, the weighted mean distance to
+    employment centers, and the average number of rooms per dwelling.
+    Furthermore, there are impulses of increased crime rates with
+    pupil-teacher ratios of approximately 20%, Full-value property tax
+    rates per \$10,000 of approximately 675, with a proportion of
+    non-retail business acres per town of approximately 18%, and
+    nitrogen oxide concentrations of approximately 0.7.
 
 ``` r
-titles = c("", "Crime Rate Vs. Proportion of Non-Retail Business Acres Per Town", "Crime Rate Vs. Nitrogen Oxide Concentration", "Crime Rate Vs. Average Number of Rooms Per Dwelling", "Crime Rate Vs. Proportion of Owner-Occupied Units Built Before 1940", "Crime Rate Vs. Weighted Mean Distance to Employment Centers", "Crime Rate Vs. Full-Value Property Tax Rate Per $10,000", "Crime Rate Vs. Pupil-Teacher Ratio by Town", "Crime Rate Vs. Percent of Lower Status of the Population", "Crime Rate Vs. Median Value of Owner-Occupied Homes in $1000s")
+titles = c("", "Crime Rate Vs. Proportion of Non-Retail Business Acres Per Town", "Crime Rate Vs. Nitrogen Oxide Concentration", "Crime Rate Vs. Average Number of Rooms Per Dwelling", "Crime Rate Vs. Age of Home", "Crime Rate Vs. Weighted Mean Distance to Employment Centers", "Crime Rate Vs. Full-Value Property Tax Rate Per $10,000", "Crime Rate Vs. Pupil-Teacher Ratio by Town", "Crime Rate Vs. Percent of Lower Status of the Population", "Crime Rate Vs. Median Value of Owner-Occupied Homes in $1000s")
 x_axis_titles = c("", "Proportion of Non-Retail Business Acres Per Town", "Nitrogen Oxide Concentration", "Average Number of Rooms Per Dwelling", "Proportion of Owner-Occupied Units Built Before 1940", "Weighted Mean Distance to Employment Centers", "Full-Value Property Tax Rate Per $10,000", "Pupil-Teacher Ratio by Town", "Percent of Lower Status of the Population", "Median Value of Owner-Occupied Homes in $1000s")
 y_axis_title = c("Per Capita Crime Rate By Town")
 plot_quantitative_correlation_point(boston_sm_formatted, titles, x_axis_titles, y_axis_title, "crim")
 ```
 
 <img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-29-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-29-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-29-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-29-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-29-5.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-29-6.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-29-7.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-29-8.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-29-9.png" width="70%" style="display: block; margin: auto;" />
+
+- **Question 10-c**: Are any of the predictors associated with per
+  capita crime rate? If so, explain the relationship.
+  - **Answer**: Per capita crime rate appears to associate with the
+    median value of owner-occupied homes, the percent of lower status of
+    the population, the weighted mean distance to employment centers,
+    the proportion of owner-occupied units built before 1940, and the
+    average number of rooms per dwelling. It appears that larger groups
+    of lower status populations, homes that have less rooms, are less
+    expensive, are closer to employment centers, and are older in age
+    tend to have a trend with increased crime rates per capita.
+- **Question 10-d**: Do any of the census tracts of Boston appear to
+  have particularly high crime rates? Tax Rates? Pupil-teacher ratios?
+  Comment on the range of each predictor.
+  - **Answer**: There are two suburbs that are greater than 3 standard
+    deviations above the mean crime rate. There is a suburb that is
+    greater than 3 standard deviations above the mean full-value
+    property-tax rate per \$10,000. There are no extreme outliers from
+    the mean with respect to pupil-teacher ratios. The crime rates per
+    capita range from 0.02% to 8.98%. The tax-rates range from 198
+    to 666. The pupil-teacher ratios range from 13.60 to 20.20.
+
+``` r
+boston_sm_tract_crime_rate <- Boston %>% filter(chas == 1)
+
+plot_quantitative_summary_hist_freq_box_singular <- function(df, var_name, title, x_axis_title) {
+    current_var_name <- names(df[var_name])
+    current_var <- df[[var_name]]
+    summary_plot <- ggplot(df) + 
+        geom_histogram(aes(current_var), color = "white", fill = "lightblue", bins = 25) + 
+        geom_freqpoly(aes(current_var), color = "darkblue", bins = 25) + 
+        theme_linedraw() + 
+        geom_boxplot(aes(current_var), color = "darkblue", fill = "lightblue") + 
+        labs(
+          title = title, 
+          x = x_axis_title, 
+          subtitle = sprintf("Min:%0.2f\nQ1: %0.2f\nIQR: %0.2f\nQ3: %0.2f\nMax: %0.2f\nMedian: %0.2f\nμ: %0.2f\nσ: %0.2f\n", 
+                             summary(current_var)["Min."], 
+                             summary(current_var)["1st Qu."], 
+                             IQR(current_var),
+                             summary(current_var)["3rd Qu."], 
+                             summary(current_var)["Max."],
+                             median(current_var),
+                             median(current_var),
+                             sd(current_var)
+                             )) +
+        theme(plot.subtitle = element_text(size = 6))
+    print(summary_plot)
+}
+```
+
+<img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-31-1.png" width="70%" style="display: block; margin: auto;" />
+
+<img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-32-1.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-33-1.png" width="70%" style="display: block; margin: auto;" />
+
+- **Question 10-e**: How many of the census tracts in this data set
+  bound the Charles river?
+  - **Answer**:
+
+``` r
+print(sprintf("%0.0f tracts in this data set bound the Charles river.", nrow(boston_sm_tract_crime_rate)))
+```
+
+    ## [1] "35 tracts in this data set bound the Charles river."
+
+- **Question 10-f**: What is the median pupil-teacher ratio among the
+  towns in this data set?
+  - **Answer**:
+
+``` r
+print(sprintf("%0.0f is the median pupil-teacher ratio among the towns in this data set.", median(Boston$ptratio)))
+```
+
+    ## [1] "19 is the median pupil-teacher ratio among the towns in this data set."
+
+- **Question 10-g**: Which census tract of Boston has lowest median
+  value of owner- occupied homes? What are the values of the other
+  predictors for that census tract, and how do those values compare to
+  the overall ranges for those predictors? Comment on your findings.
+  - **Answer**:
+
+The tract that has the lowest median value of owner-occupied homes has a
+per capita crime rate that is greater than the minimum per capita crime
+rate, but less than Q1 of the IQR of the per capita crime rate overall.
+
+This tract is in alignment with the most frequent (0) proportion of
+residential land zoned for lots over 25,000 sq. ft.
+
+This tract is greater than the 3rd Quartile of the IQR of the overall
+proportion of non-retail business acres per town. This tract is less
+than the maximum of this overall proportion.
+
+This tract is the greatest nitrogen oxide concentration of the overall
+nitrogen oxide concentrations.
+
+This tract is midway between lower limit of 1.5 times the IQR and the
+1st quartile with respect to the overall average number of rooms per
+dwelling.
+
+This tract is grouped with the largest proportion of owner-occupied
+units built before 1940.
+
+This tract is grouped with the penultimate closest weighted mean
+distance to employment centers.
+
+This tract is within one standard deviation of the mean of the
+Full-Property Tax Rate Per \$10,000. It is binned with at least 50 other
+suburbs.
+
+This tract is amongst the lowest pupil teacher ratios at 14.7. The
+overall values of pupil teacher ratios extend from a minimum of 12.6 to
+a maximum of 22.
+
+This tract is among the larger percent of lower status of the population
+with a value of 26.82%. Overall values range from a minimum of 1.73% to
+a maximum of 37.97%.
+
+This tract is among the least expensive owner-occupied homes with a
+value of 13.4 thousand dollars. The overall minimum and maximum of the
+median value of owner-occupied homes in the \$1000s are 5 and 50
+respectively.
+
+The following plots show the suburb with the lowest median value of
+owner-occupied homes.
+
+<img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-38-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-38-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-38-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-38-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-38-5.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-38-6.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-38-7.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-38-8.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-38-9.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-38-10.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-38-11.png" width="70%" style="display: block; margin: auto;" />
+
+- **Question 10-h**: In this data set, how many of the census tracts
+  average more than seven rooms per dwelling? More than eight rooms per
+  dwelling? Comment on the census tracts that average more than eight
+  rooms per dwelling.
+  - **Answer**:
+
+<!-- -->
+
+    ## [1] "In this data set, there are 8 census tracts that average more than 7 rooms per dwelling"
+
+    ## [1] "In this data set, there are 2 census tracts that average more than 8 rooms per dwelling"
+
+Both tracts are greater than the averages for the proportion of
+non-retail business acres per town, nitrogen oxygen concentration,
+average number of rooms per dwelling, the proportion of owner-occupied
+units built before 1940, the full-value property tax rate per \$10,000,
+and the median value of owner-occupied homes in the \$1000s.
+
+Similarly, both tracts are less than the averages for the per capita
+crime rate by town, the proportion of residential land zoned for lots
+over 25,000 sq.ft., the weighted mean distance to employment centers,
+and the percent of lower status of the population.
+
+The tracts only differ with respect to the overall average of the
+pupil-teacher ratio by town where one tract is less than average and the
+other tract is greater.
+
+Plots of the individual tracts with respect to the overall data in the
+Boston data set are viewable below.
+
+``` r
+# Plots Referring To The First Tract Greater Than 8 Rooms:
+```
+
+<img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-42-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-42-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-42-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-42-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-42-5.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-42-6.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-42-7.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-42-8.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-42-9.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-42-10.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-42-11.png" width="70%" style="display: block; margin: auto;" />
+
+``` r
+# Plots Referring To The Second Tract Greater Than 8 Rooms:
+```
+
+<img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-44-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-44-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-44-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-44-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-44-5.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-44-6.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-44-7.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-44-8.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-44-9.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-44-10.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_2_Introduction_to_R_Exercises_files/figure-gfm/unnamed-chunk-44-11.png" width="70%" style="display: block; margin: auto;" />
