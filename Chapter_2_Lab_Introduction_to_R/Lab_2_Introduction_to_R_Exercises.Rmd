@@ -7,9 +7,16 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width = 6)
+knitr::opts_chunk$set(fig.asp = 0.618)
+knitr::opts_chunk$set(out.width = "70%")
+knitr::opts_chunk$set(fig.align = "center")
 ```
 
-```{r include = FALSE}
+```{r Libraries, include = FALSE}
+if(!require("corrr")) install.packages("corrr")
+library(corrr)
+
 if(!require("tidyverse")) install.packages("tidyverse")
 library(tidyverse)
 
@@ -185,7 +192,7 @@ college <- ISLR2::College
 
 * **Question 8-b**: Look at the data using the View() function.
   * **Answer**:
-```{r}
+```{r eval = FALSE}
 View(college)
 ```
 
@@ -271,7 +278,237 @@ This exercise involves the Auto data set studied in the lab. Make sure
 that the missing values have been removed from the data.
 
 * **Question 9-a**: Which of the predictors are quantitative, and which are qualitative?
+  * **Answer**: Quantitative predictors include mpg, cylinders, displacement, horsepower, weight, acceleration, & year. Qualitative predictors include the origin and name. 
+  
+```{r results = "hide", echo = FALSE}
+auto <- na.omit(Auto)
+auto <-na.omit(auto)
+head(auto)
+```
+* **Question 9-b**: What is the *range* of each quantitative predictor? You can answer this using the range() function. 
+  * **Answer**: 
+```{r echo = FALSE, include = FALSE}
+attach(Auto)
+names(Auto)
+```
+```{r}
+range_all_quant <- function(df) {
+    for (i in seq_along(df)){
+      current_var <- df[[i]]
+      if (is.numeric(current_var)) {
+        current_var_name <- names(df[i])
+        cat(sprintf("%s range: \n", current_var_name))
+        cat(sprintf("%0.2f", range(df[[i]])))
+        cat("\n\n")
+      }
+    }
+}
+
+range_all_quant(Auto)
+```
+* **Question 9-c**: What is the mean and standard deviation of each predictor?
   * **Answer**:
 
+```{r}
+mean_sd_quant <- function(var_name, var) {
+  cat(sprintf("%s:\n", var_name))
+  cat(sprintf("Mean: %0.2f\nStandard Deviation: %0.2f\n\n", mean(var), sd(var)))
+}
+
+```
+
+```{r include = FALSE}
+names(Auto)
+```
+
+
+```{r}
+for (i in seq_along(Auto)){
+  current_var <- Auto[[i]]
+  if (is.numeric(current_var)) {
+    current_var_name <- names(Auto[i])
+    mean_sd_quant(current_var_name, current_var)
+  }
+}
+```
+
+* **Question 9-d**: Now remove the 10th through 85th observations. What is the
+range, mean, and standard deviation of each predictor in the
+subset of the data that remains?
+  * **Answer**:
+```{r results = "hide"}
+  auto_small <- Auto[-c(10:85),]
+```
+
+```{r}
+range_mean_sd_all_quant <- function(df) {
+    for (i in seq_along(df)){
+      current_var <- df[[i]]
+      if (is.numeric(current_var)) {
+        current_var_name <- names(df[i])
+        cat(sprintf("%s range: \n", current_var_name))
+        cat(sprintf("%0.2f", range(df[[i]])))
+        
+        cat("\n\n")
+        cat(sprintf("%s mean: \n", current_var_name))
+        cat(sprintf("%0.2f", mean(df[[i]])))
+        
+        cat("\n\n")
+        cat(sprintf("%s sd: \n", current_var_name))
+        cat(sprintf("%0.2f", sd(df[[i]])))
+        cat("\n\n")
+      }
+    }
+}
+range_mean_sd_all_quant(auto_small)
+```
+* **Question 9-e**: Using the full data set, investigate the predictors graphically, using scatterplots or other tools of your choice. Create plots highlighting the relationships among the predictors. Comment on your findings. 
+  * **Answer**: 
+
+The mean mpg of cars in the auto dataset is 23.45 mpg. The max mpg in this dataset is approximately 49 mpg. The minimum mpg is 9 mpg. The greatest number of vehicles have a mpg of approximately 35 mpg.
+
+The most common number of cylinders is 4. The most common is also the least number of cylinders. The most number of cylinders is 8. 
+
+The most common engine displacement is approximately 105 cubic inches. The largest engine has a displacement of 455 cubic inches. The smallest engine size is 64 cubic inches. The average engine size is 151 cubic inches. 
+
+The most common horsepower is 84hp. The greatest horsepower is 230hp. The smallest horsepower is 46hp. The average horsepower is 93.5hp. 
+
+The most common vehicle weight is 2306.75 lbs. The lightest vehicle is 1613 lbs. The heaviest vehicle is 5140 lbs. The average vehicle weight is 2803.5 lbs. 
+
+The fastest 0 - 60 acceleration is 8 seconds. The slowest 0 - 60 acceleration is 24.8 seconds. The average 0 - 60 acceleration is 15.5 seconds. The most frequent 0 - 60 acceleration is approximately 14.75.
+
+The newest car is from 1982. The oldest car is from 1970. The average year of a car is 1976. The most frequent year is 1973. 
+
+There is a negative correlation between the response miles per gallon and the predictors cylinders, engine displacement, vehicle weight, and horspower. There is a positive correlation between the response variable miles per gallon and the predictors acceleration and year. The strongest absolute value of a correlation is between weight and miles per gallon. The weakest absolute value correlation is between miles per gallon and acceleration. 
   
+```{r include = FALSE}
+names(Auto)
+```
+
+```{r}
+plot_quantitative_summary_hist_freq_box <- function(df, titles, x_axis_titles) {
+  for (i in seq_along(df)) {
+    # print(i)
+    current_var_name <- names(df[i])
+    current_var <- df[[i]]
+    if(is.numeric(current_var)) {
+      summary_plot <- ggplot(df) + 
+        geom_histogram(aes(current_var), color = "white", fill = "lightblue", bins = 25) + 
+        geom_freqpoly(aes(current_var), color = "darkblue", bins = 25) + 
+        theme_linedraw() + 
+        geom_boxplot(aes(current_var), color = "darkblue", fill = "lightblue") + 
+        labs(
+          title = titles[[i]], 
+          x = x_axis_titles[[i]], 
+          subtitle = sprintf("Min:%0.2f\nQ1: %0.2f\nIQR: %0.2f\nQ3: %0.2f\nMax: %0.2f\nMedian: %0.2f\nμ: %0.2f\nσ: %0.2f\n", 
+                             summary(current_var)["Min."], 
+                             summary(current_var)["1st Qu."], 
+                             IQR(current_var),
+                             summary(current_var)["3rd Qu."], 
+                             summary(current_var)["Max."],
+                             median(current_var),
+                             median(current_var),
+                             sd(current_var)
+                             )) +
+        scale_x_continuous(breaks = seq(min(current_var), max(current_var), by = round(sd(current_var)))) + 
+        theme(plot.subtitle = element_text(size = 6))
+      print(summary_plot)
+    }
+  }
+}
+titles = c("Miles Per Gallon", "Cylinders", "Displacement", "Horsepower", "Weight", "Acceleration", "Year")
+x_axis_titles = c("Miles Per Gallon", "Number of Cylinders", "Displacement", "Horsepower", "Weight", "Acceleration", "Year")
+plot_quantitative_summary_hist_freq_box(Auto[,1:7], titles, x_axis_titles)
+```
+
+```{r include = FALSE}
+val <- correlate(Auto[["year"]], Auto[["mpg"]])
+val$x
+```
+
+
+
+```{r warning=FALSE, message=FALSE}
+plot_quantitative_correlation_point <- function(df, titles, x_axis_titles, y_axis_titles, dependent_var) {
+  dependent_var_data <- df[[dependent_var]]
+  dependent_var_name <- names(df[dependent_var])
+  for (i in seq_along(df)) {
+    current_var_name <- names(df[i])
+    if (identical(current_var_name, dependent_var)){
+      next
+    }
+    current_var <- df[[i]]
+    if(is.numeric(current_var)) {
+      current_correlation <- correlate(current_var, dependent_var_data)
+      summary_plot <- ggplot(df) + 
+        geom_point(aes(current_var, dependent_var_data)) +
+        geom_smooth(aes(current_var, dependent_var_data), color = "darkblue", se = FALSE) + 
+        theme_linedraw() + 
+        labs(
+          title = titles[[i]], 
+          x = x_axis_titles[[i]], 
+          y = y_axis_title,
+          subtitle = sprintf("Correlation: %0.2f", current_correlation$x)) +
+        # scale_x_continuous(breaks = seq(min(current_var), max(current_var))) + 
+        theme(plot.subtitle = element_text(size = 8))
+      
+      print(summary_plot)
+    }
+  }
+}
+titles = c("", "Cylinders", "Displacement", "Horsepower", "Weight", "Acceleration", "Year")
+x_axis_titles = c("", "Number of Cylinders", "Displacement", "Horsepower", "Weight", "Acceleration", "Year")
+y_axis_title = c("Miles Per Gallon")
+plot_quantitative_correlation_point(Auto[,1:7], titles, x_axis_titles, y_axis_title, "mpg")
+```
+
+```{r include = FALSE}
+names(auto)
+```
+
+
+* **Question 9-f**: Suppose that you wish to predict gase mileage (mpg) on the basis of the other variables. Do your plots suggest that any of the other variables might be useful in predicting mpg? Justify your answer.
+  * **Answer**: There is a strong negative correlation between the predictors weight and displacement and the response variable miles per gallon. There is a positive correlation between miles per gallon and year. These plots suggest that the engines may be more efficient over time or the weight of the cars may be lighter over time which have an effect on the miles per gallon. Furthermore, the engines may be less powerful (i.e. have less cylinders and less horsepower) over the years and therefore have less displacement and weight. This may yield more efficient engines that have higher efficiencies with respect to miles per gallon.
+
+### Question 10: This exercise involve the Boston housing data set.
+
+* **Question 10-a**: To begin, load in the Boston data set. The Boston data set is
+part of the ISLR2 *library*. How many rows are in this data set? How many columns? What
+do the rows and columns represent?
+  * **Answer**: There are 506 rows and 13 columns in the dataset. Each row represents one house. The columns include per capita crime rate by town, proportion of residential land zoned for lots over 25,000 sq.ft., the proportion of non-business acres per town, an indicator variable if 'tract' bounds the Charles River, the parts per 10 million of nitrogen oxides concentration, the average number of rooms per dwelling, the proportion of owner occupied units built prior to 1940. The weighted mean distances to five Boston employment centers, the index of accessibility to radial highways, the full-value property tax rate per $10,000, the pupil-teacher ratio by town, the percent of the lower status of the population, and the median value of owner-occupied homes in the $1000s. 
+  
+```{r results = "hide"}
+library(ISLR2)
+Boston
+?Boston
+```
+  
+```{r}
+print(sprintf("Number of rows: %0.0f" , nrow(Boston)))
+print(sprintf("Number of columns: %0.0f" , ncol(Boston)))
+```
+
+
+* **Question 10-b**: Make pairwise scatterplots of the predictors (columns) in this data set. Describe your findings. 
+  * **Answer**:
+  
+```{r include = FALSE}
+head(Boston)
+```
+
+```{r include = FALSE}
+boston_sm_formatted <- Boston %>% select(everything(),-zn, -chas, -rad)
+boston_sm_formatted
+
+length(boston_sm_formatted)
+```
+
+
+```{r}
+titles = c("", "Crime Rate Vs. Proportion of Non-Retail Business Acres Per Town", "Crime Rate Vs. Nitrogen Oxide Concentration", "Crime Rate Vs. Average Number of Rooms Per Dwelling", "Crime Rate Vs. Proportion of Owner-Occupied Units Built Before 1940", "Crime Rate Vs. Weighted Mean Distance to Employment Centers", "Crime Rate Vs. Full-Value Property Tax Rate Per $10,000", "Crime Rate Vs. Pupil-Teacher Ratio by Town", "Crime Rate Vs. Percent of Lower Status of the Population", "Crime Rate Vs. Median Value of Owner-Occupied Homes in $1000s")
+x_axis_titles = c("", "Proportion of Non-Retail Business Acres Per Town", "Nitrogen Oxide Concentration", "Average Number of Rooms Per Dwelling", "Proportion of Owner-Occupied Units Built Before 1940", "Weighted Mean Distance to Employment Centers", "Full-Value Property Tax Rate Per $10,000", "Pupil-Teacher Ratio by Town", "Percent of Lower Status of the Population", "Median Value of Owner-Occupied Homes in $1000s")
+y_axis_title = c("Per Capita Crime Rate By Town")
+plot_quantitative_correlation_point(boston_sm_formatted, titles, x_axis_titles, y_axis_title, "crim")
+# pairs(Boston)
+```
 
