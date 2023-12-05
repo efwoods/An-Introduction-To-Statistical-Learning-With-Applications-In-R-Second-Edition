@@ -504,11 +504,11 @@ length(boston_sm_formatted)
 ```
 
 
-```{r}
+```{r warnings = FALSE, message=FALSE}
+
 titles = c("", "Crime Rate Vs. Proportion of Non-Retail Business Acres Per Town", "Crime Rate Vs. Nitrogen Oxide Concentration", "Crime Rate Vs. Average Number of Rooms Per Dwelling", "Crime Rate Vs. Proportion of Owner-Occupied Units Built Before 1940", "Crime Rate Vs. Weighted Mean Distance to Employment Centers", "Crime Rate Vs. Full-Value Property Tax Rate Per $10,000", "Crime Rate Vs. Pupil-Teacher Ratio by Town", "Crime Rate Vs. Percent of Lower Status of the Population", "Crime Rate Vs. Median Value of Owner-Occupied Homes in $1000s")
 x_axis_titles = c("", "Proportion of Non-Retail Business Acres Per Town", "Nitrogen Oxide Concentration", "Average Number of Rooms Per Dwelling", "Proportion of Owner-Occupied Units Built Before 1940", "Weighted Mean Distance to Employment Centers", "Full-Value Property Tax Rate Per $10,000", "Pupil-Teacher Ratio by Town", "Percent of Lower Status of the Population", "Median Value of Owner-Occupied Homes in $1000s")
 y_axis_title = c("Per Capita Crime Rate By Town")
 plot_quantitative_correlation_point(boston_sm_formatted, titles, x_axis_titles, y_axis_title, "crim")
-# pairs(Boston)
 ```
 
