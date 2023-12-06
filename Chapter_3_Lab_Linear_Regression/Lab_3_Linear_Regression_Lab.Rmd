@@ -1,0 +1,218 @@
+---
+title: "Lab 3 Linear Regression"
+author: "Evan Woods"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(include = FALSE)
+knitr::opts_chunk$set(fig.width = 6)
+knitr::opts_chunk$set(fig.asp = 0.618)
+knitr::opts_chunk$set(out.width = "70%")
+knitr::opts_chunk$set(fig.align = "center")
+```
+
+```{r include=FALSE}
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("ISLR2")) install.packages("ISLR2")
+library(ISLR2)
+library(tidyverse)
+```
+
+```{r}
+LoadLibraries <- function() {
+  if(!require("tidyverse")) install.packages("tidyverse")
+  if(!require("ISLR2")) install.packages("ISLR2")
+  library(ISLR2)
+  library(tidyverse)
+  print("The libraries have been loaded!")
+}
+```
+
+# Lab: Linear Regression
+```{r include=FALSE, eval=FALSE}
+Advertising <- read_csv("Advertising.csv")
+head(Advertising)
+```
+
+
+```{r}
+attach(Boston)
+```
+## F-Statistic: Is at least one predictor a significant indicator of the response in a model?
+```{r include=TRUE}
+lm.fit <- lm(medv ~ lstat)
+summary(lm.fit)
+```
+
+```{r}
+names(lm.fit)
+```
+
+
+```{r}
+confint(lm.fit)
+```
+
+## Calculate Confidence Interval: Provides a measure of confidence over all predictors
+```{r include=TRUE}
+predict(lm.fit, data.frame(lstat = (c(5, 10, 15))), interval = "confidence")
+```
+
+## Prediction Interval: Provide a measure of confidence given a particular observation in the larger dataset. 
+```{r include=TRUE}
+predict(lm.fit, data.frame(lstat = (c(5, 10, 15))), interval = "prediction")
+```
+
+```{r}
+plot(lstat, medv)
+abline(lm.fit)
+```
+
+```{r}
+plot(lstat, medv)
+abline(lm.fit, lwd = 3)
+```
+
+```{r}
+par(mfrow = c(2,2))
+plot(lm.fit)
+```
+
+```{r}
+# Return the studentized residuals
+plot(predict(lm.fit), residuals(lm.fit))
+plot(predict(lm.fit), rstudent(lm.fit))
+```
+
+```{r}
+# Residuals
+ggplot() + 
+  geom_point(aes(predict(lm.fit), residuals(lm.fit)))
+```
+
+
+## Studentized Residuals: Identify outliers if values are greater than 3 or less than -3.
+```{r include=TRUE}
+
+# Studentized residuals: Identify outliers if values are outside -3 to 3.
+ggplot() + 
+  geom_point(aes(
+    predict(lm.fit), rstudent(lm.fit)
+  ))
+```
+
+## Calculate leverage statistics 
+```{r include=TRUE}
+# Calculate leverage statistics
+plot(hatvalues(lm.fit))
+which.max(hatvalues(lm.fit)) # Identify the largest values of a vector. 
+```
+
+```{r}
+lm.fit <- lm(medv ~ lstat + age, data = Boston)
+summary(lm.fit)
+```
+## Use all predictors
+```{r}
+# Use all predictors 
+lm.fit <- lm(medv ~ ., data = Boston)
+summary(lm.fit)
+```
+
+```{r}
+# Access the individual components of a summary object
+?summary.lm
+```
+
+## R^2^ Value
+```{r include=TRUE}
+# What is the R squared value?
+summary.lm(lm.fit)$r.squared
+```
+
+## RSE
+```{r include=TRUE}
+# What is the RSE?
+summary.lm(lm.fit)$sigma
+```
+
+## Variance Inflation Factor: Identify collinearity
+```{r include=FALSE}
+# Variance Inflation Factor: used to identify collinearity or multicollinearity in the data. 5 or 10 or greater is indicative of collinearity. Minimum value is 1. 
+if(!require("car")) install.packages("car")
+library(car)
+```
+
+```{r}
+?vif()
+```
+
+```{r include=TRUE}
+vif(lm.fit)
+```
+
+## Include all predictors except a particular predictor
+```{r include=TRUE}
+# All predictors except age:
+lm.fit1 <- lm(medv ~ . - age, data = Boston)
+summary(lm.fit1)
+```
+
+## Interaction Terms
+```{r include=TRUE}
+# lstat:age includes the interaction. lstat * age is shorthand that includes the product and individual predictors. 
+summary(lm(medv ~ lstat * age, data = Boston))
+```
+## Non-linear Transformations of the predictors
+### Higher degree predictors (x^2^)
+```{r include=TRUE}
+# Create X^2 using I(X^2)
+
+# Perform a regression of medv onto lstat & lstat^2
+lm.fit2 <- lm(medv ~ lstat + I(lstat^2))
+summary(lm.fit2)
+```
+
+### Anova Function: H~0~: Both models fit the data equally well; H~a~: model 2 is a superior fit
+```{r}
+anova(lm.fit, lm.fit2)
+# The p-value is low. I reject the null hypothesis. Model 2 is a superior fit to the data.
+# The F statistic is high for model 2. Therefore, at least one predictor has a significant relationship with the response. 
+```
+
+```{r}
+# par(mfrow = c(2,2))
+plot(lm.fit2)
+# There is little pattern in the residuals vs. the fitted values. 
+```
+```{r}
+# 5th degree polynomial
+lm.fit5 <- lm(medv ~ poly(lstat, 5))
+summary(lm.fit5)
+```
+
+```{r}
+# log transformation
+summary(lm(medv ~ log(rm), data = Boston))
+```
+## Qualitative Predictors
+```{r}
+Carseats
+```
+### Identify the coding of factor variables
+```{r include = TRUE}
+contrasts(Carseats$ShelveLoc)
+```
+
+```{r}
+LoadLibraries()
+```
+
+
+```{r}
+
+```
+
