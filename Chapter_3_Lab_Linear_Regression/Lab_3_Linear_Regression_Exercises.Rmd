@@ -454,7 +454,10 @@ ggplot() +
   geom_hline(yintercept = -3, color = '#a60808') +
   labs(title = "Studentized Residuals Vs. Fitted Values", subtitle = "Detecting outliers in the model", x = "Fitted Values", y = "Studentized residuals")
 ```
-### Question 11: In this problem, we will investigate the t-statistic for the null hypothesis H~0~: β = 0 in simple linear regression without an intercept. To begin, we generate a predictor x and a response y as follows.
+
+### Question 11: 
+In this problem, we will investigate the t-statistic for the null hypothesis H~0~: β = 0 in simple linear regression without an intercept. To begin, we generate a predictor x and a response y as follows.
+
 
 ```{r}
 set.seed(1)
@@ -476,7 +479,7 @@ lm.fit_11 <- lm(y ~ x + 0)
 summary.lm(lm.fit_11)$coefficients
 ```
 
-```{r}
+```{r echo=FALSE}
 f_print(sprintf("The estimate indicates that for every unit value in x, y changes by 1.993876. The standard error indicates the size of the standard deviation of the error of the estimate of y regressed onto x. In this case, its value is 0.1064767. The t value is a measure of the number of standard deviations the x coefficient is away from 0. The p-value indicates x is a significant predictor of y. The p-value is the probability of observing any number equal to the absolute value of t or larger assuming y is not regressed onto x."))
 ```
 
@@ -517,17 +520,5 @@ ggplot() +
   labs(title = "Plot of linear models with and without intercept.", subtitle = "lm(y~x+0): blue\nlm(x~y+0): red\nlm(y~x): green")
 ```
 
-* **Question 11-d**: For the regression of Y onto X without an intercept, the t-
-statistic for H0 : β = 0 takes the form ˆβ/SE( ˆβ), where ˆβ is
-given by (3.38), and where
 
-(These formulas are slightly different from those given in Sec-
-tions 3.1.1 and 3.1.2, since here we are performing regression
-without an intercept.) Show algebraically, and confirm numeri-
-cally in R, that the t-statistic can be written as
-
-  * **Answer**: What is the relationship between the results obtained in 
-```{r}
-
-```
 

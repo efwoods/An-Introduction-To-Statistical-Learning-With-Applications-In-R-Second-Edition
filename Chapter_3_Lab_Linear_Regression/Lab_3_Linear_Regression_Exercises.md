@@ -590,10 +590,13 @@ Detecting Outliers
     outliers.
 
 <img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-51-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-51-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-51-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-51-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-51-5.png" width="70%" style="display: block; margin: auto;" />
-\### Question 11: In this problem, we will investigate the t-statistic
-for the null hypothesis H<sub>0</sub>: β = 0 in simple linear regression
-without an intercept. To begin, we generate a predictor x and a response
-y as follows.
+
+### Question 11:
+
+In this problem, we will investigate the t-statistic for the null
+hypothesis H<sub>0</sub>: β = 0 in simple linear regression without an
+intercept. To begin, we generate a predictor x and a response y as
+follows.
 
 ``` r
 set.seed(1)
@@ -614,10 +617,6 @@ y <- 2*x + rnorm(100)
 
       Estimate Std. Error  t value     Pr(>|t|)
     x 1.993876  0.1064767 18.72593 2.642197e-34
-
-``` r
-f_print(sprintf("The estimate indicates that for every unit value in x, y changes by 1.993876. The standard error indicates the size of the standard deviation of the error of the estimate of y regressed onto x. In this case, its value is 0.1064767. The t value is a measure of the number of standard deviations the x coefficient is away from 0. The p-value indicates x is a significant predictor of y. The p-value is the probability of observing any number equal to the absolute value of t or larger assuming y is not regressed onto x."))
-```
 
     The estimate indicates that for every unit value in x, y changes by 1.993876.
     The standard error indicates the size of the standard deviation of the error
@@ -649,7 +648,7 @@ f_print(sprintf("The estimate indicates that for every unit value in x, y change
 - **Question 11-c**:
   - **Answer**:
 
-$$ \beta + \beta$$
+<!-- -->
 
     Both regressions share the same intercept (0), t-values, and p-values. They are
     both positive in slope.
@@ -663,14 +662,3 @@ $$ \beta + \beta$$
        -0.03769      1.99894  
 
 <img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-59-1.png" width="70%" style="display: block; margin: auto;" />
-
-- **Question 11-d**: For the regression of Y onto X without an
-  intercept, the t- statistic for H0 : β = 0 takes the form ˆβ/SE( ˆβ),
-  where ˆβ is given by (3.38), and where
-
-(These formulas are slightly different from those given in Sec- tions
-3.1.1 and 3.1.2, since here we are performing regression without an
-intercept.) Show algebraically, and confirm numeri- cally in R, that the
-t-statistic can be written as
-
-- **Answer**: What is the relationship between the results obtained in
