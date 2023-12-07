@@ -35,12 +35,18 @@ LoadLibraries <- function() {
 ```{r include=FALSE, eval=FALSE}
 Advertising <- read_csv("Advertising.csv")
 head(Advertising)
+
+```
+```{r}
+names(Advertising)
+mean(Advertising$sales)
 ```
 
 
 ```{r}
 attach(Boston)
 ```
+
 ## F-Statistic: Is at least one predictor a significant indicator of the response in a model?
 ```{r include=TRUE}
 lm.fit <- lm(medv ~ lstat)
@@ -104,11 +110,17 @@ ggplot() +
   ))
 ```
 
+
 ## Calculate leverage statistics 
 ```{r include=TRUE}
 # Calculate leverage statistics
 plot(hatvalues(lm.fit))
 which.max(hatvalues(lm.fit)) # Identify the largest values of a vector. 
+
+lm.fit$model %>% mutate(row_number = row_number()) %>% filter(row_number == 375)
+# %>% select(everything(), -row_number)
+# lstat
+
 ```
 
 ```{r}

@@ -11,6 +11,9 @@ knitr::opts_chunk$set(fig.width = 6)
 knitr::opts_chunk$set(fig.asp = 0.618)
 knitr::opts_chunk$set(out.width = "70%")
 knitr::opts_chunk$set(fig.align = "center")
+knitr::opts_chunk$set(
+  comment = ""
+)
 ```
 
 ```{r message=FALSE, include=FALSE}
@@ -34,7 +37,38 @@ LoadLibraries <- function() {
 }
 ```
 
+```{r include=FALSE}
+f_print <- function(string){
+  cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
+}
+```
+
+
 # §3.7 Exercises
+
+<!-- ## Conceptual -->
+<!-- ### Question 7: -->
+
+<!-- ## Getting started with equations -->
+
+<!-- We can write fractions: $\frac{2}{3}$. We can also handle things like estimated population growth rate, e.g., $\hat{\lambda}=1.02$. And, $\sqrt{4}=2$. -->
+
+<!-- $$\alpha, \beta,  \gamma, \Gamma$$ -->
+
+<!-- $$a \pm b$$ -->
+<!-- $$x \ge 15$$ -->
+<!-- $$a_i \ge 0~~~\forall i$$ -->
+
+<!-- ## Matrix -->
+
+<!-- $$A_{m,n} = -->
+<!--  \begin{pmatrix} -->
+<!--   a_{1,1} & a_{1,2} & \cdots & a_{1,n} \\ -->
+<!--   a_{2,1} & a_{2,2} & \cdots & a_{2,n} \\ -->
+<!--   \vdots  & \vdots  & \ddots & \vdots  \\ -->
+<!--   a_{m,1} & a_{m,2} & \cdots & a_{m,n} -->
+<!--  \end{pmatrix}$$ -->
+
 
 ## Applied
 ### Question 8:
@@ -44,7 +78,6 @@ This question involves the use of simple linear regression on the Auto data set.
 auto <- na.omit(Auto)
 attach(auto)
 ```
-
 
 * **Question 8-a**:
   i. Is there a relationship between the predictor and the response?
@@ -59,8 +92,11 @@ attach(auto)
   iii. There is a negative relationship between the predictor and the response. This is observable from the negative coefficient of horsepower. 
   iv. The predicted mpg associated with a horsepower of 98 is 24.47 mpg. The confidence interval is 23.97 to 24.96. The prediction interval is 14.8 to 34.12.
 
+
 ```{r}
 lm.fit <- lm(mpg ~ horsepower)
+
+# Calculating Percentage of Error from Residual Standard Error
 mean_value_of_response <- mean(mpg)
 mean_value_of_response
 
@@ -68,17 +104,25 @@ RSE <- summary.lm(lm.fit)$sigma
 
 percentage_of_error <- (RSE / mean(mpg)) * 100
 percentage_of_error
+```
 
+
+```{r}
+# Summary Statistics
 summary.lm(lm.fit)
+```
 
+
+```{r}
+# Prediction & Confidence Intervals
 predict(lm.fit, data.frame(horsepower = c(98)), interval = "prediction")
 predict(lm.fit, data.frame(horsepower = c(98)), interval = "confidence")
 ```
 
-* **Question 8-b**: Plot the response and the predictor. Use the abline() funciton to display the least squares regression line. 
+* **Question 8-b**: Plot the response and the predictor. Use the abline() function to display the least squares regression line. 
   * **Answer**:
   
-```{r include=FALSE}
+```{r echo=FALSE, warning=FALSE}
 ggplot() + 
   geom_point(aes(horsepower, mpg), color = "#1A0875") +
   geom_abline(aes(intercept = lm.fit$coefficients[[1]], slope = lm.fit$coefficients[[2]]), color = "#34ABEB", size = 1) + 
@@ -87,18 +131,226 @@ ggplot() +
 ```
 
 * **Question 8-c**: Use the plot() function to produce diagnostic plots of the least squares regression fit. 
-  * **Answer**: There are two or more points with high leverage. There is heteroskedasticity in the residuals. There appears to be a non-linearity in the data after observing the Residuals vs Fitted plot. There are two ouliers in the dataset. 
-
+  * **Answer**: There are two or more points with high leverage. There is heteroskedasticity in the residuals. There appears to be a non-linearity in the data after observing the Residuals vs Fitted plot. There are multiple outliers in the dataset.
 
 ```{r echo=FALSE}
 plot(lm.fit)
+
+# Non-linearity
+f_print(sprintf('There appears to be a non-linearity in the data shown from the following plot: Residuals vs Fitted.'))
+
+# Heteroskedasticity: Non-constant variance in the error terms. 
+f_print(sprintf("There is heteroskedasticity in the residuals shown by the Residuals vs. Fitted plot. The non-constant Variance is also visible be the Q-Q Reisdual plot where points 331, 328, & 321 do not have constant variance."))
+```
+```{r echo=FALSE}
 # Studentized residuals: Identify outliers if values are outside -3 to 3.
+
 ggplot() + 
   geom_point(aes(
     predict(lm.fit), rstudent(lm.fit),
   ), color = "#1A0875") + 
   geom_hline(yintercept = 3, color = '#a60808') +
   geom_hline(yintercept = -3, color = '#a60808') +
-  labs(title = "Studentized Residuals: Detecting outliers in the model", x = "Fitted Values", y = "Studentized residuals")
+  labs(title = "Studentized Residuals Vs. Fitted Values", subtitle = "Detecting outliers in the model", x = "Fitted Values", y = "Studentized residuals")
 ```
+
+**Detecting outliers**:
+
+```{r}
+# Detecting Outliers
+lm.fit$model <- lm.fit$model %>% mutate(row_n = row_number()) 
+outliers <- subset(lm.fit$model, rstudent(lm.fit) > 3 | rstudent(lm.fit) < -3)
+```
+
+
+```{r echo=FALSE}
+f_print(sprintf("There are %0.0f outliers. They are observations %0.0f and %0.0f.", nrow(outliers), outliers[["row_n"]][[1]], outliers[["row_n"]][[2]]))
+```
+
+**Identifying the high-leverage point**: 
+
+```{r}
+# Identifying high-leverage point
+p <- ncol(lm.fit$model)
+n <- nrow(lm.fit$model)
+
+# High-Leverage: value > 3 * (p number of parameters) / (n number of observations)
+high_leverage_cutoff <- (3*p/n)
+
+# Identifying high-leverage values
+lm.hatvalues <- hatvalues(lm.fit)
+high_leverage_values <- lm.hatvalues[lm.hatvalues > high_leverage_cutoff]
+```
+
+
+```{r echo=FALSE}
+# High Leverage 
+f_print(sprintf("The cutoff value for high-leverage is %0.3f given %0.0f predictors and %0.0f observations.", high_leverage_cutoff, p, n))
+f_print(sprintf('There are %0.0f values with high-leverage with respect to the cutoff value of %0.3f. Observations 14, 9, and 116 are displayed as high-leverage on the following plot: Residuals Vs. Leverage. Their values are as follows:', length(high_leverage_values), high_leverage_cutoff))
+high_leverage_values
+```
+
+
+```{r include=FALSE}
+# Removing High-Leverage value 116
+auto_no_high_leverage <- auto %>% mutate(row_number = row_number()) %>% filter(row_number != 116)
+lm.fit_auto_no_high_leverage <- lm(auto_no_high_leverage$mpg ~ auto_no_high_leverage$horsepower)
+```
+
+**Model Summary Statistics After Removing the High-Leverage Observation**:
+
+```{r echo=FALSE}
+summary(lm.fit_auto_no_high_leverage)
+```
+
+
+```{r echo=FALSE}
+f_print(sprintf("The R-squared value increased from %0.04f to %0.04f after removing the high leverage value! This indicates a model that captures more of the variability in the data.", summary(lm.fit)$r.squared, summary(lm.fit_auto_no_high_leverage)$r.squared))
+```
+
+### Question 9:
+This question involves the use of multiple linear regression on the
+Auto data set. 
+
+* **Question 9-a**: Produce a scatterplot matrix which includes all of the variables of the data set. 
+  * **Answer**:
+
+
+Variables in Auto
+```{r echo=FALSE}
+names(auto)
+```
+
+```{r echo=FALSE}
+pairs(auto, cex = .05, pch = 20, main = "Scatterplot Matrix of All Variables in Auto")
+```
+
+* **Question 9-b**: Compute the matrix of correlations between the variables using the function cor(). You will need to exclude the name variable, which is qualitative.
+  * **Answer**:
+
+```{r echo=FALSE}
+auto_no_name_col <- auto %>% select(everything(), -name)
+
+cor(auto_no_name_col)
+```
+
+* **Question 9-c**: Use the lm() function to perform a multiple linear regression
+with mpg as the response and all other variables except name as
+the predictors. Use the summary() function to print the results.
+Comment on the output.
+i. Is there a relationship between the predictors and the response? 
+ii. Which predictors appear to have a statistically significant relationship to the response?
+iii. What does the coefficient for the year variable suggest?
+  * **Answer**:
+
+```{r echo=FALSE}
+lm.fit_all_pred_no_name <- lm(mpg ~ ., data = auto_no_name_col)
+summary(lm.fit_all_pred_no_name)
+```
+```{r include=FALSE}
+names(summary.lm(lm.fit_all_pred_no_name))
+```
+
+```{r include=FALSE}
+summary.lm(lm.fit_all_pred_no_name)$fstatistic[["value"]]
+```
+
+```{r echo=FALSE}
+f_print(sprintf("There is a relationship between the predictors and the response as indicated by the F-statistic of %0.1f.", 
+              summary.lm(lm.fit_all_pred_no_name)$fstatistic[["value"]]))
+
+f_print(sprintf("Displacement, Weight, Year, and Origin all appear to have a statistically significant relationship to the response."))
+
+f_print(sprintf("The coefficient of the year variable suggests that for every year, miles per gallon increases by 0.750773."))
+
+```
+* **Question 9-d**: Use the plot() function to produce diagnostic plots of the linear regression fit. Comment on any problems you see with the fit. Do the residual plots suggest any unusually large outliers? Does the leverage plot identify any observations with unusually high leverage?
+  * **Answer**:
+  
+```{r echo=FALSE}
+plot(lm.fit_all_pred_no_name)
+ggplot() +
+  geom_point(aes(
+    predict(lm.fit_all_pred_no_name), rstudent(lm.fit),
+  ), color = "#1A0875") +
+  geom_hline(yintercept = 3, color = '#a60808') +
+  geom_hline(yintercept = -3, color = '#a60808') +
+  labs(title = "Studentized Residuals Vs. Fitted Values", subtitle = "Detecting outliers in the model", x = "Fitted Values", y = "Studentized residuals")
+```
+```{r echo=FALSE}
+f_print(sprintf("There are two outliers in this data as observed in the following plot: Studentized Residuals Vs. Fitted Values. There is heteroskedasticity as seen in the Residuals vs Fitted plot and the Q-Q plot. There is a high-leverage observation observable in the plot Residuals vs Leverage. There is a non-linearity observable in the Residuals vs Fitted plot."))
+```
+* **Question 9-e**: User the * and : symbols to fit linear models with interaction effects. Do any interactions appear to be statistically significant?
+  * **Answer**:
+  
+```{r echo=FALSE}
+f_print(sprintf("The following interactions have significant relationships with respect to mpg: year and weight, horsepower and cylinders, and horsepower and displacement."))
+```
+
+```{r echo=FALSE, include=FALSE}
+names(auto)
+lm.fit_auto_horsepower_displacement_interaction <- lm(mpg ~ horsepower*displacement, data = auto)
+lm.fit_auto_weight_year_interaction <- lm(mpg ~ weight*year, data = auto)
+lm.fit_auto_cylinders_horsepower_interaction <- lm(mpg ~ cylinders*horsepower, data = auto)
+
+```
+
+
+```{r echo=FALSE}
+summary(lm.fit_auto_horsepower_displacement_interaction)
+```
+
+```{r echo=FALSE}
+summary(lm.fit_auto_weight_year_interaction)
+```
+
+```{r echo=FALSE}
+summary(lm.fit_auto_cylinders_horsepower_interaction)
+```
+
+* **Question 9-f**: Try a few different combinations of the variables such as log(X), √(X), X^2^. Comment on your findings.
+  * **Answer**:
+  
+```{r echo=FALSE}
+f_print(sprintf("Three transformations were performed on weight: the log, square root, and the square of weight. These transformations yielded R-squared values that were highest with the log transformation of the weight. The log transformation model furthmore exhibited improved values with respect to F-statistics and Residual Standard Error. The transformed weight is a significant indicator of mpg in all three transformed linear models."))
+```
+
+
+```{r include=FALSE}
+lm.fit_log_weight <- lm(mpg ~ log(weight), data = auto)
+lm.fit_sqrt_weight <- lm(mpg ~ sqrt(weight), data = auto)
+lm.fit_weight_squared <- lm(mpg ~ I(weight^2), data = auto)
+```
+
+```{r echo=FALSE}
+summary(lm.fit_log_weight)
+```
+
+```{r echo=FALSE}
+summary(lm.fit_sqrt_weight)
+```
+
+```{r echo=FALSE}
+summary(lm.fit_weight_squared)
+```
+
+### Question 10:
+This question should be answered using the Carseats data set. 
+
+* **Question 10-a**: Fit a multiple regression model to fit Sales using Price, Urban, and US.
+  * **Answer**: 
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
 
