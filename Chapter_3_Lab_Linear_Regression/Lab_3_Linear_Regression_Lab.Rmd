@@ -43,6 +43,7 @@ mean(Advertising$sales)
 ```
 
 
+
 ```{r}
 attach(Boston)
 ```

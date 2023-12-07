@@ -337,20 +337,197 @@ summary(lm.fit_weight_squared)
 ### Question 10:
 This question should be answered using the Carseats data set. 
 
+```{r include = FALSE}
+attach(Carseats)
+```
+
 * **Question 10-a**: Fit a multiple regression model to fit Sales using Price, Urban, and US.
   * **Answer**: 
+
+```{r echo=FALSE}
+lm.fit_carseats <- lm(Sales ~ Price + Urban + US, data = Carseats)
+lm.fit_carseats
+```
+
+* **Question 10-b**: Provide an interpretation of each coefficient in the model. Be careful - some of the variables in the model are qualitative!
+  * **Answer**: 
+
+```{r}
+f_print(sprintf("Every 1 unit of increase in price will decrease sales by 54.46 units. Stocking carseats in an Urban location decreases sales by 21.92 units. Stocking carseats in US stores increase sales by 1200 units."))
+```
+
+* **Question 10-c**: Write out the model in equation form, being careful to handle the qualitative variables properly.
+  * **Answer**: 
   
+```{r}
+# If the Carseat is stocked in an Urban And US store:
+# Sales ≈ β_0 + β_1 * Price + β_2 + β_3
+
+# If the Carseat is stocked in an Urban store only:
+# Sales ≈ β_0 + β_1 * Price + β_2
+
+# If the Carseat is stocked in a US store only:
+# Sales ≈ β_0 + β_1 * Price + β_3
+```
+
+* **Question 10-d**: For which of the predictors can you reject the null hypothesis H~0~ : β~j~ = 0?
+  * **Answer**: 
+  
+```{r echo=FALSE}
+f_print(sprintf("The following are significant predictors of sales: Price & US."))
+```
+
+  
+```{r echo=FALSE}
+summary(lm.fit_carseats)
+```
+
+* **Question 10-e**: On the basis of your response to the previous question, fit a smaller model that only uses the predictors for which there is evidence of association with the outcome. 
+  * **Answer**: 
+  
+```{r echo=FALSE}
+lm.fit_carseats_sm <- lm(Sales ~ Price + US)
+lm.fit_carseats_sm
+```
+* **Question 10-f**: How well do the models fit the data?
+  * **Answer**:
+
+```{r include=FALSE}
+names(summary.lm(lm.fit_carseats))
+
+percentage_error_carseats <- summary.lm(lm.fit_carseats)$sigma/mean(Sales) * 100
+summary.lm(lm.fit_carseats)$r.squared * 100
+
+percentage_error_carseats_sm <- summary.lm(lm.fit_carseats_sm)$sigma/mean(Sales) * 100
+summary.lm(lm.fit_carseats_sm)$r.squared * 100
+```
+
+```{r echo=FALSE}
+f_print(sprintf("The model composed of US, Urban, & Price captures %0.4f%% of the variablility of the data with %0.2f percent error with respect to the response, sales.", summary.lm(lm.fit_carseats)$r.squared * 100, percentage_error_carseats))
+
+f_print(sprintf("The model exclusively composed of US & Price captures %0.4f%% of the variablility of the data with %0.2f percent error with respect to the response, sales.", summary.lm(lm.fit_carseats_sm)$r.squared * 100, percentage_error_carseats_sm))
+
+f_print(sprintf("The US & Price model captures less variability in the data but accomodates this with less response error."))
+```
+* **Question 10-g**: Using the model from (e), obtain 95 % confidence intervals for
+the coefficient(s).
+  * **Answer**:
+```{r echo=FALSE}
+confint(lm.fit_carseats_sm)
+```
+* **Question 10-h**: Is there evidence of outliers or high leverage observations in the model from (e)?
+  * **Answer**:
+  
+Observations with High Leverage
+```{r include=FALSE}
+high_leverage_cutoff <- 3 * ncol(lm.fit_carseats_sm$model) / nrow(lm.fit_carseats_sm$model)
+high_leverage_cutoff
+```
+
+```{r echo=FALSE}
+# Detecting High Leverage
+fit_carseats_sm_high_leverage <- subset(lm.fit_carseats_sm$model, hatvalues(lm.fit_carseats_sm) > high_leverage_cutoff)
+fit_carseats_sm_high_leverage
+```
+
+Detecting Outliers
+
+```{r echo=FALSE}
+# Detecting Outliers
+fit_carseats_sm_outliers <- subset(lm.fit_carseats_sm$model, (rstudent(lm.fit_carseats_sm)  < -3 | rstudent(lm.fit_carseats_sm) > 3))
+fit_carseats_sm_outliers
+```
 
 
+```{r echo=FALSE}
+f_print(sprintf("There is evidence of %0.0f observations with high leverage given a cutoff value of %0.3f. This is observable in the plot Residuals vs Leverage. There are no outliers.", nrow(fit_carseats_sm_high_leverage), high_leverage_cutoff))
+```
+
+  
+```{r echo=FALSE}
+plot(lm.fit_carseats_sm)
+ggplot() +
+  geom_point(aes(
+    predict(lm.fit_carseats_sm), rstudent(lm.fit_carseats_sm),
+  ), color = "#1A0875") +
+  geom_hline(yintercept = 3, color = '#a60808') +
+  geom_hline(yintercept = -3, color = '#a60808') +
+  labs(title = "Studentized Residuals Vs. Fitted Values", subtitle = "Detecting outliers in the model", x = "Fitted Values", y = "Studentized residuals")
+```
+### Question 11: In this problem, we will investigate the t-statistic for the null hypothesis H~0~: β = 0 in simple linear regression without an intercept. To begin, we generate a predictor x and a response y as follows.
+
+```{r}
+set.seed(1)
+x <- rnorm(100)
+y <- 2*x + rnorm(100)
+```
+
+* **Question 11-a**: Perform a simple linear regression of y onto x, without an in-
+tercept. Report the coefficient estimate ˆβ, the standard error of
+this coefficient estimate, and the t-statistic and p-value associ-
+ated with the null hypothesis H0 : β = 0. Comment on these
+results. (You can perform regression without an intercept using
+the command lm(y∼x+0).)
+
+  * **Answer**: 
+
+```{r echo=FALSE}
+lm.fit_11 <- lm(y ~ x + 0)
+summary.lm(lm.fit_11)$coefficients
+```
+
+```{r}
+f_print(sprintf("The estimate indicates that for every unit value in x, y changes by 1.993876. The standard error indicates the size of the standard deviation of the error of the estimate of y regressed onto x. In this case, its value is 0.1064767. The t value is a measure of the number of standard deviations the x coefficient is away from 0. The p-value indicates x is a significant predictor of y. The p-value is the probability of observing any number equal to the absolute value of t or larger assuming y is not regressed onto x."))
+```
+
+* **Question 11-b**: Now perform a simple linear regression of x onto y without an
+intercept, and report the coefficient estimate, its standard error,
+and the corresponding t-statistic and p-values associated with
+the null hypothesis H0 : β = 0. Comment on these results.
+  * **Answer**: 
+
+```{r echo=FALSE}
+lm.fit_11b <- lm(x ~ y + 0)
+summary.lm(lm.fit_11b)$coefficients
+```
+
+```{r echo=FALSE}
+f_print(sprintf("For every 1 unit increase in 1, there is an increase of x of 0.3911145. The size of the standard deviation of the error of y regressed onto x is 0.02088625. The y coefficient is 18.72593 standard deviations away from 0. The p value is significant at 2.642197e-34 and indicates the probability of observing any number equal to the absolute value of t or larger given x is not regressed onto y."))
+```
+* **Question 11-c**: 
+  * **Answer**: 
+
+```{r echo=FALSE}
+f_print(sprintf("Both regressions share the same intercept (0), t-values, and p-values. They are both positive in slope."))
+```
 
 
+```{r echo=FALSE}
+lm(y ~ x)
+```
 
 
+```{r echo=FALSE}
+ggplot() +
+  geom_point(aes(x, y)) +
+  geom_abline(intercept = -.03769, slope = 1.99894, color = "green") +
+  geom_abline(intercept = 0, slope = 0.3911145, color = "red") +
+  geom_abline(intercept = 0, slope = 1.993876, color = "blue", alpha = 0.7) + 
+  theme_dark() + 
+  labs(title = "Plot of linear models with and without intercept.", subtitle = "lm(y~x+0): blue\nlm(x~y+0): red\nlm(y~x): green")
+```
 
+* **Question 11-d**: For the regression of Y onto X without an intercept, the t-
+statistic for H0 : β = 0 takes the form ˆβ/SE( ˆβ), where ˆβ is
+given by (3.38), and where
 
+(These formulas are slightly different from those given in Sec-
+tions 3.1.1 and 3.1.2, since here we are performing regression
+without an intercept.) Show algebraically, and confirm numeri-
+cally in R, that the t-statistic can be written as
 
+  * **Answer**: What is the relationship between the results obtained in 
+```{r}
 
-
-
-
+```
 

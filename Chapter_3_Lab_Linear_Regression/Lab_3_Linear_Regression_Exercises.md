@@ -457,3 +457,220 @@ This question should be answered using the Carseats data set.
 - **Question 10-a**: Fit a multiple regression model to fit Sales using
   Price, Urban, and US.
   - **Answer**:
+
+<!-- -->
+
+
+    Call:
+    lm(formula = Sales ~ Price + Urban + US, data = Carseats)
+
+    Coefficients:
+    (Intercept)        Price     UrbanYes        USYes  
+       13.04347     -0.05446     -0.02192      1.20057  
+
+- **Question 10-b**: Provide an interpretation of each coefficient in
+  the model. Be careful - some of the variables in the model are
+  qualitative!
+  - **Answer**:
+
+``` r
+f_print(sprintf("Every 1 unit of increase in price will decrease sales by 54.46 units. Stocking carseats in an Urban location decreases sales by 21.92 units. Stocking carseats in US stores increase sales by 1200 units."))
+```
+
+    Every 1 unit of increase in price will decrease sales by 54.46 units. Stocking
+    carseats in an Urban location decreases sales by 21.92 units. Stocking carseats
+    in US stores increase sales by 1200 units.
+
+- **Question 10-c**: Write out the model in equation form, being careful
+  to handle the qualitative variables properly.
+  - **Answer**:
+
+``` r
+# If the Carseat is stocked in an Urban And US store:
+# Sales ≈ β_0 + β_1 * Price + β_2 + β_3
+
+# If the Carseat is stocked in an Urban store only:
+# Sales ≈ β_0 + β_1 * Price + β_2
+
+# If the Carseat is stocked in a US store only:
+# Sales ≈ β_0 + β_1 * Price + β_3
+```
+
+- **Question 10-d**: For which of the predictors can you reject the null
+  hypothesis H<sub>0</sub> : β<sub>j</sub> = 0?
+  - **Answer**:
+
+<!-- -->
+
+    The following are significant predictors of sales: Price & US.
+
+
+    Call:
+    lm(formula = Sales ~ Price + Urban + US, data = Carseats)
+
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -6.9206 -1.6220 -0.0564  1.5786  7.0581 
+
+    Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) 13.043469   0.651012  20.036  < 2e-16 ***
+    Price       -0.054459   0.005242 -10.389  < 2e-16 ***
+    UrbanYes    -0.021916   0.271650  -0.081    0.936    
+    USYes        1.200573   0.259042   4.635 4.86e-06 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 2.472 on 396 degrees of freedom
+    Multiple R-squared:  0.2393,    Adjusted R-squared:  0.2335 
+    F-statistic: 41.52 on 3 and 396 DF,  p-value: < 2.2e-16
+
+- **Question 10-e**: On the basis of your response to the previous
+  question, fit a smaller model that only uses the predictors for which
+  there is evidence of association with the outcome.
+  - **Answer**:
+
+<!-- -->
+
+
+    Call:
+    lm(formula = Sales ~ Price + US)
+
+    Coefficients:
+    (Intercept)        Price        USYes  
+       13.03079     -0.05448      1.19964  
+
+- **Question 10-f**: How well do the models fit the data?
+  - **Answer**:
+
+<!-- -->
+
+    The model composed of US, Urban, & Price captures 23.9275% of the variablility
+    of the data with 32.98 percent error with respect to the response, sales.
+
+    The model exclusively composed of US & Price captures 23.9263% of the
+    variablility of the data with 32.94 percent error with respect to the response,
+    sales.
+
+    The US & Price model captures less variability in the data but accomodates this
+    with less response error.
+
+- **Question 10-g**: Using the model from (e), obtain 95 % confidence
+  intervals for the coefficient(s).
+  - **Answer**:
+
+<!-- -->
+
+                      2.5 %      97.5 %
+    (Intercept) 11.79032020 14.27126531
+    Price       -0.06475984 -0.04419543
+    USYes        0.69151957  1.70776632
+
+- **Question 10-h**: Is there evidence of outliers or high leverage
+  observations in the model from (e)?
+  - **Answer**:
+
+Observations with High Leverage
+
+        Sales Price  US
+    43  10.43    24  No
+    126  9.34    49  No
+    166  0.37   191 Yes
+    175  0.00   185  No
+    314  9.33    54  No
+    368 14.37    53  No
+
+Detecting Outliers
+
+    [1] Sales Price US   
+    <0 rows> (or 0-length row.names)
+
+    There is evidence of 6 observations with high leverage given a cutoff value
+    of 0.022. This is observable in the plot Residuals vs Leverage. There are no
+    outliers.
+
+<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-51-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-51-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-51-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-51-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-51-5.png" width="70%" style="display: block; margin: auto;" />
+\### Question 11: In this problem, we will investigate the t-statistic
+for the null hypothesis H<sub>0</sub>: β = 0 in simple linear regression
+without an intercept. To begin, we generate a predictor x and a response
+y as follows.
+
+``` r
+set.seed(1)
+x <- rnorm(100)
+y <- 2*x + rnorm(100)
+```
+
+- **Question 11-a**: Perform a simple linear regression of y onto x,
+  without an in- tercept. Report the coefficient estimate ˆβ, the
+  standard error of this coefficient estimate, and the t-statistic and
+  p-value associ- ated with the null hypothesis H0 : β = 0. Comment on
+  these results. (You can perform regression without an intercept using
+  the command lm(y∼x+0).)
+
+  - **Answer**:
+
+<!-- -->
+
+      Estimate Std. Error  t value     Pr(>|t|)
+    x 1.993876  0.1064767 18.72593 2.642197e-34
+
+``` r
+f_print(sprintf("The estimate indicates that for every unit value in x, y changes by 1.993876. The standard error indicates the size of the standard deviation of the error of the estimate of y regressed onto x. In this case, its value is 0.1064767. The t value is a measure of the number of standard deviations the x coefficient is away from 0. The p-value indicates x is a significant predictor of y. The p-value is the probability of observing any number equal to the absolute value of t or larger assuming y is not regressed onto x."))
+```
+
+    The estimate indicates that for every unit value in x, y changes by 1.993876.
+    The standard error indicates the size of the standard deviation of the error
+    of the estimate of y regressed onto x. In this case, its value is 0.1064767.
+    The t value is a measure of the number of standard deviations the x coefficient
+    is away from 0. The p-value indicates x is a significant predictor of y. The
+    p-value is the probability of observing any number equal to the absolute value
+    of t or larger assuming y is not regressed onto x.
+
+- **Question 11-b**: Now perform a simple linear regression of x onto y
+  without an intercept, and report the coefficient estimate, its
+  standard error, and the corresponding t-statistic and p-values
+  associated with the null hypothesis H0 : β = 0. Comment on these
+  results.
+  - **Answer**:
+
+<!-- -->
+
+       Estimate Std. Error  t value     Pr(>|t|)
+    y 0.3911145 0.02088625 18.72593 2.642197e-34
+
+    For every 1 unit increase in 1, there is an increase of x of 0.3911145. The
+    size of the standard deviation of the error of y regressed onto x is 0.02088625.
+    The y coefficient is 18.72593 standard deviations away from 0. The p value
+    is significant at 2.642197e-34 and indicates the probability of observing any
+    number equal to the absolute value of t or larger given x is not regressed onto
+    y.
+
+- **Question 11-c**:
+  - **Answer**:
+
+$$ \beta + \beta$$
+
+    Both regressions share the same intercept (0), t-values, and p-values. They are
+    both positive in slope.
+
+
+    Call:
+    lm(formula = y ~ x)
+
+    Coefficients:
+    (Intercept)            x  
+       -0.03769      1.99894  
+
+<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-59-1.png" width="70%" style="display: block; margin: auto;" />
+
+- **Question 11-d**: For the regression of Y onto X without an
+  intercept, the t- statistic for H0 : β = 0 takes the form ˆβ/SE( ˆβ),
+  where ˆβ is given by (3.38), and where
+
+(These formulas are slightly different from those given in Sec- tions
+3.1.1 and 3.1.2, since here we are performing regression without an
+intercept.) Show algebraically, and confirm numeri- cally in R, that the
+t-statistic can be written as
+
+- **Answer**: What is the relationship between the results obtained in
