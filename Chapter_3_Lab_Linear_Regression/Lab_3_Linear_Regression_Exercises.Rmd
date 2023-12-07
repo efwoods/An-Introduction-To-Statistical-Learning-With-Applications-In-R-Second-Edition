@@ -15,13 +15,15 @@ knitr::opts_chunk$set(fig.align = "center")
 
 ```{r message=FALSE, include=FALSE}
 if(!require("MASS")) install.packages("MASS")
-if(!require("ISLR2")) install.packages("ISLR2`")
+if(!require("ISLR2")) install.packages("ISLR2")
+if(!require("tidyverse")) install.packages("tidyverse")
 
 library(MASS)
 library(ISLR2)
+library(tidyverse)
 ```
 
-```{r}
+```{r include=FALSE}
 LoadLibraries <- function() {
   if(!require("MASS")) install.packages("MASS")
   if(!require("ISLR2")) install.packages("ISLR2`")
@@ -30,5 +32,73 @@ LoadLibraries <- function() {
   library(ISLR2)
   print("Libraries have been loaded!")
 }
+```
+
+# §3.7 Exercises
+
+## Applied
+### Question 8:
+This question involves the use of simple linear regression on the Auto data set. 
+
+```{r include=FALSE, message=FALSE}
+auto <- na.omit(Auto)
+attach(auto)
+```
+
+
+* **Question 8-a**:
+  i. Is there a relationship between the predictor and the response?
+  ii. How strong is the relationship between the predictor and the response?
+  iii. Is the relationship between the predictor and the response positive or negative?
+  iv. What is the predicted mpg associated with a horsepower of 98? What are the associated 95% confidence and prediction intervals?
+  
+* **Answer**:
+
+  i. There is a relationship between the predictor and the response. The F-statistic is very high which indicates that at least one variable is a predictor of the response, and there is only one predictor. 
+  ii. The Residual Standard Error is 4.906. The mean value of the response, mpg, is 23.45. This indicates that the percentage of error of this model is high: 20.9%. The Adjusted R^2^  is 60.49. This indicatest that 60.49% of the variability present in the data is captured by the model. This is a weak model. 
+  iii. There is a negative relationship between the predictor and the response. This is observable from the negative coefficient of horsepower. 
+  iv. The predicted mpg associated with a horsepower of 98 is 24.47 mpg. The confidence interval is 23.97 to 24.96. The prediction interval is 14.8 to 34.12.
+
+```{r}
+lm.fit <- lm(mpg ~ horsepower)
+mean_value_of_response <- mean(mpg)
+mean_value_of_response
+
+RSE <- summary.lm(lm.fit)$sigma
+
+percentage_of_error <- (RSE / mean(mpg)) * 100
+percentage_of_error
+
+summary.lm(lm.fit)
+
+predict(lm.fit, data.frame(horsepower = c(98)), interval = "prediction")
+predict(lm.fit, data.frame(horsepower = c(98)), interval = "confidence")
+```
+
+* **Question 8-b**: Plot the response and the predictor. Use the abline() funciton to display the least squares regression line. 
+  * **Answer**:
+  
+```{r include=FALSE}
+ggplot() + 
+  geom_point(aes(horsepower, mpg), color = "#1A0875") +
+  geom_abline(aes(intercept = lm.fit$coefficients[[1]], slope = lm.fit$coefficients[[2]]), color = "#34ABEB", size = 1) + 
+  theme_linedraw() + 
+  labs(title = "Least Squares Regression Line Vs Predictor and Response", x = "Horsepower", y = "Miles Per Gallon")
+```
+
+* **Question 8-c**: Use the plot() function to produce diagnostic plots of the least squares regression fit. 
+  * **Answer**: There are two or more points with high leverage. There is heteroskedasticity in the residuals. There appears to be a non-linearity in the data after observing the Residuals vs Fitted plot. There are two ouliers in the dataset. 
+
+
+```{r echo=FALSE}
+plot(lm.fit)
+# Studentized residuals: Identify outliers if values are outside -3 to 3.
+ggplot() + 
+  geom_point(aes(
+    predict(lm.fit), rstudent(lm.fit),
+  ), color = "#1A0875") + 
+  geom_hline(yintercept = 3, color = '#a60808') +
+  geom_hline(yintercept = -3, color = '#a60808') +
+  labs(title = "Studentized Residuals: Detecting outliers in the model", x = "Fitted Values", y = "Studentized residuals")
 ```
 

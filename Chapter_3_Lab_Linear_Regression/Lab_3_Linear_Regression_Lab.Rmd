@@ -127,13 +127,13 @@ summary(lm.fit)
 ?summary.lm
 ```
 
-## R^2^ Value
+## R^2^ Value: Closer to 1 is a better fit of the data. Closer to 0 is a poor fit of the data. 
 ```{r include=TRUE}
 # What is the R squared value?
 summary.lm(lm.fit)$r.squared
 ```
 
-## RSE
+## RSE: Closer to 0 indicates a better fit. Larger RSE indicates a lack of fit. 
 ```{r include=TRUE}
 # What is the RSE?
 summary.lm(lm.fit)$sigma
