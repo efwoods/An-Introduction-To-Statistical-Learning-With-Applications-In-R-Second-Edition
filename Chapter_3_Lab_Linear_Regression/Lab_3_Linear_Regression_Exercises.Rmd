@@ -867,6 +867,10 @@ predictor X, fit a model of the form: Y = β~0~ + β~1~X + β~2~X^2^ + β~3~X^3^
   * **Answer**:
   
 ```{r echo=FALSE}
+f_print(sprintf("There is evidence of a non-linear association of the response regressed onto the following predictors as determined by significant p-values: indus, nox, age, dis, ptratio, & medv."))
+```
+  
+```{r echo=FALSE}
 lm.fit_15_zn_mr <- lm(crim ~ zn + I(zn^2) + I(zn^3))
 lm.fit_15_indus_mr <- lm(crim ~ indus + I(indus^2) + I(indus^3))
 lm.fit_15_chas_mr <- lm(crim ~ chas + I(chas^2) + I(chas^3))
@@ -894,8 +898,6 @@ summary(lm.fit_15_lstat_mr)
 summary(lm.fit_15_medv_mr)
 ```
   
-```{r echo=FALSE}
-f_print(sprintf("There is evidence of a non-linear association of the response regressed onto the following predictors as determined by significant p-values: indus, nox, age, dis, ptratio, & medv."))
-```
+
   
   

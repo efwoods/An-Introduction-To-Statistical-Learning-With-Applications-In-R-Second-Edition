@@ -1191,3 +1191,257 @@ is the response, and the other variables are the predictors.
   β<sub>1</sub>X + β<sub>2</sub>X<sup>2</sup> +
   β<sub>3</sub>X<sup>3</sup> + ε
   - **Answer**:
+
+<!-- -->
+
+    There is evidence of a non-linear association of the response regressed onto
+    the following predictors as determined by significant p-values: indus, nox, age,
+    dis, ptratio, & medv.
+
+
+    Call:
+    lm(formula = crim ~ zn + I(zn^2) + I(zn^3))
+
+    Residuals:
+       Min     1Q Median     3Q    Max 
+    -4.821 -4.614 -1.294  0.473 84.130 
+
+    Coefficients:
+                  Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)  4.846e+00  4.330e-01  11.192  < 2e-16 ***
+    zn          -3.322e-01  1.098e-01  -3.025  0.00261 ** 
+    I(zn^2)      6.483e-03  3.861e-03   1.679  0.09375 .  
+    I(zn^3)     -3.776e-05  3.139e-05  -1.203  0.22954    
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 8.372 on 502 degrees of freedom
+    Multiple R-squared:  0.05824,   Adjusted R-squared:  0.05261 
+    F-statistic: 10.35 on 3 and 502 DF,  p-value: 1.281e-06
+
+
+    Call:
+    lm(formula = crim ~ indus + I(indus^2) + I(indus^3))
+
+    Residuals:
+       Min     1Q Median     3Q    Max 
+    -8.278 -2.514  0.054  0.764 79.713 
+
+    Coefficients:
+                  Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)  3.6625683  1.5739833   2.327   0.0204 *  
+    indus       -1.9652129  0.4819901  -4.077 5.30e-05 ***
+    I(indus^2)   0.2519373  0.0393221   6.407 3.42e-10 ***
+    I(indus^3)  -0.0069760  0.0009567  -7.292 1.20e-12 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 7.423 on 502 degrees of freedom
+    Multiple R-squared:  0.2597,    Adjusted R-squared:  0.2552 
+    F-statistic: 58.69 on 3 and 502 DF,  p-value: < 2.2e-16
+
+
+    Call:
+    lm(formula = crim ~ chas + I(chas^2) + I(chas^3))
+
+    Residuals:
+       Min     1Q Median     3Q    Max 
+    -3.738 -3.661 -3.435  0.018 85.232 
+
+    Coefficients: (2 not defined because of singularities)
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)   3.7444     0.3961   9.453   <2e-16 ***
+    chas         -1.8928     1.5061  -1.257    0.209    
+    I(chas^2)         NA         NA      NA       NA    
+    I(chas^3)         NA         NA      NA       NA    
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 8.597 on 504 degrees of freedom
+    Multiple R-squared:  0.003124,  Adjusted R-squared:  0.001146 
+    F-statistic: 1.579 on 1 and 504 DF,  p-value: 0.2094
+
+
+    Call:
+    lm(formula = crim ~ nox + I(nox^2) + I(nox^3))
+
+    Residuals:
+       Min     1Q Median     3Q    Max 
+    -9.110 -2.068 -0.255  0.739 78.302 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)   233.09      33.64   6.928 1.31e-11 ***
+    nox         -1279.37     170.40  -7.508 2.76e-13 ***
+    I(nox^2)     2248.54     279.90   8.033 6.81e-15 ***
+    I(nox^3)    -1245.70     149.28  -8.345 6.96e-16 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 7.234 on 502 degrees of freedom
+    Multiple R-squared:  0.297, Adjusted R-squared:  0.2928 
+    F-statistic: 70.69 on 3 and 502 DF,  p-value: < 2.2e-16
+
+
+    Call:
+    lm(formula = crim ~ rm + I(rm^2) + I(rm^3))
+
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -18.485  -3.468  -2.221  -0.015  87.219 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)  
+    (Intercept) 112.6246    64.5172   1.746   0.0815 .
+    rm          -39.1501    31.3115  -1.250   0.2118  
+    I(rm^2)       4.5509     5.0099   0.908   0.3641  
+    I(rm^3)      -0.1745     0.2637  -0.662   0.5086  
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 8.33 on 502 degrees of freedom
+    Multiple R-squared:  0.06779,   Adjusted R-squared:  0.06222 
+    F-statistic: 12.17 on 3 and 502 DF,  p-value: 1.067e-07
+
+
+    Call:
+    lm(formula = crim ~ age + I(age^2) + I(age^3))
+
+    Residuals:
+       Min     1Q Median     3Q    Max 
+    -9.762 -2.673 -0.516  0.019 82.842 
+
+    Coefficients:
+                  Estimate Std. Error t value Pr(>|t|)   
+    (Intercept) -2.549e+00  2.769e+00  -0.920  0.35780   
+    age          2.737e-01  1.864e-01   1.468  0.14266   
+    I(age^2)    -7.230e-03  3.637e-03  -1.988  0.04738 * 
+    I(age^3)     5.745e-05  2.109e-05   2.724  0.00668 **
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 7.84 on 502 degrees of freedom
+    Multiple R-squared:  0.1742,    Adjusted R-squared:  0.1693 
+    F-statistic: 35.31 on 3 and 502 DF,  p-value: < 2.2e-16
+
+
+    Call:
+    lm(formula = crim ~ dis + I(dis^2) + I(dis^3))
+
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -10.757  -2.588   0.031   1.267  76.378 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)  30.0476     2.4459  12.285  < 2e-16 ***
+    dis         -15.5543     1.7360  -8.960  < 2e-16 ***
+    I(dis^2)      2.4521     0.3464   7.078 4.94e-12 ***
+    I(dis^3)     -0.1186     0.0204  -5.814 1.09e-08 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 7.331 on 502 degrees of freedom
+    Multiple R-squared:  0.2778,    Adjusted R-squared:  0.2735 
+    F-statistic: 64.37 on 3 and 502 DF,  p-value: < 2.2e-16
+
+
+    Call:
+    lm(formula = crim ~ rad + I(rad^2) + I(rad^3))
+
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -10.381  -0.412  -0.269   0.179  76.217 
+
+    Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)
+    (Intercept) -0.605545   2.050108  -0.295    0.768
+    rad          0.512736   1.043597   0.491    0.623
+    I(rad^2)    -0.075177   0.148543  -0.506    0.613
+    I(rad^3)     0.003209   0.004564   0.703    0.482
+
+    Residual standard error: 6.682 on 502 degrees of freedom
+    Multiple R-squared:    0.4, Adjusted R-squared:  0.3965 
+    F-statistic: 111.6 on 3 and 502 DF,  p-value: < 2.2e-16
+
+
+    Call:
+    lm(formula = crim ~ tax + I(tax^2) + I(tax^3))
+
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -13.273  -1.389   0.046   0.536  76.950 
+
+    Coefficients:
+                  Estimate Std. Error t value Pr(>|t|)
+    (Intercept)  1.918e+01  1.180e+01   1.626    0.105
+    tax         -1.533e-01  9.568e-02  -1.602    0.110
+    I(tax^2)     3.608e-04  2.425e-04   1.488    0.137
+    I(tax^3)    -2.204e-07  1.889e-07  -1.167    0.244
+
+    Residual standard error: 6.854 on 502 degrees of freedom
+    Multiple R-squared:  0.3689,    Adjusted R-squared:  0.3651 
+    F-statistic:  97.8 on 3 and 502 DF,  p-value: < 2.2e-16
+
+
+    Call:
+    lm(formula = crim ~ ptratio + I(ptratio^2) + I(ptratio^3))
+
+    Residuals:
+       Min     1Q Median     3Q    Max 
+    -6.833 -4.146 -1.655  1.408 82.697 
+
+    Coefficients:
+                  Estimate Std. Error t value Pr(>|t|)   
+    (Intercept)  477.18405  156.79498   3.043  0.00246 **
+    ptratio      -82.36054   27.64394  -2.979  0.00303 **
+    I(ptratio^2)   4.63535    1.60832   2.882  0.00412 **
+    I(ptratio^3)  -0.08476    0.03090  -2.743  0.00630 **
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 8.122 on 502 degrees of freedom
+    Multiple R-squared:  0.1138,    Adjusted R-squared:  0.1085 
+    F-statistic: 21.48 on 3 and 502 DF,  p-value: 4.171e-13
+
+
+    Call:
+    lm(formula = crim ~ lstat + I(lstat^2) + I(lstat^3))
+
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -15.234  -2.151  -0.486   0.066  83.353 
+
+    Coefficients:
+                  Estimate Std. Error t value Pr(>|t|)  
+    (Intercept)  1.2009656  2.0286452   0.592   0.5541  
+    lstat       -0.4490656  0.4648911  -0.966   0.3345  
+    I(lstat^2)   0.0557794  0.0301156   1.852   0.0646 .
+    I(lstat^3)  -0.0008574  0.0005652  -1.517   0.1299  
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 7.629 on 502 degrees of freedom
+    Multiple R-squared:  0.2179,    Adjusted R-squared:  0.2133 
+    F-statistic: 46.63 on 3 and 502 DF,  p-value: < 2.2e-16
+
+
+    Call:
+    lm(formula = crim ~ medv + I(medv^2) + I(medv^3))
+
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -24.427  -1.976  -0.437   0.439  73.655 
+
+    Coefficients:
+                  Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) 53.1655381  3.3563105  15.840  < 2e-16 ***
+    medv        -5.0948305  0.4338321 -11.744  < 2e-16 ***
+    I(medv^2)    0.1554965  0.0171904   9.046  < 2e-16 ***
+    I(medv^3)   -0.0014901  0.0002038  -7.312 1.05e-12 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 6.569 on 502 degrees of freedom
+    Multiple R-squared:  0.4202,    Adjusted R-squared:  0.4167 
+    F-statistic: 121.3 on 3 and 502 DF,  p-value: < 2.2e-16
