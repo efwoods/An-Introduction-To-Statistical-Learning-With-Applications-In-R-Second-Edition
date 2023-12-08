@@ -119,7 +119,7 @@ predict(lm.fit, data.frame(horsepower = c(98)), interval = "confidence")
   abline() function to display the least squares regression line.
   - **Answer**:
 
-<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-8-1.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-9-1.png" width="70%" style="display: block; margin: auto;" />
 
 - **Question 8-c**: Use the plot() function to produce diagnostic plots
   of the least squares regression fit.
@@ -128,7 +128,7 @@ predict(lm.fit, data.frame(horsepower = c(98)), interval = "confidence")
     non-linearity in the data after observing the Residuals vs Fitted
     plot. There are multiple outliers in the dataset.
 
-<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-9-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-9-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-9-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-9-4.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-10-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-10-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-10-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-10-4.png" width="70%" style="display: block; margin: auto;" />
 
     There appears to be a non-linearity in the data shown from the following plot:
     Residuals vs Fitted.
@@ -137,7 +137,7 @@ predict(lm.fit, data.frame(horsepower = c(98)), interval = "confidence")
     plot. The non-constant Variance is also visible be the Q-Q Reisdual plot where
     points 331, 328, & 321 do not have constant variance.
 
-<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-10-1.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-11-1.png" width="70%" style="display: block; margin: auto;" />
 
 **Detecting outliers**:
 
@@ -216,7 +216,7 @@ Variables in Auto
     [1] "mpg"          "cylinders"    "displacement" "horsepower"   "weight"      
     [6] "acceleration" "year"         "origin"       "name"        
 
-<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-19-1.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-20-1.png" width="70%" style="display: block; margin: auto;" />
 
 - **Question 9-b**: Compute the matrix of correlations between the
   variables using the function cor(). You will need to exclude the name
@@ -299,7 +299,7 @@ Variables in Auto
   leverage?
   - **Answer**:
 
-<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-25-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-25-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-25-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-25-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-25-5.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-26-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-26-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-26-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-26-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-26-5.png" width="70%" style="display: block; margin: auto;" />
 
     There are two outliers in this data as observed in the following plot:
     Studentized Residuals Vs. Fitted Values. There is heteroskedasticity as seen
@@ -589,7 +589,7 @@ Detecting Outliers
     of 0.022. This is observable in the plot Residuals vs Leverage. There are no
     outliers.
 
-<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-51-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-51-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-51-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-51-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-51-5.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-52-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-52-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-52-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-52-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-52-5.png" width="70%" style="display: block; margin: auto;" />
 
 ### Question 11:
 
@@ -661,4 +661,533 @@ y <- 2*x + rnorm(100)
     (Intercept)            x  
        -0.03769      1.99894  
 
-<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-59-1.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-60-1.png" width="70%" style="display: block; margin: auto;" />
+
+### Question 14:
+
+This problem focuses on the *collinearity* problem.
+
+- **Question 14-a**: Perform the following commands in R then write out
+  the form of the linear model. What are the regression coefficients?
+  - **Answer**:
+
+``` r
+set.seed(1)
+x1 <- runif(100)
+x2 <- 0.5 + x1 + rnorm(100) / 10
+y <- 2 + 2 * x1 + 0.3 * x2 + rnorm(100)
+```
+
+    The correlation between x1 and x2 is: 0.947.
+
+    The form of the linear model is Y ≈ β_0 + β_1 * x1 + β_2 * x2 + ε
+
+- **Question 14-b**: What is the correlation between x1 and x2? Create a
+  scatterplot displaying the relationship between the variables.
+  - **Answer**:
+
+<!-- -->
+
+    The correlation between x1 & x2 is 0.95.
+
+<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-64-1.png" width="70%" style="display: block; margin: auto;" />
+
+- **Question 14-c**: Using this data, fit a least squares regression to
+  predict y using x1 and x2. Describe the results obtained. What are
+  ˆβ0, ˆβ1, and ˆβ2? How do these relate to the true β0, β1, and β2? Can
+  you reject the null hypothesis H0 : β1 = 0? How about the null
+  hypothesis H0 : β2 = 0?
+  - **Answer**:
+
+<!-- -->
+
+
+    Call:
+    lm(formula = y ~ x1 + x2)
+
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -2.8311 -0.7273 -0.0537  0.6338  2.3359 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)   
+    (Intercept)   1.7757     0.5933   2.993  0.00351 **
+    x1            1.0847     1.2346   0.879  0.38179   
+    x2            1.0097     1.1337   0.891  0.37536   
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 1.056 on 97 degrees of freedom
+    Multiple R-squared:  0.2333,    Adjusted R-squared:  0.2175 
+    F-statistic: 14.76 on 2 and 97 DF,  p-value: 2.54e-06
+
+    The predicted coefficients are all underestimations of the coefficients of
+    the true function representing y regressed onto x. I cannot reject the null
+    hypothesis with respect to β1 nor β2 due to high p-values and vif scores greater
+    than 5 for x1 and x2 respectively. The vif scores for x1 and x2 respectively are
+    9.69 and 9.69.
+
+    ˆβ0: 1.7757 ˆβ1: 1.0847 ˆβ2: 1.0097
+
+    β0: 2 β1: 2 β2: 0.3
+
+- **Question 14-d**: Now fit a least squares regression to predict y
+  using only x1. Comment on your results. Can you reject the null
+  hypothesis H0 : β1 = 0?
+  - **Answer**:
+
+<!-- -->
+
+
+    Call:
+    lm(formula = y ~ x1)
+
+    Residuals:
+         Min       1Q   Median       3Q      Max 
+    -2.89495 -0.66874 -0.07785  0.59221  2.45560 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)   2.2624     0.2307   9.805 3.21e-16 ***
+    x1            2.1259     0.3963   5.365 5.42e-07 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 1.055 on 98 degrees of freedom
+    Multiple R-squared:  0.227, Adjusted R-squared:  0.2191 
+    F-statistic: 28.78 on 1 and 98 DF,  p-value: 5.42e-07
+
+    The x1 is a significant predictor of y. The p-value is 5.42e-07.
+
+- **Question 14-e**: Now fit a least squares regression to predict y
+  using only x2. Comment on your results. Can you reject the null
+  hypothesis H0 : β1 = 0?
+  - **Answer**:
+
+<!-- -->
+
+
+    Call:
+    lm(formula = y ~ x2)
+
+    Residuals:
+         Min       1Q   Median       3Q      Max 
+    -2.74970 -0.68815 -0.03074  0.66090  2.34837 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)   1.3789     0.3845   3.587 0.000525 ***
+    x2            1.9529     0.3639   5.367 5.36e-07 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 1.055 on 98 degrees of freedom
+    Multiple R-squared:  0.2272,    Adjusted R-squared:  0.2193 
+    F-statistic: 28.81 on 1 and 98 DF,  p-value: 5.361e-07
+
+    x2 is also a significant predictor of y. I reject the null using the p-value of
+    5.361e-07
+
+- **Question 14-f**: Do the results obtained contradict each other?
+  Explain your answer.
+  - **Answer**: The results do not contradict each other. Each variable
+    separately is a significant indicator of the response. Because the
+    two variables are highly correlated, it is ambiguous as to which is
+    the significant predictor with respect to the response. An
+    intermediate variable is potentially available as a solution by
+    using the standardized versions of x1 and x2 if such a standard were
+    to exist. Another remedy is to use either variable exclusively as
+    predictors of the response.
+- **Question 14-g**: Now suppose we obtain one additional observation,
+  which was unfortunately mismeasured. Re-fit the linear models using
+  this new data. What effect does this new observation have on each of
+  the models? In each model, is this observation an outlier? A
+  high-leverage point? Both? Explain your answers.
+  - **Answer**:
+
+<!-- -->
+
+
+    Call:
+    lm(formula = y ~ x1 + x2)
+
+    Residuals:
+         Min       1Q   Median       3Q      Max 
+    -2.77906 -0.72031 -0.05796  0.62800  3.04112 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)  
+    (Intercept)   1.5360     0.6115   2.512   0.0136 *
+    x1            0.1292     1.2407   0.104   0.9173  
+    x2            1.7624     1.1500   1.532   0.1286  
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 1.099 on 98 degrees of freedom
+    Multiple R-squared:  0.201, Adjusted R-squared:  0.1847 
+    F-statistic: 12.32 on 2 and 98 DF,  p-value: 1.682e-05
+
+          x1       x2 
+    9.263105 9.263105 
+
+
+    Call:
+    lm(formula = y ~ x1)
+
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -2.8899 -0.6553 -0.0917  0.5679  3.4070 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)   2.4005     0.2378   10.09  < 2e-16 ***
+    x1            1.9251     0.4104    4.69 8.74e-06 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 1.106 on 99 degrees of freedom
+    Multiple R-squared:  0.1818,    Adjusted R-squared:  0.1736 
+    F-statistic:    22 on 1 and 99 DF,  p-value: 8.744e-06
+
+
+    Call:
+    lm(formula = y ~ x2)
+
+    Residuals:
+         Min       1Q   Median       3Q      Max 
+    -2.76917 -0.70920 -0.04555  0.64028  3.01186 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)   1.4877     0.3964   3.753 0.000295 ***
+    x2            1.8755     0.3760   4.989  2.6e-06 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 1.093 on 99 degrees of freedom
+    Multiple R-squared:  0.2009,    Adjusted R-squared:  0.1928 
+    F-statistic: 24.89 on 1 and 99 DF,  p-value: 2.601e-06
+
+    y regressed onto x1 and x2 now shows that x2 is a significant predictor of the
+    response given a p-value of .00391. The vif scores indicate that x1 and x2 are
+    collinear, albeit less so, with values of 9.26 and 9.26 respectively. x1 and x2
+    individually are still both significant predictors of the response, y.
+
+### Question 15:
+
+This problem involves the Boston data set, which we saw in the lab for
+this chapter. We will now try to predict per capita crime rate using the
+other variables in this data set. In other words, per capita crime rate
+is the response, and the other variables are the predictors.
+
+- **Question 15-a**: For each predictor, fit a simple linear regression
+  model to predict the response. Describe your results. In which of the
+  models is there a statistically significant association between the
+  predictor and the response? Create some plots to back up your
+  assertions.
+  - **Answer**:
+
+<!-- -->
+
+    There are statistically significant results in the models where per capita crime
+    rate regressed onto the following predictors: zn, indus, nox, rm, age, dis,
+    rad, tax, ptratio, lstat, medv. There is a slope associated with the response
+    regressed exclusively onto each predictor observable in each plot as well as
+    shapes of the data which suggest a relationship between the response and each
+    predictor that has been determined to have a significant relationship.
+
+
+    Call:
+    lm(formula = crim ~ zn)
+
+    Residuals:
+       Min     1Q Median     3Q    Max 
+    -4.429 -4.222 -2.620  1.250 84.523 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)  4.45369    0.41722  10.675  < 2e-16 ***
+    zn          -0.07393    0.01609  -4.594 5.51e-06 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 8.435 on 504 degrees of freedom
+    Multiple R-squared:  0.04019,   Adjusted R-squared:  0.03828 
+    F-statistic:  21.1 on 1 and 504 DF,  p-value: 5.506e-06
+
+
+    Call:
+    lm(formula = crim ~ indus)
+
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -11.972  -2.698  -0.736   0.712  81.813 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) -2.06374    0.66723  -3.093  0.00209 ** 
+    indus        0.50978    0.05102   9.991  < 2e-16 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 7.866 on 504 degrees of freedom
+    Multiple R-squared:  0.1653,    Adjusted R-squared:  0.1637 
+    F-statistic: 99.82 on 1 and 504 DF,  p-value: < 2.2e-16
+
+
+    Call:
+    lm(formula = crim ~ chas)
+
+    Residuals:
+       Min     1Q Median     3Q    Max 
+    -3.738 -3.661 -3.435  0.018 85.232 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)   3.7444     0.3961   9.453   <2e-16 ***
+    chas         -1.8928     1.5061  -1.257    0.209    
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 8.597 on 504 degrees of freedom
+    Multiple R-squared:  0.003124,  Adjusted R-squared:  0.001146 
+    F-statistic: 1.579 on 1 and 504 DF,  p-value: 0.2094
+
+
+    Call:
+    lm(formula = crim ~ nox)
+
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -12.371  -2.738  -0.974   0.559  81.728 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)  -13.720      1.699  -8.073 5.08e-15 ***
+    nox           31.249      2.999  10.419  < 2e-16 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 7.81 on 504 degrees of freedom
+    Multiple R-squared:  0.1772,    Adjusted R-squared:  0.1756 
+    F-statistic: 108.6 on 1 and 504 DF,  p-value: < 2.2e-16
+
+
+    Call:
+    lm(formula = crim ~ rm)
+
+    Residuals:
+       Min     1Q Median     3Q    Max 
+    -6.604 -3.952 -2.654  0.989 87.197 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)   20.482      3.365   6.088 2.27e-09 ***
+    rm            -2.684      0.532  -5.045 6.35e-07 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 8.401 on 504 degrees of freedom
+    Multiple R-squared:  0.04807,   Adjusted R-squared:  0.04618 
+    F-statistic: 25.45 on 1 and 504 DF,  p-value: 6.347e-07
+
+
+    Call:
+    lm(formula = crim ~ age)
+
+    Residuals:
+       Min     1Q Median     3Q    Max 
+    -6.789 -4.257 -1.230  1.527 82.849 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) -3.77791    0.94398  -4.002 7.22e-05 ***
+    age          0.10779    0.01274   8.463 2.85e-16 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 8.057 on 504 degrees of freedom
+    Multiple R-squared:  0.1244,    Adjusted R-squared:  0.1227 
+    F-statistic: 71.62 on 1 and 504 DF,  p-value: 2.855e-16
+
+
+    Call:
+    lm(formula = crim ~ dis)
+
+    Residuals:
+       Min     1Q Median     3Q    Max 
+    -6.708 -4.134 -1.527  1.516 81.674 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)   9.4993     0.7304  13.006   <2e-16 ***
+    dis          -1.5509     0.1683  -9.213   <2e-16 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 7.965 on 504 degrees of freedom
+    Multiple R-squared:  0.1441,    Adjusted R-squared:  0.1425 
+    F-statistic: 84.89 on 1 and 504 DF,  p-value: < 2.2e-16
+
+
+    Call:
+    lm(formula = crim ~ rad)
+
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -10.164  -1.381  -0.141   0.660  76.433 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) -2.28716    0.44348  -5.157 3.61e-07 ***
+    rad          0.61791    0.03433  17.998  < 2e-16 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 6.718 on 504 degrees of freedom
+    Multiple R-squared:  0.3913,    Adjusted R-squared:   0.39 
+    F-statistic: 323.9 on 1 and 504 DF,  p-value: < 2.2e-16
+
+
+    Call:
+    lm(formula = crim ~ tax)
+
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -12.513  -2.738  -0.194   1.065  77.696 
+
+    Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) -8.528369   0.815809  -10.45   <2e-16 ***
+    tax          0.029742   0.001847   16.10   <2e-16 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 6.997 on 504 degrees of freedom
+    Multiple R-squared:  0.3396,    Adjusted R-squared:  0.3383 
+    F-statistic: 259.2 on 1 and 504 DF,  p-value: < 2.2e-16
+
+
+    Call:
+    lm(formula = crim ~ ptratio)
+
+    Residuals:
+       Min     1Q Median     3Q    Max 
+    -7.654 -3.985 -1.912  1.825 83.353 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) -17.6469     3.1473  -5.607 3.40e-08 ***
+    ptratio       1.1520     0.1694   6.801 2.94e-11 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 8.24 on 504 degrees of freedom
+    Multiple R-squared:  0.08407,   Adjusted R-squared:  0.08225 
+    F-statistic: 46.26 on 1 and 504 DF,  p-value: 2.943e-11
+
+
+    Call:
+    lm(formula = crim ~ lstat)
+
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -13.925  -2.822  -0.664   1.079  82.862 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) -3.33054    0.69376  -4.801 2.09e-06 ***
+    lstat        0.54880    0.04776  11.491  < 2e-16 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 7.664 on 504 degrees of freedom
+    Multiple R-squared:  0.2076,    Adjusted R-squared:  0.206 
+    F-statistic:   132 on 1 and 504 DF,  p-value: < 2.2e-16
+
+
+    Call:
+    lm(formula = crim ~ medv)
+
+    Residuals:
+       Min     1Q Median     3Q    Max 
+    -9.071 -4.022 -2.343  1.298 80.957 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) 11.79654    0.93419   12.63   <2e-16 ***
+    medv        -0.36316    0.03839   -9.46   <2e-16 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 7.934 on 504 degrees of freedom
+    Multiple R-squared:  0.1508,    Adjusted R-squared:  0.1491 
+    F-statistic: 89.49 on 1 and 504 DF,  p-value: < 2.2e-16
+
+<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-81-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-81-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-81-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-81-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-81-5.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-81-6.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-81-7.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-81-8.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-81-9.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-81-10.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-81-11.png" width="70%" style="display: block; margin: auto;" />
+
+- **Question 15-b**: Fit a multiple regression model to predict the
+  response using all of the predictors. Describe your results. For which
+  predictors can we reject the null hypothesis H<sub>0</sub>
+  β<sub>j</sub> = 0?
+  - **Answer**:
+
+<!-- -->
+
+    It is appropriate to reject the null hypothesis in the multiple regression model
+    for the following predictors: zn, dis, rad, & medv. The F-statistic is low yet
+    still indicates that one or more of the predictors are significant indicators of
+    the response.
+
+
+    Call:
+    lm(formula = crim ~ ., data = boston)
+
+    Residuals:
+       Min     1Q Median     3Q    Max 
+    -8.534 -2.248 -0.348  1.087 73.923 
+
+    Coefficients:
+                  Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) 13.7783938  7.0818258   1.946 0.052271 .  
+    zn           0.0457100  0.0187903   2.433 0.015344 *  
+    indus       -0.0583501  0.0836351  -0.698 0.485709    
+    chas        -0.8253776  1.1833963  -0.697 0.485841    
+    nox         -9.9575865  5.2898242  -1.882 0.060370 .  
+    rm           0.6289107  0.6070924   1.036 0.300738    
+    age         -0.0008483  0.0179482  -0.047 0.962323    
+    dis         -1.0122467  0.2824676  -3.584 0.000373 ***
+    rad          0.6124653  0.0875358   6.997 8.59e-12 ***
+    tax         -0.0037756  0.0051723  -0.730 0.465757    
+    ptratio     -0.3040728  0.1863598  -1.632 0.103393    
+    lstat        0.1388006  0.0757213   1.833 0.067398 .  
+    medv        -0.2200564  0.0598240  -3.678 0.000261 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 6.46 on 493 degrees of freedom
+    Multiple R-squared:  0.4493,    Adjusted R-squared:  0.4359 
+    F-statistic: 33.52 on 12 and 493 DF,  p-value: < 2.2e-16
+
+- **Question 15-c**: How do your results from (a) compare to your
+  results from (b)? Create a plot displaying the univariate regression
+  coefficients from (a) on the x-axis, and the multiple regression
+  coefficients from (b) on the y-axis. That is, each predictor is
+  displayed as a single point in the plot. Its coefficient in a simple
+  linear regres- sion model is shown on the x-axis, and its coefficient
+  estimate in the multiple linear regression model is shown on the
+  y-axis.
+  - **Answer**:
+
+<img src="Lab_3_Linear_Regression_Exercises_files/figure-gfm/unnamed-chunk-84-1.png" width="70%" style="display: block; margin: auto;" />
+
+    There are more significant predictors in the models where the response is
+    regressed exclusively by a single predictor versus the multiple regression
+    model.
+
+- **Question 15-d**: Is there evidence of non-linear association between
+  any of the predictors and the response? To answer this question, for
+  each predictor X, fit a model of the form: Y = β<sub>0</sub> +
+  β<sub>1</sub>X + β<sub>2</sub>X<sup>2</sup> +
+  β<sub>3</sub>X<sup>3</sup> + ε
+  - **Answer**:

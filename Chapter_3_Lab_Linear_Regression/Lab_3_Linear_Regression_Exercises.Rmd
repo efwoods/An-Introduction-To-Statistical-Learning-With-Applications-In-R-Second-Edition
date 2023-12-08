@@ -20,7 +20,9 @@ knitr::opts_chunk$set(
 if(!require("MASS")) install.packages("MASS")
 if(!require("ISLR2")) install.packages("ISLR2")
 if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("HH")) install.packages("HH") # VIF
 
+library(HH)
 library(MASS)
 library(ISLR2)
 library(tidyverse)
@@ -36,6 +38,13 @@ LoadLibraries <- function() {
   print("Libraries have been loaded!")
 }
 ```
+
+```{r include=FALSE}
+custom_darkblue = "#1A0875"
+custom_lightblue = "#34ABEB"
+custom_red = "#a60808"
+```
+
 
 ```{r include=FALSE}
 f_print <- function(string){
@@ -396,16 +405,17 @@ lm.fit_carseats_sm
 names(summary.lm(lm.fit_carseats))
 
 percentage_error_carseats <- summary.lm(lm.fit_carseats)$sigma/mean(Sales) * 100
-summary.lm(lm.fit_carseats)$r.squared * 100
+fit_carseats_r_squared <- summary.lm(lm.fit_carseats)$r.squared * 100
 
 percentage_error_carseats_sm <- summary.lm(lm.fit_carseats_sm)$sigma/mean(Sales) * 100
-summary.lm(lm.fit_carseats_sm)$r.squared * 100
+fit_carseats_sm_r_squared <- summary.lm(lm.fit_carseats_sm)$r.squared * 100
 ```
 
-```{r echo=FALSE}
-f_print(sprintf("The model composed of US, Urban, & Price captures %0.4f%% of the variablility of the data with %0.2f percent error with respect to the response, sales.", summary.lm(lm.fit_carseats)$r.squared * 100, percentage_error_carseats))
 
-f_print(sprintf("The model exclusively composed of US & Price captures %0.4f%% of the variablility of the data with %0.2f percent error with respect to the response, sales.", summary.lm(lm.fit_carseats_sm)$r.squared * 100, percentage_error_carseats_sm))
+```{r echo=FALSE}
+f_print(sprintf("The model composed of US, Urban, & Price captures %0.4f%% of the variablility of the data with %0.2f percent error with respect to the response, sales.", fit_carseats_r_squared, percentage_error_carseats))
+
+f_print(sprintf("The model exclusively composed of US & Price captures %0.4f%% of the variablility of the data with %0.2f percent error with respect to the response, sales.", fit_carseats_sm_r_squared, percentage_error_carseats_sm))
 
 f_print(sprintf("The US & Price model captures less variability in the data but accomodates this with less response error."))
 ```
@@ -520,5 +530,372 @@ ggplot() +
   labs(title = "Plot of linear models with and without intercept.", subtitle = "lm(y~x+0): blue\nlm(x~y+0): red\nlm(y~x): green")
 ```
 
+### Question 14:
+This problem focuses on the *collinearity* problem.
+  
+* **Question 14-a**: Perform the following commands in R then write out the form of the linear model.
+What are the regression coefficients?
+  * **Answer**:
+
+```{r}
+set.seed(1)
+x1 <- runif(100)
+x2 <- 0.5 + x1 + rnorm(100) / 10
+y <- 2 + 2 * x1 + 0.3 * x2 + rnorm(100)
+```
+
+```{r echo=FALSE}
+f_print(sprintf("The correlation between x1 and x2 is: %0.03f.", cor(x1,x2)))
+```
+
+```{r echo=FALSE}
+f_print(sprintf("The form of the linear model is Y ≈ β_0 + β_1 * x1 + β_2 * x2 + ε"))
+```
+
+* **Question 14-b**: What is the correlation between x1 and x2? Create a scatterplot
+displaying the relationship between the variables.
+  * **Answer**:
+```{r echo=FALSE}
+f_print(sprintf("The correlation between x1 & x2 is %0.2f.", cor(x1, x2)))
+ggplot() + 
+  geom_point(aes(x1, x2)) +
+  labs(title = "Plot of x1 vs x2", subtitle = "Correlation: 0.95")
+```
+
+* **Question 14-c**: Using this data, fit a least squares regression to predict y using
+x1 and x2. Describe the results obtained. What are ˆβ0, ˆβ1, and
+ˆβ2? How do these relate to the true β0, β1, and β2? Can you
+reject the null hypothesis H0 : β1 = 0? How about the null
+hypothesis H0 : β2 = 0?
+  * **Answer**:
+
+```{r echo=FALSE}
+lm.fit_14 <- lm(y ~ x1 + x2)
+summary(lm.fit_14)
+```
+
+```{r include=FALSE}
+fit_14_vif <- vif(lm.fit_14)
+```
 
 
+```{r echo=FALSE}
+f_print(sprintf("The predicted coefficients are all underestimations of the coefficients of the true function representing y regressed onto x. I cannot reject the null hypothesis with respect to β1 nor β2 due to high p-values and vif scores greater than 5 for x1 and x2 respectively. The vif scores for x1 and x2 respectively are %0.02f and %0.02f.",
+                fit_14_vif[[1]],
+                fit_14_vif[[2]]))
+```
+
+
+```{r echo=FALSE}
+f_print(sprintf("ˆβ0: 1.7757\nˆβ1: 1.0847\nˆβ2: 1.0097\n"))
+f_print(sprintf("β0: 2\nβ1: 2\nβ2: 0.3"))
+```
+
+* **Question 14-d**: Now fit a least squares regression to predict y using only x1.
+Comment on your results. Can you reject the null hypothesis
+H0 : β1 = 0?
+  * **Answer**: 
+  
+```{r echo=FALSE}
+lm.fit_14d <- lm(y ~ x1)
+summary(lm.fit_14d)
+f_print(sprintf("The x1 is a significant predictor of y. The p-value is 5.42e-07."))
+```
+
+* **Question 14-e**: Now fit a least squares regression to predict y using only x2.
+Comment on your results. Can you reject the null hypothesis
+H0 : β1 = 0?
+  * **Answer**:
+
+```{r echo=FALSE}
+lm.fit_14e <- lm(y ~ x2)
+summary(lm.fit_14e)
+f_print(sprintf("x2 is also a significant predictor of y. I reject the null using the p-value of 5.361e-07"))
+```
+
+* **Question 14-f**: Do the results obtained contradict each other? Explain your answer.
+  * **Answer**: The results do not contradict each other. Each variable separately is a significant indicator of the response. Because the two variables are highly correlated, it is ambiguous as to which is the significant predictor with respect to the response. An intermediate variable is potentially available as a solution by using the standardized versions of x1 and x2 if such a standard were to exist. Another remedy is to use either variable exclusively as predictors of the response.
+  
+  
+
+* **Question 14-g**: Now suppose we obtain one additional observation, which was
+unfortunately mismeasured. Re-fit the linear models using this new data. What effect does this new observation have on each of the models? In each model, is this observation an outlier? A high-leverage point? Both? Explain your answers.
+  * **Answer**: 
+
+```{r include=FALSE}
+x1 <- c(x1, 0.1)
+x2 <- c(x2, 0.8)
+y <- c(y, 6)
+```
+
+```{r echo=FALSE}
+lm.fit_14g1 <- lm(y ~ x1 + x2)
+lm.fit_14g2 <- lm(y ~ x1)
+lm.fit_14g3 <- lm(y ~ x2)
+summary(lm.fit_14g1)
+vif(lm.fit_14g1)
+```
+
+```{r echo=FALSE}
+summary(lm.fit_14g2)
+```
+
+```{r echo=FALSE}
+summary(lm.fit_14g3)
+```
+```{r include = FALSE}
+fit_14g1_vif <- vif(lm.fit_14g1)
+```
+
+```{r echo=FALSE}
+f_print(sprintf("y regressed onto x1 and x2 now shows that x2 is a significant predictor of the response given a p-value of .00391. The vif scores indicate that x1 and x2 are collinear, albeit less so, with values of %0.2f and %0.2f respectively. x1 and x2 individually are still both significant predictors of the response, y.", fit_14g1_vif[[1]], fit_14g1_vif[[2]]))
+```
+
+### Question 15: 
+This problem involves the Boston data set, which we saw in the lab
+for this chapter. We will now try to predict per capita crime rate
+using the other variables in this data set. In other words, per capita
+crime rate is the response, and the other variables are the predictors.
+
+* **Question 15-a**: For each predictor, fit a simple linear regression model to predict
+the response. Describe your results. In which of the models is
+there a statistically significant association between the predictor
+and the response? Create some plots to back up your assertions.
+  * **Answer**:
+  
+```{r include=FALSE}
+boston <- na.omit(Boston)
+attach(boston)
+```
+
+```{r include=FALSE}
+names(Boston)
+```
+
+```{r echo=FALSE}
+f_print(sprintf("There are statistically significant results in the models where per capita crime rate regressed onto the following predictors: zn, indus, nox, rm, age, dis, rad, tax, ptratio, lstat, medv. There is a slope associated with the response regressed exclusively onto each predictor observable in each plot as well as shapes of the data which suggest a relationship between the response and each predictor that has been determined to have a significant relationship."))
+```
+
+
+```{r echo=FALSE}
+lm.fit_15_zn <- lm(crim ~ zn)
+lm.fit_15_indus <- lm(crim ~ indus)
+lm.fit_15_chas <- lm(crim ~ chas)
+lm.fit_15_nox <- lm(crim ~ nox)
+lm.fit_15_rm <- lm(crim ~ rm)
+lm.fit_15_age <- lm(crim ~ age)
+lm.fit_15_dis <- lm(crim ~ dis)
+lm.fit_15_rad <- lm(crim ~ rad)
+lm.fit_15_tax <- lm(crim ~ tax)
+lm.fit_15_ptratio <- lm(crim ~ ptratio)
+lm.fit_15_lstat <- lm(crim ~ lstat)
+lm.fit_15_medv <- lm(crim ~ medv)
+
+summary(lm.fit_15_zn)
+summary(lm.fit_15_indus)
+summary(lm.fit_15_chas)
+summary(lm.fit_15_nox)
+summary(lm.fit_15_rm)
+summary(lm.fit_15_age)
+summary(lm.fit_15_dis)
+summary(lm.fit_15_rad)
+summary(lm.fit_15_tax)
+summary(lm.fit_15_ptratio)
+summary(lm.fit_15_lstat)
+summary(lm.fit_15_medv)
+```
+
+
+```{r echo=FALSE}
+custom_crim_pair_plot <- function(predictor, titles, predictor_labels, lm_intercept, lm_slope) {
+custom_plot <- ggplot(boston) + 
+  geom_point(aes(
+    predictor,
+    crim
+  ), color = custom_darkblue) + 
+  geom_abline(intercept = lm_intercept, slope = lm_slope, color = custom_red) +
+  labs(title = titles, x = predictor_labels, y = "Per Capita Crime Rate") + 
+  theme_linedraw()
+  print(custom_plot)
+}
+
+custom_crim_pair_plot(
+  zn, 
+  "Per Capita Crime Rate Vs. Proportion of Residential Land Zoned", 
+  "proportion of residential land zoned for lots over 25,000 sq.ft.",
+  lm.fit_15_zn$coefficients[[1]],
+  lm.fit_15_zn$coefficients[[2]]
+  )
+
+custom_crim_pair_plot(
+  indus, 
+  "Per Capita Crime Rate Vs. Proportion of Non-retail Business Acres", 
+  "proportion of non-retail business acres per town",
+  lm.fit_15_indus$coefficients[[1]],
+  lm.fit_15_indus$coefficients[[2]]
+  )
+
+custom_crim_pair_plot(
+  nox, 
+  "Per Capita Crime Rate Vs. Nitrogen Oxides Concentration", 
+  "nitrogen oxides concentration (parts per 10 million)",
+  lm.fit_15_nox$coefficients[[1]],
+  lm.fit_15_nox$coefficients[[2]]
+  )
+
+custom_crim_pair_plot(
+  rm, 
+  "Per Capita Crime Rate Vs. Average Number of Rooms", 
+  "average number of rooms per dwelling",
+  lm.fit_15_rm$coefficients[[1]],
+  lm.fit_15_rm$coefficients[[2]]
+  )
+
+custom_crim_pair_plot(
+  age, 
+  "Per Capita Crime Rate Vs. Age of Home", 
+  "proportion of owner-occupied units built prior to 1940",
+  lm.fit_15_age$coefficients[[1]],
+  lm.fit_15_age$coefficients[[2]]
+  )
+
+custom_crim_pair_plot(
+  dis, 
+  "Per Capita Crime Rate Vs. Distnace to Employment Centres", 
+  "weighted mean of distances to five Boston employment centres",
+  lm.fit_15_dis$coefficients[[1]],
+  lm.fit_15_dis$coefficients[[2]]
+  )
+
+custom_crim_pair_plot(
+  rad, 
+  "Per Capita Crime Rate Vs. Accessibility Index to Highways", 
+  "index of accessibility to radial highways",
+  lm.fit_15_rad$coefficients[[1]],
+  lm.fit_15_rad$coefficients[[2]]
+  )
+
+custom_crim_pair_plot(
+  tax, 
+  "Per Capita Crime Rate Vs. Property-Tax Rate", 
+  "full-value property-tax rate per $10,000",
+  lm.fit_15_tax$coefficients[[1]],
+  lm.fit_15_tax$coefficients[[2]]
+  )
+
+custom_crim_pair_plot(
+  ptratio, 
+  "Per Capita Crime Rate Vs. Pupil-Teacher Ratio", 
+  "pupil-teacher ratio by town",
+  lm.fit_15_ptratio$coefficients[[1]],
+  lm.fit_15_ptratio$coefficients[[2]]
+  )
+
+custom_crim_pair_plot(
+  lstat, 
+  "Per Capita Crime Rate Vs. % of Lower Status Population", 
+  "lower status of the population (percent)",
+  lm.fit_15_lstat$coefficients[[1]],
+  lm.fit_15_lstat$coefficients[[2]]
+  )
+
+custom_crim_pair_plot(
+  medv, 
+  "Per Capita Crime Rate Vs. Median Value of Homes", 
+  "median value of owner-occupied homes in $1000s",
+  lm.fit_15_medv$coefficients[[1]],
+  lm.fit_15_medv$coefficients[[2]]
+  )
+
+
+```
+
+
+* **Question 15-b**: Fit a multiple regression model to predict the response using all of the predictors. Describe your results. For which predictors can we reject the null hypothesis H~0~ β~j~ = 0?
+  * **Answer**:
+  
+```{r echo=FALSE}
+f_print(sprintf("It is appropriate to reject the null hypothesis in the multiple regression model for the following predictors: zn, dis, rad, & medv. The F-statistic is low yet still indicates that one or more of the predictors are significant indicators of the response."))
+```
+
+
+```{r echo=FALSE}
+lm.fit_15_mr <- lm(crim ~ ., data = boston)
+summary(lm.fit_15_mr)
+```
+* **Question 15-c**: How do your results from (a) compare to your results from (b)?
+Create a plot displaying the univariate regression coefficients
+from (a) on the x-axis, and the multiple regression coefficients
+from (b) on the y-axis. That is, each predictor is displayed as a
+single point in the plot. Its coefficient in a simple linear regres-
+sion model is shown on the x-axis, and its coefficient estimate
+in the multiple linear regression model is shown on the y-axis.
+  * **Answer**: 
+  
+
+```{r echo=FALSE}
+#zn, indus, nox, rm, age, dis, rad, tax, ptratio, lstat, medv
+x <- c(
+    lm.fit_15_zn$coefficients[[2]],
+    lm.fit_15_indus$coefficients[[2]],
+    lm.fit_15_nox$coefficients[[2]],
+    lm.fit_15_rm$coefficients[[2]],
+    lm.fit_15_rm$coefficients[[2]],
+    lm.fit_15_age$coefficients[[2]],
+    lm.fit_15_dis$coefficients[[2]],
+    lm.fit_15_rad$coefficients[[2]],
+    lm.fit_15_tax$coefficients[[2]],
+    lm.fit_15_ptratio$coefficients[[2]],
+    lm.fit_15_lstat$coefficients[[2]],
+    lm.fit_15_medv$coefficients[[2]]
+    )
+y <- c(double(0L))
+for (index in seq_along(lm.fit_15_mr$coefficients[-1])) {
+ y <- c(y, lm.fit_15_mr$coefficients[-1][[index]]) 
+}
+
+ggplot() + 
+  geom_point(aes(x, y)) + 
+  labs(x = "Univariate Regression Coefficients", y = "Multivariate Regression Coefficients") +
+  theme_linedraw()
+
+f_print(sprintf("There are more significant predictors in the models where the response is regressed exclusively by a single predictor versus the multiple regression model."))
+```
+* **Question 15-d**: Is there evidence of non-linear association between any of the
+predictors and the response? To answer this question, for each
+predictor X, fit a model of the form: Y = β~0~ + β~1~X + β~2~X^2^ + β~3~X^3^ + ε
+  * **Answer**:
+  
+```{r echo=FALSE}
+lm.fit_15_zn_mr <- lm(crim ~ zn + I(zn^2) + I(zn^3))
+lm.fit_15_indus_mr <- lm(crim ~ indus + I(indus^2) + I(indus^3))
+lm.fit_15_chas_mr <- lm(crim ~ chas + I(chas^2) + I(chas^3))
+lm.fit_15_nox_mr <- lm(crim ~ nox + I(nox^2) + I(nox^3))
+lm.fit_15_rm_mr <- lm(crim ~ rm + I(rm^2) + I(rm^3))
+lm.fit_15_age_mr <- lm(crim ~ age + I(age^2) + I(age^3))
+lm.fit_15_dis_mr <- lm(crim ~ dis + I(dis^2) + I(dis^3))
+lm.fit_15_rad_mr <- lm(crim ~ rad + I(rad^2) + I(rad^3))
+lm.fit_15_tax_mr <- lm(crim ~ tax + I(tax^2) + I(tax^3))
+lm.fit_15_ptratio_mr <- lm(crim ~ ptratio + I(ptratio^2) + I(ptratio^3))
+lm.fit_15_lstat_mr <- lm(crim ~ lstat + I(lstat^2) + I(lstat^3))
+lm.fit_15_medv_mr <- lm(crim ~ medv + I(medv^2) + I(medv^3))
+
+summary(lm.fit_15_zn_mr)
+summary(lm.fit_15_indus_mr)
+summary(lm.fit_15_chas_mr)
+summary(lm.fit_15_nox_mr)
+summary(lm.fit_15_rm_mr)
+summary(lm.fit_15_age_mr)
+summary(lm.fit_15_dis_mr)
+summary(lm.fit_15_rad_mr)
+summary(lm.fit_15_tax_mr)
+summary(lm.fit_15_ptratio_mr)
+summary(lm.fit_15_lstat_mr)
+summary(lm.fit_15_medv_mr)
+```
+  
+```{r echo=FALSE}
+f_print(sprintf("There is evidence of a non-linear association of the response regressed onto the following predictors as determined by significant p-values: indus, nox, age, dis, ptratio, & medv."))
+```
+  
+  
