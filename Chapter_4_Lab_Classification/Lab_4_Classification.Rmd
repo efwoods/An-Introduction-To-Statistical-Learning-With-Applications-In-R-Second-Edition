@@ -1,0 +1,65 @@
+---
+title: "Lab 4 Classification"
+author: "Evan Woods"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width = 6)
+knitr::opts_chunk$set(fig.asp = 0.618)
+knitr::opts_chunk$set(out.width = "70%")
+knitr::opts_chunk$set(fig.align = "center")
+knitr::opts_chunk$set(
+  comment = ""
+)
+```
+
+```{r message=FALSE, include=FALSE}
+if(!require("MASS")) install.packages("MASS")
+if(!require("ISLR2")) install.packages("ISLR2")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("HH")) install.packages("HH") # VIF
+
+library(HH)
+library(MASS)
+library(ISLR2)
+library(tidyverse)
+```
+
+```{r include=FALSE}
+LoadLibraries <- function() {
+  if(!require("MASS")) install.packages("MASS")
+  if(!require("ISLR2")) install.packages("ISLR2")
+  if(!require("tidyverse")) install.packages("tidyverse")
+  if(!require("HH")) install.packages("HH") # VIF
+
+  library(HH)
+  library(MASS)
+  library(ISLR2)
+  library(tidyverse)
+  print("Libraries have been loaded!")
+}
+```
+
+```{r include=FALSE}
+custom_darkblue = "#1A0875"
+custom_lightblue = "#34ABEB"
+custom_red = "#a60808"
+```
+
+
+```{r include=FALSE}
+f_print <- function(string){
+  cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
+}
+```
+
+```{r}
+
+```
+
+
+
+
