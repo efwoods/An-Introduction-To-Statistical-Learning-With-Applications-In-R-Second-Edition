@@ -21,7 +21,11 @@ if(!require("MASS")) install.packages("MASS")
 if(!require("ISLR2")) install.packages("ISLR2")
 if(!require("tidyverse")) install.packages("tidyverse")
 if(!require("HH")) install.packages("HH") # VIF
+if(!require("e1071")) install.packages("e1071") # naiveBayes
+if(!require("class")) install.packages("class") # knn
 
+library(class)
+library(e1071)
 library(HH)
 library(MASS)
 library(ISLR2)
@@ -34,7 +38,9 @@ LoadLibraries <- function() {
   if(!require("ISLR2")) install.packages("ISLR2")
   if(!require("tidyverse")) install.packages("tidyverse")
   if(!require("HH")) install.packages("HH") # VIF
+  if(!require("e1071")) install.packages("e1071")
 
+  library(e1071)
   library(HH)
   library(MASS)
   library(ISLR2)
@@ -56,10 +62,378 @@ f_print <- function(string){
 }
 ```
 
+# Lab 4: Classification Methods
+
 ```{r}
+attach(Smarket)
+```
+
+
+```{r}
+names(Smarket)
+```
+
+```{r}
+summary(Smarket)
+```
+
+```{r}
+dim(Smarket)
+```
+
+```{r}
+pairs(Smarket, cex = .1, pch = 20)
+```
+
+```{r}
+smarket_quant <- Smarket %>% select(everything(), -Direction)
+```
+
+```{r}
+cor(smarket_quant)
+```
+```{r}
+names(Smarket)
+```
+
+
+## Logistic Regression
+```{r}
+glm.fit <- glm(Direction ~ . -Year -Today -Direction, data = Smarket, family = binomial)
+summary(glm.fit)$coefficients
+```
+
+```{r}
+glm.probs <- predict(glm.fit, type = "response")
+glm.probs[1:10]
+```
+
+```{r}
+contrasts(Direction)
+```
+
+```{r}
+glm.pred <- rep("Down", 1250)
+```
+
+```{r}
+glm.pred[glm.probs > .5] = "Up"
+```
+
+```{r}
+table(glm.pred, Direction)
+```
+
+```{r}
+mean(glm.pred == Direction)
+```
+
+```{r}
+train <- (Year < 2005) # The training set; used to train the model
+Smarket.2005 <- Smarket[!train, ] # The test set; used to create test predictions
+dim(Smarket)
+Direction.2005 <- Direction[!train] # The true values of the test set; Used to compare against the test predictions. 
+```
+
+```{r}
+names(Smarket)
+```
+
+
+```{r}
+# Fit the model using the training subset
+glm.fits <- glm(Direction ~ . -Today -Direction -Year, data = Smarket, subset = train, family = binomial)
+summary(glm.fits)
+```
+
+
+```{r}
+# Creating test predictions using the test set
+glm.probs <- predict(glm.fits, Smarket.2005, type = "response")
+glm.probs
+```
+
+
+```{r}
+glm.pred <- rep("Down", 252)
+glm.pred[glm.probs > .5] <- "Up"
+```
+
+
+```{r}
+table(glm.pred, Direction.2005)
+```
+
+```{r}
+
+mean(glm.pred == Direction.2005)
+```
+
+```{r}
+# average number of predictions not equal to the true values of the test set. Testing Error.
+mean(glm.pred != Direction.2005)
+```
+
+```{r}
+glm.fit2 <- glm(Direction ~ Lag1 + Lag2, data = Smarket, family = binomial, subset = train)
+glm.probs2 <- predict(glm.fit2, Smarket.2005, type = "response")
+glm.preds2 <- rep("Down", 252)
+glm.preds2[glm.probs2 > 0.5] = "Up"
+table(glm.preds2, Direction.2005)
+
+# Test Error
+mean(glm.preds2 != Direction.2005)
+```
+
+```{r}
+length(Lag2)
 
 ```
 
 
+```{r}
+# Predictions for particular values of Lag1 & Lag2
+predict(glm.fit2, 
+        newdata = data.frame(Lag1 = c(1.2, 1.5), Lag2 = c(1.1, -0.8)), 
+        type = "response")
+```
 
+## LDA
+```{r}
+lda.fit <- lda(Direction ~ Lag1 + Lag2, data = Smarket, subset = train)
+lda.fit
+```
+
+```{r}
+lda.pred <- predict(lda.fit, Smarket.2005)
+names(lda.pred)
+```
+
+```{r}
+table(lda.pred$class, Direction.2005)
+```
+
+```{r}
+# Average Test Error
+mean(lda.pred$class != Direction.2005)
+```
+
+```{r}
+# The predicated probabilities that the market will decrease
+sum(lda.pred$posterior[, 1] >= .5)
+sum(lda.pred$posterior[, 1] < .5)
+```
+
+## Quadratic Discriminant Analysis
+```{r}
+qda.fit <- qda(Direction ~ Lag1 + Lag2, data = Smarket, subset = train)
+qda.fit
+```
+
+```{r}
+qda.class <- predict(qda.fit, Smarket.2005)$class
+table(qda.class, Direction.2005)
+```
+
+```{r}
+# Test Error rate
+mean(qda.class != Direction.2005)
+```
+
+## Naive Bayes
+```{r}
+nb.fit <- naiveBayes(Direction ~ Lag1 + Lag2, data = Smarket, subset = train)
+nb.fit
+```
+
+
+```{r}
+# Mean & Standard deviation
+mean(Lag1[train][Direction[train] == "Down"])
+sd(Lag1[train][Direction[train] == "Down"])
+```
+
+```{r}
+# Prediction
+nb.class <- predict(nb.fit, Smarket.2005)
+table(nb.class, Direction.2005)
+```
+
+```{r}
+mean(nb.class == Direction.2005)
+```
+
+```{r}
+nb.preds <- predict(nb.fit, Smarket.2005, type = "raw")
+nb.preds[1:5,]
+```
+
+## K-Nearest Neighbors
+```{r}
+train.X <- cbind(Lag1, Lag2)[train, ]
+test.X <- cbind(Lag1, Lag2)[!train, ]
+train.Direction <- Direction[train] # labels for the training observations
+```
+
+```{r}
+set.seed(1)
+knn.pred <- knn(train.X, test.X, train.Direction, k = 1)
+table(knn.pred, Direction.2005)
+
+# Test Error
+mean(knn.pred != Direction.2005)
+```
+
+```{r}
+knn.pred_k3 <- knn(train.X, test.X, train.Direction, k = 3)
+table(knn.pred_k3, Direction.2005)
+```
+
+```{r}
+mean(knn.pred == Direction.2005)
+```
+
+```{r}
+dim(Caravan)
+```
+
+```{r}
+attach(Caravan)
+names(Caravan)
+```
+
+
+```{r}
+summary(Purchase)
+```
+
+```{r}
+length(Purchase)
+```
+
+
+```{r}
+# Give variables a mean of zero and a standard deviation of one: scale()
+
+standardized.X <- scale(Caravan[, -86])
+var(Caravan[, 1])
+var(Caravan[, 2])
+var(standardized.X[, 1])
+var(standardized.X[, 2])
+```
+```{r}
+test <- 1:1000
+
+train.X <- standardized.X[-test, ]
+test.X <- standardized.X[test, ]
+train.Y <- Purchase[-test]
+test.Y <- Purchase[test]
+set.seed(1)
+knn.pred_standardized <- knn(train.X, test.X, train.Y, k = 1)
+
+mean(test.Y != knn.pred_standardized)
+mean(test.Y != "No")
+```
+
+```{r}
+table(knn.pred_standardized, test.Y)
+```
+
+## Poisson Regression
+```{r}
+knn.pred_standardized_k3 <- knn(train.X, test.X, train.Y, k = 3)
+table(knn.pred_standardized_k3, test.Y)
+5/(19+5)
+```
+
+```{r}
+knn.pred_standardized_k5 <- knn(train.X, test.X, train.Y, k = 5)
+table(knn.pred_standardized_k5, test.Y)
+```
+
+```{r}
+glm.fits <- glm(Purchase ~ ., data = Caravan, family = binomial, subset = -test)
+```
+
+```{r}
+glm.probs <- predict(glm.fits, Caravan[test, ], type = "response")
+glm.pred <- rep("No", 1000)
+glm.pred[glm.probs > .5] <- "Yes"
+table(glm.pred, test.Y)
+```
+
+```{r}
+glm.pred <- rep("No", 1000)
+glm.pred[glm.probs > .25] <- "Yes"
+table(glm.pred, test.Y)
+```
+## Poisson Regression
+```{r}
+attach(Bikeshare)
+dim(Bikeshare)
+names(Bikeshare)
+```
+
+```{r}
+mod.lm <- lm(
+  bikers ~ mnth + hr + workingday + temp + weathersit, data = Bikeshare
+)
+summary(mod.lm)
+```
+
+```{r}
+contrasts(Bikeshare$hr) = contr.sum(24)
+contrasts(Bikeshare$mnth) = contr.sum(12)
+```
+
+```{r}
+mod.lm2 <- lm(
+  bikers ~ mnth + hr + workingday + temp + weathersit, data = Bikeshare
+)
+summary(mod.lm2)
+```
+```{r}
+near(sum(predict(mod.lm) - predict(mod.lm2))^2, 0)
+```
+
+```{r}
+all.equal(predict(mod.lm), predict(mod.lm2))
+```
+
+
+```{r}
+coef.months <- c(coef(mod.lm2)[2:12], -sum(coef(mod.lm2)[2:12]))
+plot(coef.months, xlab = "Month", ylab = "Coefficient", xaxt = "n", col = "blue", pch = 19, type = "o")
+axis(side = 1, at =  1:12, labels = c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"))
+```
+
+```{r}
+coef.hours <- c(coef(mod.lm2)[13:35], -sum(coef(mod.lm2)[13:35]))
+plot(coef.hours, xlab = "Hour", ylab = "Coefficient", col = "blue", pch = 19, type = "o")
+```
+
+```{r}
+mod.pois <- glm(
+  bikers ~ mnth + hr + workingday + temp + weathersit, 
+  data = Bikeshare, family = poisson
+)
+summary(mod.pois)
+```
+
+```{r}
+coef.mnth <- c(coef(mod.pois)[2:12], -sum(coef(mod.pois)[2:12]))
+plot(coef.mnth, xlab = "Month", ylab = "Coefficient", xaxt = "n", col = "blue", pch = 19, type = "o")
+axis(side = 1, at = 1:12, labels = c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"))
+```
+
+
+```{r}
+coef.hours <- c(coef(mod.pois)[13:35], -sum(coef(mod.pois)[13:35]))
+plot(coef.mnth, xlab = "Hour", ylab = "Coefficient", col = "blue", pch = 19, type = "o")
+```
+
+```{r}
+plot(predict(mod.lm2), predict(mod.pois, type = "response"), cex = .1, pch = 20)
+abline(0, 1, col = 2, lwd = 3)
+```
 

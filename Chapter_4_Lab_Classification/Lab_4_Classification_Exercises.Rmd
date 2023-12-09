@@ -1,5 +1,5 @@
 ---
-title: "Lab 4: Classification Exercises"
+title: "Lab 4 Classification Exercises"
 author: "Evan Woods"
 date: "`r Sys.Date()`"
 output: github_document
@@ -7,24 +7,57 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width = 6)
+knitr::opts_chunk$set(fig.asp = 0.618)
+knitr::opts_chunk$set(out.width = "70%")
+knitr::opts_chunk$set(fig.align = "center")
+knitr::opts_chunk$set(
+  comment = ""
+)
 ```
 
-## R Markdown
+```{r message=FALSE, include=FALSE}
+if(!require("MASS")) install.packages("MASS")
+if(!require("ISLR2")) install.packages("ISLR2")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("HH")) install.packages("HH") # VIF
+if(!require("e1071")) install.packages("e1071") # naiveBayes
+if(!require("class")) install.packages("class") # knn
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+library(class)
+library(e1071)
+library(HH)
+library(MASS)
+library(ISLR2)
+library(tidyverse)
 ```
 
-## Including Plots
+```{r include=FALSE}
+LoadLibraries <- function() {
+  if(!require("MASS")) install.packages("MASS")
+  if(!require("ISLR2")) install.packages("ISLR2")
+  if(!require("tidyverse")) install.packages("tidyverse")
+  if(!require("HH")) install.packages("HH") # VIF
+  if(!require("e1071")) install.packages("e1071")
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+  library(e1071)
+  library(HH)
+  library(MASS)
+  library(ISLR2)
+  library(tidyverse)
+  print("Libraries have been loaded!")
+}
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r include=FALSE}
+custom_darkblue = "#1A0875"
+custom_lightblue = "#34ABEB"
+custom_red = "#a60808"
+```
+
+
+```{r include=FALSE}
+f_print <- function(string){
+  cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
+}
+```
