@@ -1,7 +1,7 @@
 Lab 4 Classification
 ================
 Evan Woods
-2023-12-09
+2023-12-10
 
 # Lab 4: Classification Methods
 
@@ -154,7 +154,7 @@ dim(Smarket)
     [1] 1250    9
 
 ``` r
-Direction.2005 <- Direction[!train] # The true values of the test set; Used to compare against the test predictions. 
+Direction.2005 <- Direction[!train] # The true values of the test set's response; Used to compare against the test set's predictions. 
 ```
 
 ``` r
@@ -578,7 +578,6 @@ length(Purchase)
 
 ``` r
 # Give variables a mean of zero and a standard deviation of one: scale()
-
 standardized.X <- scale(Caravan[, -86])
 var(Caravan[, 1])
 ```
@@ -610,6 +609,27 @@ train.X <- standardized.X[-test, ]
 test.X <- standardized.X[test, ]
 train.Y <- Purchase[-test]
 test.Y <- Purchase[test]
+```
+
+``` r
+dim(train.X)
+```
+
+    [1] 4822   85
+
+``` r
+dim(test.X)
+```
+
+    [1] 1000   85
+
+``` r
+length(train.Y)
+```
+
+    [1] 4822
+
+``` r
 set.seed(1)
 knn.pred_standardized <- knn(train.X, test.X, train.Y, k = 1)
 
@@ -858,14 +878,14 @@ plot(coef.months, xlab = "Month", ylab = "Coefficient", xaxt = "n", col = "blue"
 axis(side = 1, at =  1:12, labels = c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"))
 ```
 
-<img src="Lab_4_Classification_files/figure-gfm/unnamed-chunk-66-1.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_4_Classification_files/figure-gfm/unnamed-chunk-68-1.png" width="70%" style="display: block; margin: auto;" />
 
 ``` r
 coef.hours <- c(coef(mod.lm2)[13:35], -sum(coef(mod.lm2)[13:35]))
 plot(coef.hours, xlab = "Hour", ylab = "Coefficient", col = "blue", pch = 19, type = "o")
 ```
 
-<img src="Lab_4_Classification_files/figure-gfm/unnamed-chunk-67-1.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_4_Classification_files/figure-gfm/unnamed-chunk-69-1.png" width="70%" style="display: block; margin: auto;" />
 
 ``` r
 mod.pois <- glm(
@@ -939,18 +959,71 @@ plot(coef.mnth, xlab = "Month", ylab = "Coefficient", xaxt = "n", col = "blue", 
 axis(side = 1, at = 1:12, labels = c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"))
 ```
 
-<img src="Lab_4_Classification_files/figure-gfm/unnamed-chunk-69-1.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_4_Classification_files/figure-gfm/unnamed-chunk-71-1.png" width="70%" style="display: block; margin: auto;" />
 
 ``` r
 coef.hours <- c(coef(mod.pois)[13:35], -sum(coef(mod.pois)[13:35]))
 plot(coef.mnth, xlab = "Hour", ylab = "Coefficient", col = "blue", pch = 19, type = "o")
 ```
 
-<img src="Lab_4_Classification_files/figure-gfm/unnamed-chunk-70-1.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_4_Classification_files/figure-gfm/unnamed-chunk-72-1.png" width="70%" style="display: block; margin: auto;" />
 
 ``` r
 plot(predict(mod.lm2), predict(mod.pois, type = "response"), cex = .1, pch = 20)
 abline(0, 1, col = 2, lwd = 3)
 ```
 
-<img src="Lab_4_Classification_files/figure-gfm/unnamed-chunk-71-1.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_4_Classification_files/figure-gfm/unnamed-chunk-73-1.png" width="70%" style="display: block; margin: auto;" />
+
+## Classifiers
+
+### Linear Discriminant Analysis
+
+The mean is different in each class. The covariance matrix is assumed to
+the constant among each class. Linear decision boundary is assumed.
+
+### Quadratic Discriminant Analysis
+
+Each class has its own covariance matrix. A non-linear decision boundary
+is assumed. Works well with a larger number of predictors.
+
+### Naive Bayes
+
+Assumes that the predictors are independent. That is, each class has its
+own covariance matrix and that class-specific matrix is encoded as a
+vector along the diagonal. Works well with a small number of predictors.
+
+### K-Nearest Neighbors
+
+KNN is a non-parametric approach. The function of the data is not
+assumed. Rather the data itself is used to make predictions without the
+inclusion of coefficients.  
+The training observations that are closest to X are identified. Then the
+greatest number of classes that are closest to X assign X to that class.
+
+## General Linear Models
+
+A distribution of the data is assumed. The mean is transformed so that
+the transformed mean is a linear function of the predictors using a link
+function. In the case of a linear regression, the mean is not
+transformed, i.e. $η(μ) = μ$. Logistic functions use a link function of
+$η(μ) = log(μ/(1-μ))$ whereas Poisson regressions use a link function of
+$η(μ) = log(μ)$.
+
+### Linear Regression
+
+The variance is constant.
+
+### Logistic Regression
+
+Assumes a linear decision boundary of the true function of f. Useful for
+qualitative classification. There exists multiple logistic regression
+(binary response & multiple predictors), & multinomial logistic
+regression (multiple responses: i.e. more than two possible outcome
+classes).
+
+### Poisson Regression
+
+The mean is equal to the variance. The variance is not constant. Best
+used when a log transformation of a linear model is not adequate due to
+non-constant variance.

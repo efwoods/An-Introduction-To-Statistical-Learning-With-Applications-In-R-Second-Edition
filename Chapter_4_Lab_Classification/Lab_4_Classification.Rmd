@@ -23,7 +23,9 @@ if(!require("tidyverse")) install.packages("tidyverse")
 if(!require("HH")) install.packages("HH") # VIF
 if(!require("e1071")) install.packages("e1071") # naiveBayes
 if(!require("class")) install.packages("class") # knn
+if(!require("formulaic")) install.packages("formulaic") # create formula
 
+library(formulaic)
 library(class)
 library(e1071)
 library(HH)
@@ -132,7 +134,7 @@ mean(glm.pred == Direction)
 train <- (Year < 2005) # The training set; used to train the model
 Smarket.2005 <- Smarket[!train, ] # The test set; used to create test predictions
 dim(Smarket)
-Direction.2005 <- Direction[!train] # The true values of the test set; Used to compare against the test predictions. 
+Direction.2005 <- Direction[!train] # The true values of the test set's response; Used to compare against the test set's predictions. 
 ```
 
 ```{r}
@@ -187,7 +189,6 @@ mean(glm.preds2 != Direction.2005)
 
 ```{r}
 length(Lag2)
-
 ```
 
 
@@ -241,6 +242,7 @@ mean(qda.class != Direction.2005)
 ```
 
 ## Naive Bayes
+
 ```{r}
 nb.fit <- naiveBayes(Direction ~ Lag1 + Lag2, data = Smarket, subset = train)
 nb.fit
@@ -312,9 +314,9 @@ length(Purchase)
 ```
 
 
+
 ```{r}
 # Give variables a mean of zero and a standard deviation of one: scale()
-
 standardized.X <- scale(Caravan[, -86])
 var(Caravan[, 1])
 var(Caravan[, 2])
@@ -328,6 +330,15 @@ train.X <- standardized.X[-test, ]
 test.X <- standardized.X[test, ]
 train.Y <- Purchase[-test]
 test.Y <- Purchase[test]
+```
+
+```{r}
+dim(train.X)
+dim(test.X)
+length(train.Y)
+```
+
+```{r}
 set.seed(1)
 knn.pred_standardized <- knn(train.X, test.X, train.Y, k = 1)
 
@@ -435,3 +446,29 @@ plot(predict(mod.lm2), predict(mod.pois, type = "response"), cex = .1, pch = 20)
 abline(0, 1, col = 2, lwd = 3)
 ```
 
+
+## Classifiers
+### Linear Discriminant Analysis
+The mean is different in each class. The covariance matrix is assumed to the constant among each class. Linear decision boundary is assumed. 
+
+### Quadratic Discriminant Analysis
+Each class has its own covariance matrix. A non-linear decision boundary is assumed. Works well with a larger number of predictors. 
+
+### Naive Bayes
+Assumes that the predictors are independent. That is, each class has its own covariance matrix and that class-specific matrix is encoded as a vector along the diagonal. Works well with a small number of predictors. 
+
+### K-Nearest Neighbors
+KNN is a non-parametric approach. The function of the data is not assumed. Rather the data itself is used to make predictions without the inclusion of coefficients.  
+The training observations that are closest to X are identified. Then the greatest number of classes that are closest to X assign X to that class. 
+
+## General Linear Models
+A distribution of the data is assumed. The mean is transformed so that the transformed mean is a linear function of the predictors using a link function. In the case of a linear regression, the mean is not transformed, i.e. $η(μ) = μ$. Logistic functions use a link function of $η(μ) = log(μ/(1-μ))$ whereas Poisson regressions use a link function of $η(μ) = log(μ)$.
+
+### Linear Regression
+The variance is constant. 
+
+### Logistic Regression
+Assumes a linear decision boundary of the true function of f. Useful for qualitative classification. There exists multiple logistic regression (binary response & multiple predictors), & multinomial logistic regression (multiple responses: i.e. more than two possible outcome classes). 
+
+### Poisson Regression
+The mean is equal to the variance. The variance is not constant. Best used when a log transformation of a linear model is not adequate due to non-constant variance. 

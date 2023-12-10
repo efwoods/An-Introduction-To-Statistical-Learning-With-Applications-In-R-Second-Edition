@@ -1,9 +1,7 @@
 Lab 4 Classification Exercises
 ================
 Evan Woods
-2023-12-09
-
-# Lab 4 Classification Exercises
+2023-12-10
 
 ## Applied
 
@@ -18,7 +16,7 @@ returns for 21 years, from the beginning of 1990 to the end of 2010.
   the Weekly data. Do there appear to be any patterns?
   - **Answer**:
 
-<img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-6-1.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-11-1.png" width="70%" style="display: block; margin: auto;" />
 
     There appears to be a logrithmic relationship between Year & Volume. The data
     appears otherwise to have no discernable patterns.
@@ -91,4 +89,1262 @@ returns for 21 years, from the beginning of 1990 to the end of 2010.
                  Down    9  5
                  Up     34 56
 
-    The overall fraction of correct predictions for the held out data is 62.50%.
+    The overall fraction of correct predictions for the test set is 62.50%.
+
+- **Question 13-e**: Now fit a model using linear discriminant analysis
+  and a training data period from 1990 to 2008 with Lag2 as the only
+  predictor. Compute the confusion matrix and the overall fraction of
+  correct predictions for the held out data (that is, the data from 2009
+  and 2010).
+  - **Answer**:
+
+<!-- -->
+
+          test.Y
+           Down Up
+      Down    9  5
+      Up     34 56
+
+    The overall fraction of correct predictions for the test set is 62.50%.
+
+- **Question 13-f**: Now fit a model using quadratic discriminant
+  analysis and a training data period from 1990 to 2008 with Lag2 as the
+  only predictor. Compute the confusion matrix and the overall fraction
+  of correct predictions for the held out data (that is, the data from
+  2009 and 2010).
+  - **Answer**:
+
+<!-- -->
+
+          test.Y
+           Down Up
+      Down    0  0
+      Up     43 61
+    The overall fraction of correct predictions for the test set is 58.65%.
+
+- **Question 13-g**: Now fit a model using knn and a training data
+  period from 1990 to 2008 with Lag2 as the only predictor. Compute the
+  confusion matrix and the overall fraction of correct predictions for
+  the held out data (that is, the data from 2009 and 2010).
+  - **Answer**:
+
+<!-- -->
+
+           
+    knn.fit Down Up
+       Down   21 30
+       Up     22 31
+
+    The overall fraction of correct predictions for the test set is 0.50%.
+
+- **Question 13-h**: Now fit a model using naive bayes and a training
+  data period from 1990 to 2008 with Lag2 as the only predictor. Compute
+  the confusion matrix and the overall fraction of correct predictions
+  for the held out data (that is, the data from 2009 and 2010).
+  - **Answer**:
+
+<!-- -->
+
+           test.Y
+    nb.pred Down Up
+       Down    0  0
+       Up     43 61
+
+- **Question 13-i**: Which of these methods appears to provide the best
+  results on this data?
+- **Answer**:
+
+<!-- -->
+
+    The linear discriminant analysis and the logistic model both provide the best
+    results on this data. Their accuracies are highest amongst all the methods at
+    62.5%.
+
+- **Question 13-j**: Experiment with different combinations of
+  predictors, includ- ing possible transformations and interactions, for
+  each of the methods. Report the variables, method, and associated
+  confu- sion matrix that appears to provide the best results on the
+  held out data. Note that you should also experiment with values for K
+  in the KNN classifier.
+  - **Answer**:
+
+Quadratic Discriminant Analysis
+
+    QDA Model 1:
+
+    Formula:
+    Direction ~ Year + Lag1 + Lag3 + Lag5 + Year * Lag1 + Lag1 * 
+        Lag3 + Lag3 * Lag5
+    <environment: 0x1464f84b0>
+
+
+    Call:
+    qda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+             Year         Lag1       Lag3       Lag5 Year:Lag1    Lag1:Lag3
+    Down 1999.295  0.289444444 0.17080045 0.21409297 578.19599 -0.006554329
+    Up   1998.853 -0.009213235 0.08404044 0.04548897 -19.47546  0.687742739
+         Lag3:Lag5
+    Down 0.4913572
+    Up   0.3137873
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down   27 39
+      Up     16 22
+    The overall fraction of correct predictions for the test set is 47.12%.
+
+
+    QDA Model 2:
+
+    Formula:
+    Direction ~ Year + Lag2 + Lag4 + Year * Lag2 + Lag2 * Lag4
+    <environment: 0x146bac4b0>
+
+
+    Call:
+    qda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+             Year        Lag2       Lag4 Year:Lag2  Lag2:Lag4
+    Down 1999.295 -0.03568254 0.15925624 -72.78371 0.78824608
+    Up   1998.853  0.26036581 0.09220956 520.28269 0.04407141
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down   24 32
+      Up     19 29
+    The overall fraction of correct predictions for the test set is 50.96%.
+
+
+    QDA Model 3:
+
+    Formula:
+    Direction ~ Lag1 + Volume + Lag2 + Lag3 + Lag4 + Lag5 + Lag1 * 
+        Volume + Lag2 * Volume + Lag3 * Volume + Lag4 * Volume + 
+        Lag5 * Volume
+    <environment: 0x144993710>
+
+
+    Call:
+    qda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+                 Lag1   Volume        Lag2       Lag3       Lag4       Lag5
+    Down  0.289444444 1.266966 -0.03568254 0.17080045 0.15925624 0.21409297
+    Up   -0.009213235 1.156529  0.26036581 0.08404044 0.09220956 0.04548897
+         Lag1:Volume Volume:Lag2 Volume:Lag3 Volume:Lag4 Volume:Lag5
+    Down   0.3362336 -0.70124208  -0.1417243  -0.2257271  -0.2323645
+    Up    -0.6187543  0.06257301  -0.2956207  -0.1677342  -0.1401411
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down   31 46
+      Up     12 15
+    The overall fraction of correct predictions for the test set is 44.23%.
+
+
+    QDA Model 4:
+
+    Formula:
+    Direction ~ Year
+    <environment: 0x150a4da90>
+
+
+    Call:
+    qda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+             Year
+    Down 1999.295
+    Up   1998.853
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down   20 32
+      Up     23 29
+    The overall fraction of correct predictions for the test set is 47.12%.
+
+
+    QDA Model 5:
+
+    Formula:
+    Direction ~ Lag1
+    <environment: 0x150adb608>
+
+
+    Call:
+    qda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+                 Lag1
+    Down  0.289444444
+    Up   -0.009213235
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down    0  0
+      Up     43 61
+    The overall fraction of correct predictions for the test set is 58.65%.
+
+
+    QDA Model 6:
+
+    Formula:
+    Direction ~ Lag2
+    <environment: 0x150b00ce8>
+
+
+    Call:
+    qda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+                Lag2
+    Down -0.03568254
+    Up    0.26036581
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down    0  0
+      Up     43 61
+    The overall fraction of correct predictions for the test set is 58.65%.
+
+
+    QDA Model 7:
+
+    Formula:
+    Direction ~ Lag3
+    <environment: 0x150b263c8>
+
+
+    Call:
+    qda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+               Lag3
+    Down 0.17080045
+    Up   0.08404044
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down    0  0
+      Up     43 61
+    The overall fraction of correct predictions for the test set is 58.65%.
+
+
+    QDA Model 8:
+
+    Formula:
+    Direction ~ Lag4
+    <environment: 0x150b47b98>
+
+
+    Call:
+    qda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+               Lag4
+    Down 0.15925624
+    Up   0.09220956
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down    7 12
+      Up     36 49
+    The overall fraction of correct predictions for the test set is 53.85%.
+
+
+    QDA Model 9:
+
+    Formula:
+    Direction ~ Lag5
+    <environment: 0x150b6b278>
+
+
+    Call:
+    qda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+               Lag5
+    Down 0.21409297
+    Up   0.04548897
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down    2 13
+      Up     41 48
+    The overall fraction of correct predictions for the test set is 48.08%.
+
+
+    QDA Model 10:
+
+    Formula:
+    Direction ~ Volume
+    <environment: 0x150b8ca48>
+
+
+    Call:
+    qda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+           Volume
+    Down 1.266966
+    Up   1.156529
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down   43 59
+      Up      0  2
+    The overall fraction of correct predictions for the test set is 43.27%.
+
+
+    QDA Model 11:
+
+    Formula:
+    Direction ~ Today
+    <environment: 0x150bb0128>
+
+
+    Call:
+    qda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+             Today
+    Down -1.687018
+    Up    1.603956
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down   41  0
+      Up      2 61
+    The overall fraction of correct predictions for the test set is 98.08%.
+
+
+    QDA Model 12:
+
+    Formula:
+    Direction ~ Year + Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume + 
+        Today + Year * Lag1 + Year * Lag2 + Year * Lag3 + Year * 
+        Lag4 + Year * Lag5 + Year * Volume + Year * Today + Lag1 * 
+        Lag2 + Lag1 * Lag3 + Lag1 * Lag4 + Lag1 * Lag5 + Lag1 * Volume + 
+        Lag1 * Today + Lag2 * Lag3 + Lag2 * Lag4 + Lag2 * Lag5 + 
+        Lag2 * Volume + Lag2 * Today + Lag3 * Lag4 + Lag3 * Lag5 + 
+        Lag3 * Volume + Lag3 * Today + Lag4 * Lag5 + Lag4 * Volume + 
+        Lag4 * Today + Lag5 * Volume + Lag5 * Today + Volume * Today
+    <environment: 0x14757d8a0>
+
+
+    Call:
+    qda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+             Year         Lag1        Lag2       Lag3       Lag4       Lag5
+    Down 1999.295  0.289444444 -0.03568254 0.17080045 0.15925624 0.21409297
+    Up   1998.853 -0.009213235  0.26036581 0.08404044 0.09220956 0.04548897
+           Volume     Today Year:Lag1 Year:Lag2 Year:Lag3 Year:Lag4 Year:Lag5
+    Down 1.266966 -1.687018 578.19599 -72.78371  340.8003  317.5336 426.84087
+    Up   1.156529  1.603956 -19.47546 520.28269  167.2162  183.6835  90.64494
+         Year:Volume Year:Today  Lag1:Lag2    Lag1:Lag3  Lag1:Lag4  Lag1:Lag5
+    Down    2538.931  -3374.497 -0.8014495 -0.006554329 -0.4724269  0.3615693
+    Up      2317.141   3206.778 -0.1393632  0.687742739 -0.2036205 -0.1833118
+         Lag1:Volume Lag1:Today  Lag2:Lag3  Lag2:Lag4  Lag2:Lag5 Lag2:Volume
+    Down   0.3362336  0.1738497 -0.1937158 0.78824608 -0.3132494 -0.70124208
+    Up    -0.6187543 -0.9534591 -0.6405132 0.04407141 -0.3497535  0.06257301
+         Lag2:Today    Lag3:Lag4 Lag3:Lag5 Lag3:Volume  Lag3:Today  Lag4:Lag5
+    Down 0.74587625 -0.991496916 0.4913572  -0.1417243 -0.05941946 -0.3686248
+    Up   0.09518695  0.007162822 0.3137873  -0.2956207 -0.53289209 -0.4945795
+         Lag4:Volume Lag4:Today Lag5:Volume Lag5:Today Volume:Today
+    Down  -0.2257271 0.06281807  -0.2323645  0.2487265    -2.759432
+    Up    -0.1677342 0.03612840  -0.1401411 -0.2397730     2.126023
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down   42  9
+      Up      1 52
+    The overall fraction of correct predictions for the test set is 90.38%.
+
+
+    QDA Model 13:
+
+    Formula:
+    Direction ~ Year + Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume + 
+        Today
+    <environment: 0x122ccbad8>
+
+
+    Call:
+    qda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+             Year         Lag1        Lag2       Lag3       Lag4       Lag5
+    Down 1999.295  0.289444444 -0.03568254 0.17080045 0.15925624 0.21409297
+    Up   1998.853 -0.009213235  0.26036581 0.08404044 0.09220956 0.04548897
+           Volume     Today
+    Down 1.266966 -1.687018
+    Up   1.156529  1.603956
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down   43 12
+      Up      0 49
+    The overall fraction of correct predictions for the test set is 88.46%.
+
+Linear Discriminant Analysis
+
+    LDA Model 1:
+
+    Formula:
+    Direction ~ Year + Lag1 + Lag3 + Lag5 + Year * Lag1 + Lag1 * 
+        Lag3 + Lag3 * Lag5
+    <environment: 0x1464f84b0>
+
+
+    Call:
+    lda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+             Year         Lag1       Lag3       Lag5 Year:Lag1    Lag1:Lag3
+    Down 1999.295  0.289444444 0.17080045 0.21409297 578.19599 -0.006554329
+    Up   1998.853 -0.009213235 0.08404044 0.04548897 -19.47546  0.687742739
+         Lag3:Lag5
+    Down 0.4913572
+    Up   0.3137873
+
+    Coefficients of linear discriminants:
+                       LD1
+    Year      -0.090302969
+    Lag1      -4.486462577
+    Lag3      -0.096724673
+    Lag5      -0.151300870
+    Year:Lag1  0.002095242
+    Lag1:Lag3  0.039219082
+    Lag3:Lag5 -0.037399055
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down   23 32
+      Up     20 29
+    The overall fraction of correct predictions for the test set is 50.00%.
+
+
+    LDA Model 2:
+
+    Formula:
+    Direction ~ Year + Lag2 + Lag4 + Year * Lag2 + Lag2 * Lag4
+    <environment: 0x146bac4b0>
+
+
+    Call:
+    lda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+             Year        Lag2       Lag4 Year:Lag2  Lag2:Lag4
+    Down 1999.295 -0.03568254 0.15925624 -72.78371 0.78824608
+    Up   1998.853  0.26036581 0.09220956 520.28269 0.04407141
+
+    Coefficients of linear discriminants:
+                       LD1
+    Year       -0.08030473
+    Lag2      -43.27816571
+    Lag4       -0.10977091
+    Year:Lag2   0.02177283
+    Lag2:Lag4  -0.04328845
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down   14 19
+      Up     29 42
+    The overall fraction of correct predictions for the test set is 53.85%.
+
+
+    LDA Model 3:
+
+    Formula:
+    Direction ~ Lag1 + Volume + Lag2 + Lag3 + Lag4 + Lag5 + Lag1 * 
+        Volume + Lag2 * Volume + Lag3 * Volume + Lag4 * Volume + 
+        Lag5 * Volume
+    <environment: 0x144993710>
+
+
+    Call:
+    lda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+                 Lag1   Volume        Lag2       Lag3       Lag4       Lag5
+    Down  0.289444444 1.266966 -0.03568254 0.17080045 0.15925624 0.21409297
+    Up   -0.009213235 1.156529  0.26036581 0.08404044 0.09220956 0.04548897
+         Lag1:Volume Volume:Lag2 Volume:Lag3 Volume:Lag4 Volume:Lag5
+    Down   0.3362336 -0.70124208  -0.1417243  -0.2257271  -0.2323645
+    Up    -0.6187543  0.06257301  -0.2956207  -0.1677342  -0.1401411
+
+    Coefficients of linear discriminants:
+                          LD1
+    Lag1        -0.1250730830
+    Volume      -0.3123774076
+    Lag2         0.1554788538
+    Lag3        -0.0455803757
+    Lag4        -0.1329490349
+    Lag5        -0.3242142619
+    Lag1:Volume -0.0530357709
+    Volume:Lag2  0.0162774763
+    Volume:Lag3 -0.0068937391
+    Volume:Lag4  0.0007600716
+    Volume:Lag5  0.0992936153
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down   28 38
+      Up     15 23
+    The overall fraction of correct predictions for the test set is 49.04%.
+
+
+    LDA Model 4:
+
+    Formula:
+    Direction ~ Year
+    <environment: 0x150a4da90>
+
+
+    Call:
+    lda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+             Year
+    Down 1999.295
+    Up   1998.853
+
+    Coefficients of linear discriminants:
+               LD1
+    Year 0.1832969
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down    0  0
+      Up     43 61
+    The overall fraction of correct predictions for the test set is 58.65%.
+
+
+    LDA Model 5:
+
+    Formula:
+    Direction ~ Lag1
+    <environment: 0x150adb608>
+
+
+    Call:
+    lda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+                 Lag1
+    Down  0.289444444
+    Up   -0.009213235
+
+    Coefficients of linear discriminants:
+               LD1
+    Lag1 0.4413786
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down    4  6
+      Up     39 55
+    The overall fraction of correct predictions for the test set is 56.73%.
+
+
+    LDA Model 6:
+
+    Formula:
+    Direction ~ Lag2
+    <environment: 0x150b00ce8>
+
+
+    Call:
+    lda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+                Lag2
+    Down -0.03568254
+    Up    0.26036581
+
+    Coefficients of linear discriminants:
+               LD1
+    Lag2 0.4414162
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down    9  5
+      Up     34 56
+    The overall fraction of correct predictions for the test set is 62.50%.
+
+
+    LDA Model 7:
+
+    Formula:
+    Direction ~ Lag3
+    <environment: 0x150b263c8>
+
+
+    Call:
+    lda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+               Lag3
+    Down 0.17080045
+    Up   0.08404044
+
+    Coefficients of linear discriminants:
+               LD1
+    Lag3 0.4398771
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down    0  0
+      Up     43 61
+    The overall fraction of correct predictions for the test set is 58.65%.
+
+
+    LDA Model 8:
+
+    Formula:
+    Direction ~ Lag4
+    <environment: 0x150b47b98>
+
+
+    Call:
+    lda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+               Lag4
+    Down 0.15925624
+    Up   0.09220956
+
+    Coefficients of linear discriminants:
+               LD1
+    Lag4 0.4398435
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down    0  0
+      Up     43 61
+    The overall fraction of correct predictions for the test set is 58.65%.
+
+
+    LDA Model 9:
+
+    Formula:
+    Direction ~ Lag5
+    <environment: 0x150b6b278>
+
+
+    Call:
+    lda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+               Lag5
+    Down 0.21409297
+    Up   0.04548897
+
+    Coefficients of linear discriminants:
+               LD1
+    Lag5 0.4397768
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down    0  3
+      Up     43 58
+    The overall fraction of correct predictions for the test set is 55.77%.
+
+
+    LDA Model 10:
+
+    Formula:
+    Direction ~ Volume
+    <environment: 0x150b8ca48>
+
+
+    Call:
+    lda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+           Volume
+    Down 1.266966
+    Up   1.156529
+
+    Coefficients of linear discriminants:
+                 LD1
+    Volume 0.7951384
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down   33 47
+      Up     10 14
+    The overall fraction of correct predictions for the test set is 45.19%.
+
+
+    LDA Model 11:
+
+    Formula:
+    Direction ~ Today
+    <environment: 0x150bb0128>
+
+
+    Call:
+    lda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+             Today
+    Down -1.687018
+    Up    1.603956
+
+    Coefficients of linear discriminants:
+                LD1
+    Today 0.6304449
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down   40  0
+      Up      3 61
+    The overall fraction of correct predictions for the test set is 97.12%.
+
+
+    LDA Model 12:
+
+    Formula:
+    Direction ~ Year + Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume + 
+        Today + Year * Lag1 + Year * Lag2 + Year * Lag3 + Year * 
+        Lag4 + Year * Lag5 + Year * Volume + Year * Today + Lag1 * 
+        Lag2 + Lag1 * Lag3 + Lag1 * Lag4 + Lag1 * Lag5 + Lag1 * Volume + 
+        Lag1 * Today + Lag2 * Lag3 + Lag2 * Lag4 + Lag2 * Lag5 + 
+        Lag2 * Volume + Lag2 * Today + Lag3 * Lag4 + Lag3 * Lag5 + 
+        Lag3 * Volume + Lag3 * Today + Lag4 * Lag5 + Lag4 * Volume + 
+        Lag4 * Today + Lag5 * Volume + Lag5 * Today + Volume * Today
+    <environment: 0x14757d8a0>
+
+
+    Call:
+    lda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+             Year         Lag1        Lag2       Lag3       Lag4       Lag5
+    Down 1999.295  0.289444444 -0.03568254 0.17080045 0.15925624 0.21409297
+    Up   1998.853 -0.009213235  0.26036581 0.08404044 0.09220956 0.04548897
+           Volume     Today Year:Lag1 Year:Lag2 Year:Lag3 Year:Lag4 Year:Lag5
+    Down 1.266966 -1.687018 578.19599 -72.78371  340.8003  317.5336 426.84087
+    Up   1.156529  1.603956 -19.47546 520.28269  167.2162  183.6835  90.64494
+         Year:Volume Year:Today  Lag1:Lag2    Lag1:Lag3  Lag1:Lag4  Lag1:Lag5
+    Down    2538.931  -3374.497 -0.8014495 -0.006554329 -0.4724269  0.3615693
+    Up      2317.141   3206.778 -0.1393632  0.687742739 -0.2036205 -0.1833118
+         Lag1:Volume Lag1:Today  Lag2:Lag3  Lag2:Lag4  Lag2:Lag5 Lag2:Volume
+    Down   0.3362336  0.1738497 -0.1937158 0.78824608 -0.3132494 -0.70124208
+    Up    -0.6187543 -0.9534591 -0.6405132 0.04407141 -0.3497535  0.06257301
+         Lag2:Today    Lag3:Lag4 Lag3:Lag5 Lag3:Volume  Lag3:Today  Lag4:Lag5
+    Down 0.74587625 -0.991496916 0.4913572  -0.1417243 -0.05941946 -0.3686248
+    Up   0.09518695  0.007162822 0.3137873  -0.2956207 -0.53289209 -0.4945795
+         Lag4:Volume Lag4:Today Lag5:Volume Lag5:Today Volume:Today
+    Down  -0.2257271 0.06281807  -0.2323645  0.2487265    -2.759432
+    Up    -0.1677342 0.03612840  -0.1401411 -0.2397730     2.126023
+
+    Coefficients of linear discriminants:
+                           LD1
+    Year          -0.017511733
+    Lag1         -35.907312902
+    Lag2         -13.366720066
+    Lag3          -5.262242386
+    Lag4         -24.014415134
+    Lag5          11.387921821
+    Volume         4.262892302
+    Today         39.772496810
+    Year:Lag1      0.017999986
+    Year:Lag2      0.006679114
+    Year:Lag3      0.002624861
+    Year:Lag4      0.012022371
+    Year:Lag5     -0.005715962
+    Year:Volume   -0.002074270
+    Year:Today    -0.019518083
+    Lag1:Lag2      0.003510271
+    Lag1:Lag3     -0.012967075
+    Lag1:Lag4      0.004827092
+    Lag1:Lag5      0.009432674
+    Lag1:Volume   -0.061064028
+    Lag1:Today     0.034081986
+    Lag2:Lag3      0.005121715
+    Lag2:Lag4      0.010533665
+    Lag2:Lag5     -0.003431343
+    Lag2:Volume    0.013178028
+    Lag2:Today     0.040273938
+    Lag3:Lag4      0.007729026
+    Lag3:Lag5     -0.001612136
+    Lag3:Volume    0.014212182
+    Lag3:Today     0.012090902
+    Lag4:Lag5      0.007295234
+    Lag4:Volume   -0.028998515
+    Lag4:Today     0.022181810
+    Lag5:Volume    0.010609783
+    Lag5:Today     0.024798919
+    Volume:Today   0.026069194
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down   34  1
+      Up      9 60
+    The overall fraction of correct predictions for the test set is 90.38%.
+
+
+    LDA Model 13:
+
+    Formula:
+    Direction ~ Year + Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume + 
+        Today
+    <environment: 0x122ccbad8>
+
+
+    Call:
+    lda(formula_master_list[[i]], data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+             Year         Lag1        Lag2       Lag3       Lag4       Lag5
+    Down 1999.295  0.289444444 -0.03568254 0.17080045 0.15925624 0.21409297
+    Up   1998.853 -0.009213235  0.26036581 0.08404044 0.09220956 0.04548897
+           Volume     Today
+    Down 1.266966 -1.687018
+    Up   1.156529  1.603956
+
+    Coefficients of linear discriminants:
+                     LD1
+    Year   -0.0106936942
+    Lag1    0.0003606345
+    Lag2    0.0169738374
+    Lag3    0.0295058746
+    Lag4   -0.0155046298
+    Lag5   -0.0279798179
+    Volume  0.0587137582
+    Today   0.6322256639
+
+    Confusion Matrix:
+          test.Y
+           Down Up
+      Down   36  0
+      Up      7 61
+    The overall fraction of correct predictions for the test set is 93.27%.
+
+Naive Bayes
+
+    Naive Bayes Model 1:
+
+    Formula:
+    Direction ~ Year
+    <environment: 0x150a4da90>
+
+    Naive Bayes Classifier for Discrete Predictors
+
+    Call:
+    naiveBayes.default(x = X, y = Y, laplace = laplace)
+
+    A-priori probabilities:
+    Y
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Conditional probabilities:
+          Year
+    Y          [,1]     [,2]
+      Down 1999.295 5.505303
+      Up   1998.853 5.415045
+
+
+    Confusion Matrix:
+              test.Y
+    model.pred Down Up
+          Down   20 32
+          Up     23 29
+    The overall fraction of correct predictions for the test set is 47.12%.
+
+
+    Naive Bayes Model 2:
+
+    Formula:
+    Direction ~ Lag1
+    <environment: 0x150adb608>
+
+    Naive Bayes Classifier for Discrete Predictors
+
+    Call:
+    naiveBayes.default(x = X, y = Y, laplace = laplace)
+
+    A-priori probabilities:
+    Y
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Conditional probabilities:
+          Lag1
+    Y              [,1]     [,2]
+      Down  0.289444444 2.211721
+      Up   -0.009213235 2.308387
+
+
+    Confusion Matrix:
+              test.Y
+    model.pred Down Up
+          Down    0  0
+          Up     43 61
+    The overall fraction of correct predictions for the test set is 58.65%.
+
+
+    Naive Bayes Model 3:
+
+    Formula:
+    Direction ~ Lag2
+    <environment: 0x150b00ce8>
+
+    Naive Bayes Classifier for Discrete Predictors
+
+    Call:
+    naiveBayes.default(x = X, y = Y, laplace = laplace)
+
+    A-priori probabilities:
+    Y
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Conditional probabilities:
+          Lag2
+    Y             [,1]     [,2]
+      Down -0.03568254 2.199504
+      Up    0.26036581 2.317485
+
+
+    Confusion Matrix:
+              test.Y
+    model.pred Down Up
+          Down    0  0
+          Up     43 61
+    The overall fraction of correct predictions for the test set is 58.65%.
+
+
+    Naive Bayes Model 4:
+
+    Formula:
+    Direction ~ Lag3
+    <environment: 0x150b263c8>
+
+    Naive Bayes Classifier for Discrete Predictors
+
+    Call:
+    naiveBayes.default(x = X, y = Y, laplace = laplace)
+
+    A-priori probabilities:
+    Y
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Conditional probabilities:
+          Lag3
+    Y            [,1]     [,2]
+      Down 0.17080045 2.228462
+      Up   0.08404044 2.309105
+
+
+    Confusion Matrix:
+              test.Y
+    model.pred Down Up
+          Down    0  0
+          Up     43 61
+    The overall fraction of correct predictions for the test set is 58.65%.
+
+
+    Naive Bayes Model 5:
+
+    Formula:
+    Direction ~ Lag4
+    <environment: 0x150b47b98>
+
+    Naive Bayes Classifier for Discrete Predictors
+
+    Call:
+    naiveBayes.default(x = X, y = Y, laplace = laplace)
+
+    A-priori probabilities:
+    Y
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Conditional probabilities:
+          Lag4
+    Y            [,1]     [,2]
+      Down 0.15925624 2.400042
+      Up   0.09220956 2.165612
+
+
+    Confusion Matrix:
+              test.Y
+    model.pred Down Up
+          Down    7 12
+          Up     36 49
+    The overall fraction of correct predictions for the test set is 53.85%.
+
+
+    Naive Bayes Model 6:
+
+    Formula:
+    Direction ~ Lag5
+    <environment: 0x150b6b278>
+
+    Naive Bayes Classifier for Discrete Predictors
+
+    Call:
+    naiveBayes.default(x = X, y = Y, laplace = laplace)
+
+    A-priori probabilities:
+    Y
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Conditional probabilities:
+          Lag5
+    Y            [,1]     [,2]
+      Down 0.21409297 2.368626
+      Up   0.04548897 2.194109
+
+
+    Confusion Matrix:
+              test.Y
+    model.pred Down Up
+          Down    2 13
+          Up     41 48
+    The overall fraction of correct predictions for the test set is 48.08%.
+
+
+    Naive Bayes Model 7:
+
+    Formula:
+    Direction ~ Volume
+    <environment: 0x150b8ca48>
+
+    Naive Bayes Classifier for Discrete Predictors
+
+    Call:
+    naiveBayes.default(x = X, y = Y, laplace = laplace)
+
+    A-priori probabilities:
+    Y
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Conditional probabilities:
+          Volume
+    Y          [,1]     [,2]
+      Down 1.266966 1.320152
+      Up   1.156529 1.204614
+
+
+    Confusion Matrix:
+              test.Y
+    model.pred Down Up
+          Down   43 59
+          Up      0  2
+    The overall fraction of correct predictions for the test set is 43.27%.
+
+
+    Naive Bayes Model 8:
+
+    Formula:
+    Direction ~ Today
+    <environment: 0x150bb0128>
+
+    Naive Bayes Classifier for Discrete Predictors
+
+    Call:
+    naiveBayes.default(x = X, y = Y, laplace = laplace)
+
+    A-priori probabilities:
+    Y
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Conditional probabilities:
+          Today
+    Y           [,1]     [,2]
+      Down -1.687018 1.726355
+      Up    1.603956 1.462778
+
+
+    Confusion Matrix:
+              test.Y
+    model.pred Down Up
+          Down   41  0
+          Up      2 61
+    The overall fraction of correct predictions for the test set is 98.08%.
+
+KNN
+
+
+           
+    knn.fit Down Up
+       Down   43 61
+       Up      0  0
+    The overall fraction of correct predictions for the test set is 0.41%.
+           
+    knn.fit Down Up
+       Down   18 31
+       Up     25 30
+    The overall fraction of correct predictions for the test set is 0.46%.
+           
+    knn.fit Down Up
+       Down   21 30
+       Up     22 31
+    The overall fraction of correct predictions for the test set is 0.50%.
+           
+    knn.fit Down Up
+       Down   20 27
+       Up     23 34
+    The overall fraction of correct predictions for the test set is 0.52%.
+           
+    knn.fit Down Up
+       Down   18 26
+       Up     25 35
+    The overall fraction of correct predictions for the test set is 0.51%.
+           
+    knn.fit Down Up
+       Down   17 22
+       Up     26 39
+    The overall fraction of correct predictions for the test set is 0.54%.
+           
+    knn.fit Down Up
+       Down   16 29
+       Up     27 32
+    The overall fraction of correct predictions for the test set is 0.46%.
+           
+    knn.fit Down Up
+       Down   43  0
+       Up      0 61
+    The overall fraction of correct predictions for the test set is 1.00%.

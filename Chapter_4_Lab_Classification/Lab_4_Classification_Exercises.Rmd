@@ -23,7 +23,9 @@ if(!require("tidyverse")) install.packages("tidyverse")
 if(!require("HH")) install.packages("HH") # VIF
 if(!require("e1071")) install.packages("e1071") # naiveBayes
 if(!require("class")) install.packages("class") # knn
+if(!require("formulaic")) install.packages("formulaic")
 
+library(formulaic)
 library(class)
 library(e1071)
 library(HH)
@@ -62,7 +64,63 @@ f_print <- function(string){
 }
 ```
 
-# Lab 4 Classification Exercises
+```{r include = FALSE}
+accuracy_of_predictions <- function(pred, truth) {
+  f_print(sprintf("The overall fraction of correct predictions for the test set is %0.2f%%.", mean(pred == truth)*100))
+}
+```
+
+```{r include=FALSE}
+classify <- function(method) {
+  method.fit <- method(Direction ~ Lag2, weekly, subset = train)
+  method.pred <- predict(method.fit, test.X)
+  print(table(method.pred$class, test.Y))
+  
+  accuracy_of_predictions(method.pred$class, test.Y)
+}
+```
+
+
+```{r include=FALSE}
+# Function to add all interactions
+create_interactions <- function(input_v) {
+  interaction_l <- list()
+  index <- 1
+  for (i in seq_along(input_v)) {
+    for (j in seq_along(input_v[i+1:length(input_v)])) {
+      if(!is.na(input_v[j+i])) {
+        interaction_l[index] <- list(c(input_v[i], input_v[j+i]))
+        index <- index + 1
+      }
+    }
+  }
+  return(interaction_l)
+}
+```
+
+```{r include=FALSE}
+# Input: accepts a response and a vector of predictors. 
+# Return: returns all pairing of the response and each predictor.
+create_all_individual_pairs_formulas <- function(response, predictors) {
+    individual_formulas <- c()
+    for (index in seq_along(predictors)) {
+      print(predictors[index])
+        formula <- create.formula(response, predictors[[index]])
+        print(formula)
+        individual_formulas <- c(individual_formulas, formula$formula)    
+    }
+    return(individual_formulas)
+}
+```
+
+```{r include=FALSE}
+create_formula_master_list <- function(formula_master_list, formula) {
+  for (i in seq_along(formula)) {
+    formula_master_list <- c(formula_master_list, formula[i])
+  }
+  return(formula_master_list)
+}
+```
 
 ## Applied
 ### Question 13:
@@ -113,7 +171,6 @@ glm.pred[glm.probs > 0.5] = "Up"
 table(glm.pred, Direction)
 
 f_print(sprintf("Among the training set, there is an average training error of %0.2f%%. The model gave correct responses on average %0.2f%% of the time. The model predicted made false positive predictions of an Upwards direction when the true direction was Down 430 times. The model made false negative predictions of the Downwards direction when the true direction was Up 48 times.", ((1-((54+557)/length(Direction))) * 100), ((((54+557)/length(Direction))) * 100)))
-
 ```
 
 ```{r include = FALSE}
@@ -139,6 +196,225 @@ glm.fit_2008_probs <- predict(glm.fit_2008, test.X, type = "response")
 glm.fit_2008_pred <- rep("Down", 104)
 glm.fit_2008_pred[glm.fit_2008_probs > 0.5] = "Up"
 table(glm.fit_2008_pred, test.Y)
-f_print(sprintf("The overall fraction of correct predictions for the held out data is %0.2f%%.", mean(glm.fit_2008_pred == test.Y)*100))
+
+accuracy_of_predictions(glm.fit_2008_pred, test.Y)
 ```
+
+* **Question 13-e**: Now fit a model using linear discriminant analysis and a training data period from 1990 to 2008 with Lag2 as the only predictor. Compute the confusion matrix and the overall fraction of correct predictions for the held out data (that is, the data from 2009 and 2010). 
+  * **Answer**:
+
+```{r echo=FALSE}
+lda.fit_2008 <- lda(Direction ~ Lag2, weekly, subset = train)
+lda.fit_2008_pred <- predict(lda.fit_2008, test.X)
+table(lda.fit_2008_pred$class, test.Y)
+
+accuracy_of_predictions(lda.fit_2008_pred$class, test.Y)
+```
+
+* **Question 13-f**: Now fit a model using quadratic discriminant analysis and a training data period from 1990 to 2008 with Lag2 as the only predictor. Compute the confusion matrix and the overall fraction of correct predictions for the held out data (that is, the data from 2009 and 2010). 
+  * **Answer**:
+
+```{r include=FALSE}
+train <- (Year < 2009)
+test.X <- weekly[!train, ]
+test.Y <- Direction[!train]
+```
+
+
+```{r echo=FALSE}
+classify(qda)
+```
+
+* **Question 13-g**: Now fit a model using knn and a training data period from 1990 to 2008 with Lag2 as the only predictor. Compute the confusion matrix and the overall fraction of correct predictions for the held out data (that is, the data from 2009 and 2010). 
+  * **Answer**:
+  
+```{r include=FALSE}
+train <- (Year < 2009)
+
+train_x <- weekly %>% filter(Year < 2009) %>% select(Lag2)
+train_y <- weekly %>% filter(Year < 2009) %>% select(Direction)
+test_x <- weekly %>% filter(Year >= 2009) %>% select(Lag2)
+test_y <- weekly %>% filter(Year >= 2009) %>% select(Direction)
+```
+
+
+```{r echo=FALSE}
+knn.fit <- knn(train_x, test_x, train_y[[1]], k = 1)
+table(knn.fit, test_y[[1]])
+f_print(sprintf("The overall fraction of correct predictions for the test set is %0.2f%%.", mean(knn.fit == test_y[[1]])))
+```
+
+* **Question 13-h**: Now fit a model using naive bayes and a training data period from 1990 to 2008 with Lag2 as the only predictor. Compute the confusion matrix and the overall fraction of correct predictions for the held out data (that is, the data from 2009 and 2010). 
+  * **Answer**:
+```{r echo=FALSE}
+nb.fit <- naiveBayes(Direction ~ Lag2, weekly, subset = train)
+nb.pred <- predict(nb.fit, test.X)
+table(nb.pred, test.Y)
+```
+
+* **Question 13-i**: Which of these methods appears to provide the best results on this data?
+ * **Answer**:
+```{r echo=FALSE}
+  f_print(sprintf("The linear discriminant analysis and the logistic model both provide the best results on this data. Their accuracies are highest amongst all the methods at 62.5%%."))
+```
+
+
+* **Question 13-j**: Experiment with different combinations of predictors, includ-
+ing possible transformations and interactions, for each of the
+methods. Report the variables, method, and associated confu-
+sion matrix that appears to provide the best results on the held
+out data. Note that you should also experiment with values for
+K in the KNN classifier.
+  * **Answer**:
+
+```{r include=FALSE}
+# Build Formula: All predictors & all interactions
+response <- "Direction"
+predictors <- c(names(weekly))
+predictors <- predictors[-length(predictors)]
+all_interactions <- create_interactions(predictors)
+```
+
+```{r include=FALSE}
+all_individual_pairs_formulas <- create_all_individual_pairs_formulas(response, predictors)
+```
+
+```{r include=FALSE}
+formula_all_predictors_all_interactions <- create.formula(outcome.name = response, input.names = predictors, dat = snack.dat, interactions = all_interactions)$formula
+```
+
+```{r include=FALSE}
+# Build Formula: Predictors only
+formula_predictors_only <- create.formula(outcome.name = response, input.names = predictors, dat = snack.dat)$formula
+```
+
+```{r include=FALSE}
+interaction_formula_1 <- c(all_interactions[1], all_interactions[9], all_interactions[20])
+interaction_formula_1
+```
+
+```{r include=FALSE}
+interaction_formula_2 <- c(all_interactions[2], all_interactions[15])
+interaction_formula_2
+```
+
+```{r include=FALSE}
+interaction_formula_3 <- c(all_interactions[12], all_interactions[17], all_interactions[21], all_interactions[24], all_interactions[26]) 
+interaction_formula_3
+```
+
+```{r include=FALSE}
+combination_of_interactions_list <- list(interaction_formula_1, interaction_formula_2, interaction_formula_3)
+combination_of_interactions_list[[2]]
+```
+
+```{r include=FALSE}
+select_interaction_formulas <- c()
+for (i in seq_along(combination_of_interactions_list)) {
+  select_interaction_formulas <- c(select_interaction_formulas, create.formula(outcome.name = response, dat = snack.dat, interactions = combination_of_interactions_list[[i]])$formula)
+}
+select_interaction_formulas
+```
+
+```{r include=FALSE}
+formula_master_list <- c()
+formula_master_list <- create_formula_master_list(formula_master_list, select_interaction_formulas)
+formula_master_list <- create_formula_master_list(formula_master_list, all_individual_pairs_formulas)
+formula_master_list <- append(formula_master_list, formula_all_predictors_all_interactions)
+formula_master_list <- append(formula_master_list, formula_predictors_only)
+```
+
+```{r include=FALSE}
+qda(formula_master_list[[i]], weekly, subset = train)
+```
+
+Quadratic Discriminant Analysis
+```{r echo=FALSE}
+for (i in seq_along(formula_master_list)){
+  f_print(sprintf("QDA Model %0.0f:", i))
+  cat("\n\n")
+  f_print(sprintf("Formula:"))
+  cat("\n")
+  print(formula_master_list[[i]])
+  cat("\n\n")
+  model.fit <- qda(formula_master_list[[i]], weekly, subset = train)
+  print(model.fit)
+  cat("\n")
+  f_print(sprintf("Confusion Matrix:"))
+  cat("\n")
+  model.pred <- predict(model.fit, test.X)
+  # print(model.pred)
+  print(table(model.pred$class, test.Y))
+  accuracy_of_predictions(model.pred$class, test.Y)
+  cat("\n\n\n")
+}
+```
+
+Linear Discriminant Analysis
+```{r echo=FALSE}
+for (i in seq_along(formula_master_list)){
+  f_print(sprintf("LDA Model %0.0f:", i))
+  cat("\n\n")
+  f_print(sprintf("Formula:"))
+  cat("\n")
+  print(formula_master_list[[i]])
+  cat("\n\n")
+  model.fit <- lda(formula_master_list[[i]], weekly, subset = train)
+  print(model.fit)
+  cat("\n")
+  f_print(sprintf("Confusion Matrix:"))
+  cat("\n")
+  model.pred <- predict(model.fit, test.X)
+  print(table(model.pred$class, test.Y))
+  accuracy_of_predictions(model.pred$class, test.Y)
+  cat("\n\n\n")
+}
+```
+
+Naive Bayes
+
+```{r include = FALSE}
+formula_master_list_no_interaction <- formula_master_list[4:11]
+formula_master_list_no_interaction
+```
+
+```{r echo=FALSE}
+for (i in seq_along(formula_master_list_no_interaction)){
+  f_print(sprintf("Naive Bayes Model %0.0f:", i))
+  cat("\n\n")
+  f_print(sprintf("Formula:"))
+  cat("\n")
+  print(formula_master_list_no_interaction[[i]])
+  # cat("\n\n")
+  model.fit <- naiveBayes(formula_master_list_no_interaction[[i]], weekly, subset = train)
+  print(model.fit)
+  cat("\n")
+  f_print(sprintf("Confusion Matrix:"))
+  cat("\n")
+  model.pred <- predict(model.fit, test.X)
+  # print(model.pred)
+  print(table(model.pred, test.Y))
+  accuracy_of_predictions(model.pred, test.Y)
+  cat("\n\n\n")
+}
+```
+
+KNN
+
+```{r echo=FALSE}
+train <- (Year < 2009)
+train_y <- weekly %>% filter(Year < 2009) %>% select(Direction)
+test_y <- weekly %>% filter(Year >= 2009) %>% select(Direction)
+for (i in seq_along(predictors)) { 
+  train_x <- weekly %>% filter(Year < 2009) %>% select(predictors[i])
+  test_x <- weekly %>% filter(Year >= 2009) %>% select(predictors[i])
+  knn.fit <- knn(train_x, test_x, train_y[[1]], k = 1)
+  cat("\n")
+  print(table(knn.fit, test_y[[1]]))
+  f_print(sprintf("The overall fraction of correct predictions for the test set is %0.2f%%.", mean(knn.fit == test_y[[1]])))
+}
+```
+
+
+
 
