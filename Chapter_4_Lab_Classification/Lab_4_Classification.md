@@ -633,8 +633,6 @@ table(knn.pred_standardized, test.Y)
                       No  873  50
                       Yes  68   9
 
-## Poisson Regression
-
 ``` r
 knn.pred_standardized_k3 <- knn(train.X, test.X, train.Y, k = 3)
 table(knn.pred_standardized_k3, test.Y)

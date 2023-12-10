@@ -61,3 +61,84 @@ f_print <- function(string){
   cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
 }
 ```
+
+# Lab 4 Classification Exercises
+
+## Applied
+### Question 13:
+This question should be answered using the weekly data set, which is part of the ISLR2 package. This data is similar in nature to the Smarket data from this chapter's lab, except that it contains 1,089 weekly returns for 21 years, from the beginning of 1990 to the end of 2010. 
+
+* **Question 13-a**: Produce some numerical and graphical summaries of the Weekly
+data. Do there appear to be any patterns?
+  * **Answer**:
+```{r include=FALSE}
+  weekly <- na.omit(Weekly)
+  names(Weekly)
+  attach(weekly)
+```
+
+```{r echo=FALSE}
+  pairs(weekly, cex = .1, pch = 20, main = "Pair plot of the Weekly Data set")
+  f_print(sprintf("There appears to be a logrithmic relationship between Year & Volume. The data appears otherwise to have no discernable patterns."))
+```
+
+* **Question 13-b**: Use the full data set to perform a logistic regression with
+Direction as the response and the five lag variables plus Volume
+as predictors. Use the summary function to print the results. Do
+any of the predictors appear to be statistically significant? If so,
+which ones?
+  * **Answer**: 
+```{r include=FALSE}
+  names(weekly)
+```
+  
+```{r echo=FALSE}
+  glm.fit <- glm(Direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume, data = weekly, family = binomial)
+  summary(glm.fit)
+  f_print(sprintf("Only Lag2 appears to be statistically significant given a p-value of 0.0296."))
+```
+
+* **Question 13-c**: Compute the confusion matrix and overall fraction of correct predictions. Explain what the confusion matrix is telling you about the types of mistakes made by logistic regression.
+  * **Answer**: 
+
+```{r include=FALSE}
+  length(Direction)
+```
+
+
+```{r echo=FALSE}
+glm.probs <- predict(glm.fit, data = weekly, type = "response")
+glm.pred <- rep("Down", 1089)
+glm.pred[glm.probs > 0.5] = "Up"
+table(glm.pred, Direction)
+
+f_print(sprintf("Among the training set, there is an average training error of %0.2f%%. The model gave correct responses on average %0.2f%% of the time. The model predicted made false positive predictions of an Upwards direction when the true direction was Down 430 times. The model made false negative predictions of the Downwards direction when the true direction was Up 48 times.", ((1-((54+557)/length(Direction))) * 100), ((((54+557)/length(Direction))) * 100)))
+
+```
+
+```{r include = FALSE}
+length(Direction)
+mean(glm.pred == Direction)
+```
+
+
+* **Question 13-d**: Now fit the logistic regression model using a training data period from 1990 to 2008 with Lag2 as the only predictor. Compute the confusion matrix and the overall fraction of correct predictions for the held out data (that is, the data from 2009 and 2010). 
+  * **Answer**:
+
+```{r echo=FALSE}
+train <- (Year < 2009)
+glm.fit_2008 <- glm(Direction ~ Lag2, data = weekly, subset = train, family = binomial)
+test.X <- weekly[!train, ]
+test.Y <- Direction[!train]
+```
+
+
+```{r echo=FALSE}
+glm.fit_2008_probs <- predict(glm.fit_2008, test.X, type = "response")
+# length(Direction[!train])
+glm.fit_2008_pred <- rep("Down", 104)
+glm.fit_2008_pred[glm.fit_2008_probs > 0.5] = "Up"
+table(glm.fit_2008_pred, test.Y)
+f_print(sprintf("The overall fraction of correct predictions for the held out data is %0.2f%%.", mean(glm.fit_2008_pred == test.Y)*100))
+```
+

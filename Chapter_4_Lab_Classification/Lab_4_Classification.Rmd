@@ -338,8 +338,6 @@ mean(test.Y != "No")
 ```{r}
 table(knn.pred_standardized, test.Y)
 ```
-
-## Poisson Regression
 ```{r}
 knn.pred_standardized_k3 <- knn(train.X, test.X, train.Y, k = 3)
 table(knn.pred_standardized_k3, test.Y)
