@@ -24,6 +24,8 @@ if(!require("HH")) install.packages("HH") # VIF
 if(!require("e1071")) install.packages("e1071") # naiveBayes
 if(!require("class")) install.packages("class") # knn
 if(!require("formulaic")) install.packages("formulaic")
+if(!require("caTools")) install.packages("caTools")
+if(!require("caret")) install.packages("caret")
 
 library(formulaic)
 library(class)
@@ -32,21 +34,31 @@ library(HH)
 library(MASS)
 library(ISLR2)
 library(tidyverse)
+library(caTools)
+library(caret)
 ```
 
 ```{r include=FALSE}
 LoadLibraries <- function() {
-  if(!require("MASS")) install.packages("MASS")
-  if(!require("ISLR2")) install.packages("ISLR2")
-  if(!require("tidyverse")) install.packages("tidyverse")
-  if(!require("HH")) install.packages("HH") # VIF
-  if(!require("e1071")) install.packages("e1071")
+if(!require("MASS")) install.packages("MASS")
+if(!require("ISLR2")) install.packages("ISLR2")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("HH")) install.packages("HH") # VIF
+if(!require("e1071")) install.packages("e1071") # naiveBayes
+if(!require("class")) install.packages("class") # knn
+if(!require("formulaic")) install.packages("formulaic")
+if(!require("caTools")) install.packages("caTools")
+if(!require("caret")) install.packages("caret")
 
-  library(e1071)
-  library(HH)
-  library(MASS)
-  library(ISLR2)
-  library(tidyverse)
+library(caret)
+library(formulaic)
+library(class)
+library(e1071)
+library(HH)
+library(MASS)
+library(ISLR2)
+library(tidyverse)
+library(caTools)
   print("Libraries have been loaded!")
 }
 ```
@@ -82,7 +94,7 @@ classify <- function(method) {
 
 
 ```{r include=FALSE}
-# Function to add all interactions
+# Function to add all interactions for formula creation
 create_interactions <- function(input_v) {
   interaction_l <- list()
   index <- 1
@@ -121,6 +133,265 @@ create_formula_master_list <- function(formula_master_list, formula) {
   return(formula_master_list)
 }
 ```
+
+```{r include=FALSE}
+# Input: Dataframe, x, y, title of the plot, title of the x-axis, title of the y-axis
+# Output: Scatterplot of x and y variables with correlation between the two on the grid & a smooth line of best fit to the data points. 
+create_custom_geom_point <- function(df, x, y, title, x_title, y_title){
+    correlation <- sprintf("r: %0.3f", cor(x,y))
+    label <- df %>% summarise(x = max(x), y = max(y), label = correlation)
+    ggplot(df, aes(x, y)) +
+      geom_point(color = custom_darkblue) + 
+      theme_linedraw() +
+      geom_smooth(se = FALSE, color = custom_lightblue) +
+      labs(title = title, x = x_title, y = y_title) + 
+      geom_text(aes(label = label), data = label, vjust = "top", hjust = "right", color = "#a60808") 
+}
+```
+
+```{r include=FALSE}
+# Input: Dataframe, x (a numerical that is converted to a factor), y (double), title, x-axis title, y-axis title
+# Output: Transparent violin plots overlayed onto colored yoxplots of y onto each x factor. Each boxplot is of a single x factor. 
+create_custom_geom_box_grouped_by_x_factor <- function(df, x, y, title, x_title, y_title){
+    ggplot(df, aes(as.factor(x), y)) +
+      geom_boxplot(color = custom_darkblue, fill = custom_lightblue) +
+      geom_violin(alpha = .1) + 
+      theme_linedraw() +
+      labs(title = title, x = x_title, y = y_title)  
+}
+```
+
+
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+# Input: 
+    # df: dataframe containing x and y values to be plotted. 
+    # plot_types: indicator (TRUE or NULL) that attributes of the the type of plot to create has been added to the dataframe before calling this function. All predictors must be included. The number of columns in the dataframe must equal the number of columns in the attribute that has been added. The name of the attribute must be "plot_types_when_on_x_axis". All variables will be plotted against another as in a pairs plot. Accepted values of the plot_types_when_on_x_axis include "point", and "box". Accepted values of plot_types_when_on_x_axis must be verbatim. When plot_types is NULL, the x axis will assume integers are categorical and convert them to factors in the custom plotting functions before creating box plots. 
+
+# Example of adding attibutes to a dataframe:
+# attr(auto_plot_formatted, "plot_types_when_on_x_axis") <- c("point", "box", "point", "point", "point", "point", "box", "box")
+# attributes(auto_plot_formatted)
+
+# Example df: $names
+#  "mpg"          "cylinders"    "displacement" "horsepower"   "weight"       "acceleration" "year"         "origin"     
+
+# Example attribute: $plot_types_when_on_x_axis
+#  "point" "box"   "point" "point" "point" "point" "box"   "box" 
+# In the example, when mpg is on the x axis, a scatter plot will be created. When origin is on the x axis, a box plot will be created. 
+
+
+# Output: returns plots of all pairs of variables using ggplot. Plots are either of type scatter or box. 
+
+create_all_custom_box_scatter_plots <- function(df, plot_types=NULL) {
+    if(!is.null(plot_types)) {
+    for (i in seq_along(df)) {
+      current_x_axis_name <- names(df[i])
+      current_x_axis <- df[[i]]
+      current_plot_type <- attributes(df)$plot_types_when_on_x_axis
+      # print(sprintf("current_x_axis_name: %s", current_x_axis_name))
+      # print(sprintf("current_plot_type: %s", current_plot_type[[i]]))
+      for (j in seq_along(df)) {
+          
+            current_y_axis_name <- names(df[j])
+            
+            if(identical(current_x_axis_name, current_y_axis_name)) {
+              next
+            }
+            current_y_axis <- df[[j]]
+          if (identical(current_plot_type[[i]], "point")) {
+            if(identical(current_plot_type[[j]], "box")) {
+              next
+            # print("Dependent variable is a box plot & independent variable is a point plot.")
+          } else {
+              
+              # print("Create Scatterplot 1")
+              custom_plot <- create_custom_geom_point(
+                df = df, 
+                x = df[[i]], 
+                y = df[[j]], 
+                title = sprintf("%s vs. %s", current_x_axis_name, current_y_axis_name), 
+                x_title = current_x_axis_name, 
+                y_title = current_y_axis_name
+              )
+              # print(sprintf("j: %0.0f", j))
+              # print(sprintf("current_plot_type[[j]]: %s", current_plot_type[[j]]))
+              # print("create_custom_geom_point defined in 1")
+            }
+          } else if(identical(current_plot_type[[i]], "box")){
+              # print("# Plot x as factor boxplot with double y 3.")
+              custom_plot <- create_custom_geom_box_grouped_by_x_factor(
+                df = df, 
+                x = df[[i]], 
+                y = df[[j]], 
+                title = sprintf("%s vs. %s", current_x_axis_name, current_y_axis_name), 
+                x_title = current_x_axis_name, 
+                y_title = current_y_axis_name
+              )
+              # print(sprintf("j: %0.0f", j))
+              # print(sprintf("current_plot_type[[j]]: %s", current_plot_type[[j]]))
+              # print("create_custom_geom_box_grouped_by_x_factor defined in 3")
+          } else {
+            # print("Error in plot type. Plot type is neither scatter nor box.")
+            next
+          }
+            print(custom_plot)
+        }
+    }
+    } else {
+    for (i in seq_along(df)) {
+      current_x_axis_name <- names(df[i])
+      current_x_axis <- df[[i]]
+      # print(sprintf("current_x_axis_name: %s", current_x_axis_name))
+      for (j in seq_along(df)) {
+          
+            current_y_axis_name <- names(df[j])
+            
+            if(identical(current_x_axis_name, current_y_axis_name)) {
+              next
+            }
+            current_y_axis <- df[[j]]
+          if (identical(typeof(df[[i]]), "double")) {
+            if(identical(typeof(df[[j]]), "double")) {
+              # print("Create Scatterplot 1")
+              custom_plot <- create_custom_geom_point(
+                df = df, 
+                x = df[[i]], 
+                y = df[[j]], 
+                title = sprintf("%s vs. %s", current_x_axis_name, current_y_axis_name), 
+                x_title = current_x_axis_name, 
+                y_title = current_y_axis_name
+              )
+              # print("create_custom_geom_point defined in 1")
+            } else if(identical(typeof(df[[j]]), "integer")) {
+              # print("# Next: X is double, y is integer; Use y as x in boxplot. 2")
+              next
+            } else {
+              # print("Error: X is a double. Y is neither a double nor an integer. Unhandled.")
+            }
+          } else if(identical(typeof(df[[i]]), "integer")){
+            if(identical(typeof(df[[j]]), "integer")){
+              # print("# Both x & y are integers. No custom plot exists yet")
+              next
+            } else if(identical(typeof(df[[j]]), "double")) {
+              # print("# Plot x as factor boxplot with double y 3.")
+              custom_plot <- create_custom_geom_box_grouped_by_x_factor(
+                df = df, 
+                x = df[[i]], 
+                y = df[[j]], 
+                title = sprintf("%s vs. %s", current_x_axis_name, current_y_axis_name), 
+                x_title = current_x_axis_name, 
+                y_title = current_y_axis_name
+              )
+              # print("create_custom_geom_box_grouped_by_x_factor defined in 3")
+            } else {
+              # print("Error: X is an integer. Y is neither a double nor an integer. Unhandled.")
+            }
+          } else {
+            # print("X is neither integer nor double.")
+          }
+            print(custom_plot)
+        }
+    }  
+    }
+}
+```
+
+```{r}
+# Purpose: This method will accept a list of methods to be run, a formula to use consistently across the methods, training & testing data, and will output confusion matrices along with the minimum test error for each type of function. This function anticipates a response that is either 0 or 1. It anticipates that the data has already been split into training and test sets.
+# Inputs: 
+# enable_knn: Enables the knn method. The response and predictors are required for this method to create training and testing data for the knn function.
+# predictors: This is a collection of predictors that are used when creating knn training sets.
+# response: This is the response to be selected from the data when creating knn test sets.
+# Output: This function will output confusion matrices and test error for each method specified. 
+
+create_categorical_models <- function(methods_c, formula, train_x=NULL, test_x=NULL, train_y=NULL, test_y=NULL, enable_knn=NULL, response=NULL, predictors=NULL) {
+  min_error <- c()
+  error_func <- c()
+  for (i in seq_along(methods_c)){
+    if (identical(methods_c[[i]], "glm")){
+      f_print(sprintf("Logistic Regression Model:"))
+      cat("\n\n\n")
+      glm.fit <- glm(formula, data = train_x, family = "binomial")
+      glm.fit_prob <- predict(glm.fit, test_x, type = "response")
+      glm.fit_pred <- rep(0, length(glm.fit_prob))
+      glm.fit_pred[glm.fit_prob > .5] <- 1
+      print(confusionMatrix(as.factor(glm.fit_pred), as.factor(test_y[[1]])))
+      f_print(sprintf("The logistic regression model test error is: %0.3f%%.",(mean(glm.fit_pred != test_y[[1]]) * 100)))
+      cat("\n\n\n")
+      min_error<- append(min_error,mean(glm.fit_pred != test_y[[1]]))
+      error_func <- append(error_func, "glm")
+    } 
+    if(identical(methods_c[[i]], "lda")) {
+      f_print(sprintf("Linear Discriminant Analysis Model:"))
+      cat("\n\n\n")
+        lda.fit <- lda(formula, data = train_x)
+        lda.fit_pred <- predict(lda.fit, test_x)
+        print(confusionMatrix(lda.fit_pred$class, as.factor(test_y[[1]])))
+        f_print(sprintf("The LDA model test error is: %0.3f%%.",(mean(lda.fit_pred$class != test_y[[1]]) * 100)))
+        cat("\n\n\n")
+    }
+    if(identical(methods_c[[i]], "qda")) {
+      f_print(sprintf("Quadratic Discriminant Analysis Model:"))
+      cat("\n\n\n")
+        qda.fit <- qda(formula, data = train_x)
+        qda.fit_pred <- predict(qda.fit, test_x)
+        print(confusionMatrix(qda.fit_pred$class, as.factor(test_y[[1]])))
+        f_print(sprintf("The QDA model test error is: %0.3f%%.",(mean(qda.fit_pred$class != test_y[[1]]) * 100)))
+        cat("\n\n\n")
+    }
+    if(identical(methods_c[[i]], "nb")) {
+      f_print(sprintf("Naive Bayes Model:"))
+      cat("\n\n\n")
+      nb.fit <- naiveBayes(above_med_crim ~ crim + nox + indus + age + dis + rad + tax, data = train_x)
+      nb.fit_pred <- predict(nb.fit, test_x)
+      print(confusionMatrix(nb.fit_pred, as.factor(test_y[[1]])))
+      f_print(sprintf("The naive bayes model test error is: %0.3f%%.",(mean(nb.fit_pred != test_y[[1]]) * 100)))
+      cat("\n\n\n")
+    }
+    if(identical(methods_c[[i]], "knn")) {
+      set.seed(42)
+      f_print(sprintf("K-Nearest Neighbors Model:"))
+      cat("\n\n\n")
+      knn_train_x <- train_x %>% select(predictors)
+      knn_test_x <- test_x %>% select(predictors)
+      knn_train_y <- train_y %>% select(response)
+      knn_test_y <- test_y %>% select(response)
+      
+      k_val <- 1
+      
+      knn.fit <- knn(knn_train_x, knn_test_x, knn_train_y[[1]], k = k_val)
+      penultimate_mean_test_error <- mean(knn.fit != knn_test_y[[1]])
+      ultimate_mean_test_error <- 0
+      
+      if(!near(penultimate_mean_test_error - ultimate_mean_test_error, 0)){
+        while (TRUE){
+          k_val <- k_val + 1
+          knn.fit <- knn(knn_train_x, knn_test_x, knn_train_y[[1]], k = k_val)
+          ultimate_mean_test_error <- mean(knn.fit != knn_test_y[[1]])
+          print(sprintf("pen: %0.3f", penultimate_mean_test_error))
+          print(sprintf("ult: %0.3f", ultimate_mean_test_error))
+          if (ultimate_mean_test_error < penultimate_mean_test_error) {
+            penultimate_mean_test_error <- ultimate_mean_test_error
+          } else {
+            break
+          }
+          penultimate_mean_test_error <- mean(knn.fit != knn_test_y[[1]])
+        }   
+      }
+      
+      print(confusionMatrix(knn.fit, as.factor(knn_test_y[[1]])))
+      f_print(sprintf("The KNN model's minimum test error for which k = %s is: %0.3f%%.", k_val-1, penultimate_mean_test_error * 100))
+      cat("\n\n\n")
+    }
+  }
+}
+```
+
+
+```{r include=FALSE}
+set.seed(42)
+```
+
 
 ## Applied
 ### Question 13:
@@ -666,3 +937,390 @@ auto_false <- auto %>% filter(mpg01 == FALSE) %>% mutate(mpg01 = 0)
 auto <- add_row(auto_true, auto_false)
 head(auto)
 ```
+
+* **Question 14-b**: Explore the data graphically in order to investigate the associ-
+ation between mpg01 and the other features. Which of the other
+features seem most likely to be useful in predicting mpg01? Scat-
+terplots and boxplots may be useful tools to answer this ques-
+tion. Describe your findings.
+  * **Answer**: 
+  
+```{r echo=FALSE}
+f_print(sprintf("The features that seem most likely to be useful in predicting mpg01 appear to be the following predictors: mpg, cylinders, displacement, & weight. Cylinders, displacement, & weight each have interquartile ranges for the 0 and 1 categories of mpg01 that do not overlap. Furthermore, the density of observations in the 0 category of mpg01 that do overlap with the interquartile range of the 1 category of mpg01 are slender in comparison to the density of observations at the same level in the 0 category of mpg01 or the density of the observations at the median within the same category. This indicates that given a particular predictor, the proportion of observations may be sufficiently biforcated such that ambiguity between the categories of mpg01 is insignificant when determining a prediction. These observations are clearly depicted in boxplots where mpg01 is the dependent variable and the independent variables are one of the following: mpg, cylinders, displacement, & weight."))
+```
+
+```{r echo=FALSE}
+pairs(auto, cex = .1, pch = 20, main = "Pair Plots of the Auto Dataset")
+```
+
+```{r include=FALSE}
+# Formatting the data for plotting
+auto_plot_formatted <- auto %>% select(everything(), -name)
+typeof(auto_plot_formatted)
+attr(auto_plot_formatted, "plot_types_when_on_x_axis") <- c("box", "point", "box", "point", "point", "point", "point", "box", "box")
+# attributes(auto_plot_formatted)
+# attributes(auto_plot_formatted)$plot_types_when_on_x_axis
+```
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+create_all_custom_box_scatter_plots(auto_plot_formatted, plot_types = TRUE)
+```
+
+* **Question 14-c**: Split the data into a training set and a test set.
+  * **Answer**: 
+
+```{r results="hide"}
+auto$train <- sample.split(auto$mpg01, SplitRatio = 0.8)
+auto_train_x <- auto %>% select(train, everything()) %>% filter(train == TRUE) %>% select(everything(), -train)
+auto_train_y <- auto %>% select(train, mpg01) %>% filter(train == TRUE) %>% select(everything(), -train)
+auto_test_x <- auto %>% select(train, everything()) %>% filter(train == FALSE) %>% select(everything(), -train)
+auto_test_y <- auto %>% select(train, mpg01) %>% filter(train == FALSE) %>% select(everything(), -train)
+```
+
+* **Question 14-d**: Perform LDA on the training data in order to predict mpg01 using the variables that seemed most associated with mpg01 in the previous question. What is the test error of the model obtained?
+  * **Answer**: 
+
+```{r echo=FALSE}
+f_print(sprintf("Confusion Matrix of mpg01"))
+lda.fit_mpg01_mpg_cyl_dis_wei <- lda(mpg01 ~ mpg + cylinders + displacement + weight, data = auto_train_x)
+lda.fit_mpg01_mpg_cyl_dis_wei_pred <- predict(lda.fit_mpg01_mpg_cyl_dis_wei, auto_test_x)
+# table(lda.fit_mpg01_mpg_cyl_dis_wei_pred$class, auto_test_y[[1]])
+confusionMatrix(lda.fit_mpg01_mpg_cyl_dis_wei_pred$class, as.factor(auto_test_y[[1]]))
+mean(lda.fit_mpg01_mpg_cyl_dis_wei_pred$class == auto_test_y[[1]])
+f_print(sprintf("The test error of the model obtained is: %0.3f%%.", (mean(lda.fit_mpg01_mpg_cyl_dis_wei_pred$class != auto_test_y[[1]]) * 100)))
+```
+
+* **Question 14-e**: Perform QDA on the training data in order to predict mpg01 using the variables that seemed most associated with mpg01 in the previous question. What is the test error of the model obtained?
+  * **Answer**: 
+
+```{r echo=FALSE}
+qda.fit_mpg01_mpg_cyl_dis_wei <- qda(mpg01 ~ mpg + cylinders + displacement + weight, data = auto_train_x)
+qda.fit_mpg01_mpg_cyl_dis_wei_pred <- predict(qda.fit_mpg01_mpg_cyl_dis_wei, auto_test_x)
+f_print(sprintf("The test error of the model obtained is: %0.3f%%.", (mean(qda.fit_mpg01_mpg_cyl_dis_wei_pred$class != auto_test_y[[1]]) * 100)))
+```
+
+* **Question 14-f**: Perform logistic regression on the training data in order to pre-
+dict mpg01 using the variables that seemed most associated with
+mpg01 in the previous question. What is the test error of the model obtained?
+  * **Answer**: 
+
+```{r warning=FALSE, echo=FALSE}
+glm.fit_mpg01_mpg_cyl_dis_wei <- glm(mpg01 ~ mpg + cylinders + displacement + weight, data = auto_train_x, family = "binomial")
+glm.fit_mpg01_mpg_cyl_dis_wei_prob <- predict(glm.fit_mpg01_mpg_cyl_dis_wei, auto_test_x, type = "response")
+glm.fit_mpg01_mpg_cyl_dis_wei_pred <- rep(0, length(glm.fit_mpg01_mpg_cyl_dis_wei_prob))
+glm.fit_mpg01_mpg_cyl_dis_wei_pred[glm.fit_mpg01_mpg_cyl_dis_wei_prob > 0.5] <- 1
+table(glm.fit_mpg01_mpg_cyl_dis_wei_pred, auto_test_y[[1]])
+f_print(sprintf("The test error of the logistic model is: %0.3f%%", (mean(glm.fit_mpg01_mpg_cyl_dis_wei_pred != auto_test_y[[1]]) * 100)))
+```
+
+* **Question 14-g**: Perform naive Bayes on the training data in order to predict
+mpg01 using the variables that seemed most associated with mpg01
+in the previous question. What is the test error of the model obtained?
+  * **Answer**: 
+```{r echo=FALSE}
+nb.fit_mpg01_mpg_cyl_dis_wei <- naiveBayes(mpg01 ~ mpg + cylinders + displacement + weight, data = auto_train_x)
+nb.fit_mpg01_mpg_cyl_dis_wei_pred <- predict(nb.fit_mpg01_mpg_cyl_dis_wei, auto_test_x)
+f_print(sprintf("The test error of the naiveBayes model is: %0.3f%%", (mean(nb.fit_mpg01_mpg_cyl_dis_wei_pred != auto_test_y[[1]]) * 100)))
+```
+  
+  * **Question 14-h**: Perform KNN on the training data, with several values of K, in
+order to predict mpg01. Use only the variables that seemed most
+associated with mpg01 in the previous question. What test errors do you obtain? Which value of K seems to perform the best on this data set?
+  * **Answer**: 
+  
+```{r echo=FALSE}
+f_print(sprintf("The value of k that seemed to performed best on this dataset is: 7."))
+```
+  
+```{r include=FALSE}
+knn_auto_train_x_mpg_cyl_dis_wei <- auto_train_x %>% select(mpg, cylinders, displacement, weight)
+knn_auto_test_x_mpg_cyl_dis_wei <- auto_test_x %>% select(mpg, cylinders, displacement, weight)
+knn_auto_train_y_mpg01 <- auto_train_y %>% select(mpg01)
+knn_auto_test_y_mpg01 <- auto_test_y %>% select(mpg01)
+```
+
+```{r echo=FALSE}
+knn.fit_mpg01 <- knn(knn_auto_train_x_mpg_cyl_dis_wei, knn_auto_test_x_mpg_cyl_dis_wei, knn_auto_train_y_mpg01[[1]], k = 1)
+f_print(sprintf("The test error of the knn model where k is %0.0f is: %0.3f%%", 1, (mean(knn.fit_mpg01 != knn_auto_test_y_mpg01[[1]]) * 100)))
+```
+
+```{r echo=FALSE}
+knn.fit_mpg01 <- knn(knn_auto_train_x_mpg_cyl_dis_wei, knn_auto_test_x_mpg_cyl_dis_wei, knn_auto_train_y_mpg01[[1]], k = 3)
+f_print(sprintf("The test error of the knn model where k is %0.0f is: %0.3f%%", 3, (mean(knn.fit_mpg01 != knn_auto_test_y_mpg01[[1]]) * 100)))
+```
+
+```{r echo=FALSE}
+knn.fit_mpg01 <- knn(knn_auto_train_x_mpg_cyl_dis_wei, knn_auto_test_x_mpg_cyl_dis_wei, knn_auto_train_y_mpg01[[1]], k = 5)
+f_print(sprintf("The test error of the knn model where k is %0.0f is: %0.3f%%", 5, (mean(knn.fit_mpg01 != knn_auto_test_y_mpg01[[1]]) * 100)))
+```
+
+```{r echo=FALSE}
+knn.fit_mpg01 <- knn(knn_auto_train_x_mpg_cyl_dis_wei, knn_auto_test_x_mpg_cyl_dis_wei, knn_auto_train_y_mpg01[[1]], k = 7)
+f_print(sprintf("The test error of the knn model where k is %0.0f is: %0.3f%%", 7, (mean(knn.fit_mpg01 != knn_auto_test_y_mpg01[[1]]) * 100)))
+```
+
+
+```{r echo=FALSE}
+knn.fit_mpg01 <- knn(knn_auto_train_x_mpg_cyl_dis_wei, knn_auto_test_x_mpg_cyl_dis_wei, knn_auto_train_y_mpg01[[1]], k = 9)
+f_print(sprintf("The test error of the knn model where k is %0.0f is: %0.3f%%", 9, (mean(knn.fit_mpg01 != knn_auto_test_y_mpg01[[1]]) * 100)))
+```
+
+### Quesiton 15:
+This problem involves writing functions.
+
+* **Question 15-a**: Write a function, Power(), that prints out the result of raising 2
+to the 3rd power. In other words, your function should compute
+2^3^ and print out the results.
+Hint: Recall that x^a raises x to the power a. Use the print()
+function to output the result.
+  * **Answer**: 
+  
+```{r}
+Power <- function() {
+  print(2^3)
+}
+Power()
+```
+
+* **Question 15-b**:Create a new function, Power2(), that allows you to pass any
+two numbers, x and a, and prints out the value of x^a. You can
+do this by beginning your function with the line: "Power2 <- function(x, a) {"
+You should be able to call your function by entering, for instance, "Power2(3, 8)"
+on the command line. This should output the value of 38, namely,
+6,561.
+  * **Answer**: 
+```{r}
+Power2 <- function(x, a) {
+  print(x^a)
+}
+
+Power2(3, 8)
+```
+
+
+* **Question 15-c**:Using the Power2() function that you just wrote, compute 10^3^,
+8^17^, and 131^3^.
+  * **Answer**: 
+
+```{r}
+Power2(10, 3)
+Power2(8, 17)
+Power2(131, 3)
+```
+
+* **Question 15-d**: Now create a new function, Power3(), that actually returns the
+result x^a as an R object, rather than simply printing it to the
+screen. That is, if you store the value x^a in an object called
+result within your function, then you can simply return() this
+result, using the following line: return(result)
+The line above should be the last line in your function, before
+the } symbol.
+  * **Answer**: 
+```{r}
+Power3 <- function(x, a) {
+  return(x^a)
+}
+```
+
+* **Question 15-e**:Now using the Power3() function, create a plot of f(x) = x^2^.
+The x-axis should display a range of integers from 1 to 10, and
+the y-axis should display x^2^. Label the axes appropriately, and
+use an appropriate title for the figure. Consider displaying either
+the x-axis, the y-axis, or both on the log-scale. You can do this
+by using log = "x", log = "y", or log = "xy" as arguments to
+the plot() function.
+  * **Answer**:
+  
+```{r echo=FALSE}
+x <- seq(1,10)
+y <- Power3(x, 2)
+ggplot() + 
+  geom_point(aes(x,y)) +
+  labs(title = expression( 'ƒ(x) = x'^{"2"}), y = expression('x'^{"2"})) +
+  scale_y_log10(breaks = y) + 
+  scale_x_log10(breaks = x) + 
+  theme_linedraw()
+```
+
+* **Question 15-f**: Create a function, PlotPower(), that allows you to create a plot
+of x against x^a^ for a fixed a and for a range of values of x. For
+instance, if you call: "PlotPower(1:10, 3)" then a plot should be created with an x-axis taking on values
+1, 2, . . . , 10, and a y-axis taking on values 1^3^, 2^3^, . . . , 10^3^.
+  * **Answer**:
+  
+```{r echo=FALSE}
+PlotPower <- function(x,a){
+  exp <- expression( 'ƒ(x) = x'^{a})
+x_val <- seq(x)
+y_val <- Power3(x_val, a)
+
+
+ggplot() + 
+  geom_point(aes(x,y)) +
+  labs(title = exp, y = 'ƒ(x)', subtitle = sprintf("a = %0.0f", a)) +
+  scale_y_log10(breaks = y) + 
+  scale_x_log10(breaks = x) + 
+  theme_linedraw()
+}
+
+PlotPower(1:10, 3)
+```
+
+### Question 16:
+Using the Boston data set, fit classification models in order to predict
+whether a given census tract has a crime rate above or below the me-
+dian. Explore logistic regression, LDA, naive Bayes, and KNN models
+using various subsets of the predictors. Describe your findings.
+
+```{r }
+boston <- na.omit(Boston)
+boston <- boston %>% mutate(above_med_crim = crim > median(crim)) %>% select(above_med_crim, everything())
+boston_false <- boston %>% filter(above_med_crim == FALSE) %>% mutate(above_med_crim = 0)
+boston_true <- boston %>% filter(above_med_crim == TRUE) %>% mutate(above_med_crim = 1)
+boston <- add_row(boston_false, boston_true) 
+boston
+```
+
+```{r}
+boston$train <- sample.split(boston$above_med_crim, SplitRatio = .8)
+boston_train_x <- boston %>% select(train, everything()) %>% filter(train == TRUE) %>% select(everything(), -train)
+boston_test_x <- boston %>% select(train, everything()) %>% filter(train == FALSE) %>% select(everything(), -train)
+boston_train_y <- boston %>% select(train, above_med_crim) %>% filter(train == TRUE) %>% select(everything(), -train)
+boston_test_y <- boston %>% select(train, above_med_crim) %>% filter(train == FALSE) %>% select(everything(), -train)
+```
+
+```{r}
+names(boston)
+head(boston)
+?boston
+```
+
+```{r}
+boston_formatted_plot <- boston %>% select(everything(), -train)
+attr(boston_formatted_plot, "plot_types_when_on_x_axis") <- c("box", "point", "box", "point", "box", "point", "point", "point", "point", "box", "point", "point", "point", "point")
+length(attributes(boston_formatted_plot)$plot_types_when_on_x_axis)
+length(boston_formatted_plot)
+```
+
+
+
+```{r warning=FALSE, message=FALSE}
+create_all_custom_box_scatter_plots(boston_formatted_plot, plot_types = TRUE)
+```
+
+```{r}
+vect <- c("crim", "nox", "indus", "age", "dis", "rad", "tax")
+boston %>% select(vect)
+```
+
+
+```{r}
+# crim, nox, indus, age, dis, rad, tax
+knn_boston_train_x_amc_cri_nox_ind_age_dis_rad_tax <- boston_train_x %>% select(crim, nox, indus, age, dis, rad, tax)
+knn_boston_test_x_amc_cri_nox_ind_age_dis_rad_tax <- boston_test_x %>% select(crim, nox, indus, age, dis, rad, tax)
+knn_boston_train_y_amc <- boston_train_y %>% select(above_med_crim)
+knn_boston_test_y_amc <- boston_test_y %>% select(above_med_crim)
+```
+
+
+Logistic Regression
+```{r}
+glm.fit_amc_cri_nox_ind_age_dis_rad_tax <- glm(above_med_crim ~ crim + nox + indus + age + dis + rad + tax, data = boston_train_x, family = "binomial")
+glm.fit_amc_cri_nox_ind_age_dis_rad_tax_prob <- predict(glm.fit_amc_cri_nox_ind_age_dis_rad_tax, boston_test_x, type = "response")
+glm.fit_amc_cri_nox_ind_age_dis_rad_tax_pred <- rep(0, length(glm.fit_amc_cri_nox_ind_age_dis_rad_tax_prob))
+glm.fit_amc_cri_nox_ind_age_dis_rad_tax_pred[glm.fit_amc_cri_nox_ind_age_dis_rad_tax_prob > .5] <- 1
+confusionMatrix(as.factor(glm.fit_amc_cri_nox_ind_age_dis_rad_tax_pred), as.factor(boston_test_y[[1]]))
+f_print(sprintf("The logistic regression model test error is: %0.3f%%.",(mean(glm.fit_amc_cri_nox_ind_age_dis_rad_tax_pred != boston_test_y[[1]]) * 100)))
+```
+
+
+LDA
+```{r}
+lda.fit_amc_cri_nox_ind_age_dis_rad_tax <- lda(above_med_crim ~ crim + nox + indus + age + dis + rad + tax, data = boston_train_x)
+lda.fit_amc_cri_nox_ind_age_dis_rad_tax_pred <- predict(lda.fit_amc_cri_nox_ind_age_dis_rad_tax, boston_test_x)
+confusionMatrix(lda.fit_amc_cri_nox_ind_age_dis_rad_tax_pred$class, as.factor(boston_test_y[[1]]))
+f_print(sprintf("The LDA model test error is: %0.3f%%.",(mean(lda.fit_amc_cri_nox_ind_age_dis_rad_tax_pred$class != boston_test_y[[1]]) * 100)))
+```
+
+
+```{r include=FALSE}
+# qda.fit_amc_cri_nox_ind_age_dis_rad_tax <- qda(above_med_crim ~ crim + nox + indus + age + dis + rad + tax, data = boston_train_x)
+# qda.fit_amc_cri_nox_ind_age_dis_rad_tax_pred <- predict(qda.fit_amc_cri_nox_ind_age_dis_rad_tax, boston_test_x)
+# confusionMatrix(qda.fit_amc_cri_nox_ind_age_dis_rad_tax_pred$class, as.factor(boston_test_y[[1]]))
+# f_print(sprintf("The QDA model test error is: %0.3f%%.",(mean(qda.fit_amc_cri_nox_ind_age_dis_rad_tax_pred$class != boston_test_y[[1]]) * 100)))
+```
+
+Naive Bayes
+```{r}
+nb.fit_amc_cri_nox_ind_age_rad_tax <- naiveBayes(above_med_crim ~ crim + nox + indus + age + dis + rad + tax, data = boston_train_x)
+nb.fit_amc_cri_nox_ind_age_rad_tax_pred <- predict(nb.fit_amc_cri_nox_ind_age_rad_tax, boston_test_x)
+confusionMatrix(nb.fit_amc_cri_nox_ind_age_rad_tax_pred, as.factor(boston_test_y[[1]]))
+f_print(sprintf("The naive bayes model test error is: %0.3f%%.",(mean(nb.fit_amc_cri_nox_ind_age_rad_tax_pred != boston_test_y[[1]]) * 100)))
+```
+
+KNN
+
+```{r}
+# k = 1
+knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 <- knn(knn_boston_train_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_test_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_train_y_amc[[1]], k = 1)
+confusionMatrix(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1, as.factor(knn_boston_test_y_amc[[1]]))
+f_print(sprintf("The KNN model test error for k = %s is: %0.3f%%.", 1, (mean(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 != knn_boston_test_y_amc[[1]]) * 100)))
+```
+
+```{r}
+# k = 3
+knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 <- knn(knn_boston_train_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_test_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_train_y_amc[[1]], k = 3)
+confusionMatrix(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1, as.factor(knn_boston_test_y_amc[[1]]))
+f_print(sprintf("The KNN model test error for k = %s is: %0.3f%%.", 3, (mean(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 != boston_test_y[[1]]) * 100)))
+```
+
+
+```{r}
+# k = 5
+knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 <- knn(knn_boston_train_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_test_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_train_y_amc[[1]], k = 5)
+confusionMatrix(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1, as.factor(knn_boston_test_y_amc[[1]]))
+f_print(sprintf("The KNN model test error for k = %s is: %0.3f%%.", 5, (mean(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 != boston_test_y[[1]]) * 100)))
+```
+
+
+```{r}
+# k = 7
+knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 <- knn(knn_boston_train_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_test_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_train_y_amc[[1]], k = 7)
+confusionMatrix(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1, as.factor(knn_boston_test_y_amc[[1]]))
+f_print(sprintf("The KNN model test error for k = %s is: %0.3f%%.", 7, (mean(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 != boston_test_y[[1]]) * 100)))
+```
+
+
+
+```{r}
+names(boston_formatted_plot)
+predictors <- c("nox", "indus", "age", "dis", "rad", "tax")
+nox_indus_age_dis_rad_tax <- create.formula(outcome.name = "above_med_crim", input.names = predictors)$formula
+```
+
+
+```{r}
+
+```
+
+
+```{r echo=FALSE}
+predictors <- c("nox", "indus", "age", "dis", "rad", "tax")
+nox_indus_age_dis_rad_tax <- create.formula(outcome.name = "above_med_crim", input.names = predictors)$formula
+
+f_print(sprintf("Formula: %s ~ ", response))
+cat(" ")
+f_print(sprintf("%s", predictors))
+cat("\n\n\n")
+
+methods <- c("glm", "lda", "nb", "knn", "qda")
+response <- "above_med_crim"
+create_categorical_models(methods, nox_indus_age_dis_rad_tax, boston_train_x, boston_test_x, boston_train_y, boston_test_y, enable_knn = TRUE, response = response, predictors = predictors)
+```
+
+
+```{r}
+```
+
+
+
