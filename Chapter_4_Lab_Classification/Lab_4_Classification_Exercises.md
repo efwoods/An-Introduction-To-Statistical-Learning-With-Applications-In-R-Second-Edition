@@ -192,7 +192,7 @@ Quadratic Discriminant Analysis
     Formula:
     Direction ~ Year + Lag1 + Lag3 + Lag5 + Year * Lag1 + Lag1 * 
         Lag3 + Lag3 * Lag5
-    <environment: 0x1334950a8>
+    <environment: 0x1658e1628>
 
 
     Call:
@@ -222,7 +222,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Year + Lag2 + Lag4 + Year * Lag2 + Lag2 * Lag4
-    <environment: 0x124d4c718>
+    <environment: 0x1328dafd0>
 
 
     Call:
@@ -251,7 +251,7 @@ Quadratic Discriminant Analysis
     Direction ~ Lag1 + Volume + Lag2 + Lag3 + Lag4 + Lag5 + Lag1 * 
         Volume + Lag2 * Volume + Lag3 * Volume + Lag4 * Volume + 
         Lag5 * Volume
-    <environment: 0x1219d72f0>
+    <environment: 0x131bd28e0>
 
 
     Call:
@@ -281,7 +281,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Year
-    <environment: 0x1311506a0>
+    <environment: 0x16116e6a0>
 
 
     Call:
@@ -308,7 +308,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Lag1
-    <environment: 0x127405080>
+    <environment: 0x1611bce80>
 
 
     Call:
@@ -335,7 +335,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Lag2
-    <environment: 0x127421f28>
+    <environment: 0x1611d7d28>
 
 
     Call:
@@ -362,7 +362,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Lag3
-    <environment: 0x130c346c0>
+    <environment: 0x1611f0cc0>
 
 
     Call:
@@ -389,7 +389,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Lag4
-    <environment: 0x130c515a0>
+    <environment: 0x161211ba0>
 
 
     Call:
@@ -416,7 +416,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Lag5
-    <environment: 0x130c6a538>
+    <environment: 0x161228b38>
 
 
     Call:
@@ -443,7 +443,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Volume
-    <environment: 0x130c853e0>
+    <environment: 0x1612439e0>
 
 
     Call:
@@ -470,7 +470,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Today
-    <environment: 0x130c9e3b0>
+    <environment: 0x16125c9b0>
 
 
     Call:
@@ -504,7 +504,7 @@ Quadratic Discriminant Analysis
         Lag2 * Volume + Lag2 * Today + Lag3 * Lag4 + Lag3 * Lag5 + 
         Lag3 * Volume + Lag3 * Today + Lag4 * Lag5 + Lag4 * Volume + 
         Lag4 * Today + Lag5 * Volume + Lag5 * Today + Volume * Today
-    <environment: 0x131899660>
+    <environment: 0x1366fa860>
 
 
     Call:
@@ -547,7 +547,7 @@ Quadratic Discriminant Analysis
     Formula:
     Direction ~ Year + Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume + 
         Today
-    <environment: 0x13260a328>
+    <environment: 0x16315faa8>
 
 
     Call:
@@ -807,7 +807,7 @@ Linear Discriminant Analysis
     Formula:
     Direction ~ Year + Lag1 + Lag3 + Lag5 + Year * Lag1 + Lag1 * 
         Lag3 + Lag3 * Lag5
-    <environment: 0x1334950a8>
+    <environment: 0x1658e1628>
 
 
     Call:
@@ -847,7 +847,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Year + Lag2 + Lag4 + Year * Lag2 + Lag2 * Lag4
-    <environment: 0x124d4c718>
+    <environment: 0x1328dafd0>
 
 
     Call:
@@ -884,7 +884,7 @@ Linear Discriminant Analysis
     Direction ~ Lag1 + Volume + Lag2 + Lag3 + Lag4 + Lag5 + Lag1 * 
         Volume + Lag2 * Volume + Lag3 * Volume + Lag4 * Volume + 
         Lag5 * Volume
-    <environment: 0x1219d72f0>
+    <environment: 0x131bd28e0>
 
 
     Call:
@@ -928,7 +928,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Year
-    <environment: 0x1311506a0>
+    <environment: 0x16116e6a0>
 
 
     Call:
@@ -959,7 +959,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Lag1
-    <environment: 0x127405080>
+    <environment: 0x1611bce80>
 
 
     Call:
@@ -990,7 +990,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Lag2
-    <environment: 0x127421f28>
+    <environment: 0x1611d7d28>
 
 
     Call:
@@ -1021,7 +1021,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Lag3
-    <environment: 0x130c346c0>
+    <environment: 0x1611f0cc0>
 
 
     Call:
@@ -1052,7 +1052,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Lag4
-    <environment: 0x130c515a0>
+    <environment: 0x161211ba0>
 
 
     Call:
@@ -1083,7 +1083,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Lag5
-    <environment: 0x130c6a538>
+    <environment: 0x161228b38>
 
 
     Call:
@@ -1114,7 +1114,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Volume
-    <environment: 0x130c853e0>
+    <environment: 0x1612439e0>
 
 
     Call:
@@ -1145,7 +1145,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Today
-    <environment: 0x130c9e3b0>
+    <environment: 0x16125c9b0>
 
 
     Call:
@@ -1183,7 +1183,7 @@ Linear Discriminant Analysis
         Lag2 * Volume + Lag2 * Today + Lag3 * Lag4 + Lag3 * Lag5 + 
         Lag3 * Volume + Lag3 * Today + Lag4 * Lag5 + Lag4 * Volume + 
         Lag4 * Today + Lag5 * Volume + Lag5 * Today + Volume * Today
-    <environment: 0x131899660>
+    <environment: 0x1366fa860>
 
 
     Call:
@@ -1265,7 +1265,7 @@ Linear Discriminant Analysis
     Formula:
     Direction ~ Year + Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume + 
         Today
-    <environment: 0x13260a328>
+    <environment: 0x16315faa8>
 
 
     Call:
@@ -1307,7 +1307,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Year
-    <environment: 0x1311506a0>
+    <environment: 0x16116e6a0>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1338,7 +1338,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Lag1
-    <environment: 0x127405080>
+    <environment: 0x1611bce80>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1369,7 +1369,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Lag2
-    <environment: 0x127421f28>
+    <environment: 0x1611d7d28>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1400,7 +1400,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Lag3
-    <environment: 0x130c346c0>
+    <environment: 0x1611f0cc0>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1431,7 +1431,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Lag4
-    <environment: 0x130c515a0>
+    <environment: 0x161211ba0>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1462,7 +1462,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Lag5
-    <environment: 0x130c6a538>
+    <environment: 0x161228b38>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1493,7 +1493,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Volume
-    <environment: 0x130c853e0>
+    <environment: 0x1612439e0>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1524,7 +1524,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Today
-    <environment: 0x130c9e3b0>
+    <environment: 0x16125c9b0>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -2569,38 +2569,7 @@ KNN
 
     K-Nearest Neighbors Model:
 
-    Warning: Using an external vector in selections was deprecated in tidyselect 1.1.0.
-    ℹ Please use `all_of()` or `any_of()` instead.
-      # Was:
-      data %>% select(predictors)
 
-      # Now:
-      data %>% select(all_of(predictors))
-
-    See <https://tidyselect.r-lib.org/reference/faq-external-vector.html>.
-    This warning is displayed once every 8 hours.
-    Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-    generated.
-
-    Warning: Using an external vector in selections was deprecated in tidyselect 1.1.0.
-    ℹ Please use `all_of()` or `any_of()` instead.
-      # Was:
-      data %>% select(response)
-
-      # Now:
-      data %>% select(all_of(response))
-
-    See <https://tidyselect.r-lib.org/reference/faq-external-vector.html>.
-    This warning is displayed once every 8 hours.
-    Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-    generated.
-
-    [1] "pen: 0.098"
-    [1] "ult: 0.069"
-    [1] "pen: 0.069"
-    [1] "ult: 0.059"
-    [1] "pen: 0.059"
-    [1] "ult: 0.078"
     Confusion Matrix and Statistics
 
               Reference

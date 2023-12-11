@@ -368,8 +368,8 @@ create_categorical_models <- function(methods_c, formula, train_x=NULL, test_x=N
           k_val <- k_val + 1
           knn.fit <- knn(knn_train_x, knn_test_x, knn_train_y[[1]], k = k_val)
           ultimate_mean_test_error <- mean(knn.fit != knn_test_y[[1]])
-          print(sprintf("pen: %0.3f", penultimate_mean_test_error))
-          print(sprintf("ult: %0.3f", ultimate_mean_test_error))
+          # print(sprintf("pen: %0.3f", penultimate_mean_test_error))
+          # print(sprintf("ult: %0.3f", ultimate_mean_test_error))
           if (ultimate_mean_test_error < penultimate_mean_test_error) {
             penultimate_mean_test_error <- ultimate_mean_test_error
           } else {
@@ -1248,7 +1248,7 @@ f_print(sprintf("The LDA model test error is: %0.3f%%.",(mean(lda.fit_amc_cri_no
 ```
 
 Naive Bayes
-```{r echo=FALSE}
+```{r warning=FALSE, echo=FALSE}
 nb.fit_amc_cri_nox_ind_age_rad_tax <- naiveBayes(above_med_crim ~ crim + nox + indus + age + dis + rad + tax, data = boston_train_x)
 nb.fit_amc_cri_nox_ind_age_rad_tax_pred <- predict(nb.fit_amc_cri_nox_ind_age_rad_tax, boston_test_x)
 confusionMatrix(nb.fit_amc_cri_nox_ind_age_rad_tax_pred, as.factor(boston_test_y[[1]]))
@@ -1257,7 +1257,7 @@ f_print(sprintf("The naive bayes model test error is: %0.3f%%.",(mean(nb.fit_amc
 
 KNN
 
-```{r echo=FALSE}
+```{r warning=FALSE, echo=FALSE}
 set.seed(42)
 # k = 1
 knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 <- knn(knn_boston_train_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_test_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_train_y_amc[[1]], k = 1)
@@ -1323,7 +1323,7 @@ nox_indus_age_dis_rad_tax <- create.formula(outcome.name = "above_med_crim", inp
 ```
 
 
-```{r echo=FALSE}
+```{r warning=FALSE,echo=FALSE}
 predictors <- c("nox", "indus", "age", "dis", "rad", "tax")
 nox_indus_age_dis_rad_tax <- create.formula(outcome.name = "above_med_crim", input.names = predictors)$formula
 
