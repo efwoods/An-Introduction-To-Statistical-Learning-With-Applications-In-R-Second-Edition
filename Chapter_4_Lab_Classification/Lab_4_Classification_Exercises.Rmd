@@ -1221,7 +1221,7 @@ knn_boston_test_y_amc <- boston_test_y %>% select(above_med_crim)
 
 
 Logistic Regression
-```{r echo=FALSE}
+```{r warning=FALSE, echo=FALSE}
 glm.fit_amc_cri_nox_ind_age_dis_rad_tax <- glm(above_med_crim ~ crim + nox + indus + age + dis + rad + tax, data = boston_train_x, family = "binomial")
 glm.fit_amc_cri_nox_ind_age_dis_rad_tax_prob <- predict(glm.fit_amc_cri_nox_ind_age_dis_rad_tax, boston_test_x, type = "response")
 glm.fit_amc_cri_nox_ind_age_dis_rad_tax_pred <- rep(0, length(glm.fit_amc_cri_nox_ind_age_dis_rad_tax_prob))
@@ -1313,8 +1313,6 @@ confusionMatrix(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1, as.factor(knn_bosto
 f_print(sprintf("The KNN model test error for k = %s is: %0.3f%%.", 13, (mean(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 != boston_test_y[[1]]) * 100)))
 cat("\n\n\n")
 ```
-
-
 
 ```{r include=FALSE}
 names(boston_formatted_plot)

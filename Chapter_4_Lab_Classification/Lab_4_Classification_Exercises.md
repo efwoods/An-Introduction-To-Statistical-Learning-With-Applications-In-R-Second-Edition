@@ -192,7 +192,7 @@ Quadratic Discriminant Analysis
     Formula:
     Direction ~ Year + Lag1 + Lag3 + Lag5 + Year * Lag1 + Lag1 * 
         Lag3 + Lag3 * Lag5
-    <environment: 0x1658e1628>
+    <environment: 0x1302f3628>
 
 
     Call:
@@ -222,7 +222,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Year + Lag2 + Lag4 + Year * Lag2 + Lag2 * Lag4
-    <environment: 0x1328dafd0>
+    <environment: 0x117886f98>
 
 
     Call:
@@ -251,7 +251,7 @@ Quadratic Discriminant Analysis
     Direction ~ Lag1 + Volume + Lag2 + Lag3 + Lag4 + Lag5 + Lag1 * 
         Volume + Lag2 * Volume + Lag3 * Volume + Lag4 * Volume + 
         Lag5 * Volume
-    <environment: 0x131bd28e0>
+    <environment: 0x115ab4918>
 
 
     Call:
@@ -281,7 +281,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Year
-    <environment: 0x16116e6a0>
+    <environment: 0x122c29ca0>
 
 
     Call:
@@ -308,7 +308,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Lag1
-    <environment: 0x1611bce80>
+    <environment: 0x122c78480>
 
 
     Call:
@@ -335,7 +335,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Lag2
-    <environment: 0x1611d7d28>
+    <environment: 0x122c93328>
 
 
     Call:
@@ -362,7 +362,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Lag3
-    <environment: 0x1611f0cc0>
+    <environment: 0x122cac2c0>
 
 
     Call:
@@ -389,7 +389,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Lag4
-    <environment: 0x161211ba0>
+    <environment: 0x122ccd1a0>
 
 
     Call:
@@ -416,7 +416,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Lag5
-    <environment: 0x161228b38>
+    <environment: 0x122ce4138>
 
 
     Call:
@@ -443,7 +443,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Volume
-    <environment: 0x1612439e0>
+    <environment: 0x122cfefe0>
 
 
     Call:
@@ -470,7 +470,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Today
-    <environment: 0x16125c9b0>
+    <environment: 0x122d17fb0>
 
 
     Call:
@@ -504,7 +504,7 @@ Quadratic Discriminant Analysis
         Lag2 * Volume + Lag2 * Today + Lag3 * Lag4 + Lag3 * Lag5 + 
         Lag3 * Volume + Lag3 * Today + Lag4 * Lag5 + Lag4 * Volume + 
         Lag4 * Today + Lag5 * Volume + Lag5 * Today + Volume * Today
-    <environment: 0x1366fa860>
+    <environment: 0x123272860>
 
 
     Call:
@@ -547,7 +547,7 @@ Quadratic Discriminant Analysis
     Formula:
     Direction ~ Year + Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume + 
         Today
-    <environment: 0x16315faa8>
+    <environment: 0x1250e62a8>
 
 
     Call:
@@ -807,7 +807,7 @@ Linear Discriminant Analysis
     Formula:
     Direction ~ Year + Lag1 + Lag3 + Lag5 + Year * Lag1 + Lag1 * 
         Lag3 + Lag3 * Lag5
-    <environment: 0x1658e1628>
+    <environment: 0x1302f3628>
 
 
     Call:
@@ -847,7 +847,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Year + Lag2 + Lag4 + Year * Lag2 + Lag2 * Lag4
-    <environment: 0x1328dafd0>
+    <environment: 0x117886f98>
 
 
     Call:
@@ -884,7 +884,7 @@ Linear Discriminant Analysis
     Direction ~ Lag1 + Volume + Lag2 + Lag3 + Lag4 + Lag5 + Lag1 * 
         Volume + Lag2 * Volume + Lag3 * Volume + Lag4 * Volume + 
         Lag5 * Volume
-    <environment: 0x131bd28e0>
+    <environment: 0x115ab4918>
 
 
     Call:
@@ -928,7 +928,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Year
-    <environment: 0x16116e6a0>
+    <environment: 0x122c29ca0>
 
 
     Call:
@@ -959,7 +959,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Lag1
-    <environment: 0x1611bce80>
+    <environment: 0x122c78480>
 
 
     Call:
@@ -990,7 +990,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Lag2
-    <environment: 0x1611d7d28>
+    <environment: 0x122c93328>
 
 
     Call:
@@ -1021,7 +1021,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Lag3
-    <environment: 0x1611f0cc0>
+    <environment: 0x122cac2c0>
 
 
     Call:
@@ -1052,7 +1052,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Lag4
-    <environment: 0x161211ba0>
+    <environment: 0x122ccd1a0>
 
 
     Call:
@@ -1083,7 +1083,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Lag5
-    <environment: 0x161228b38>
+    <environment: 0x122ce4138>
 
 
     Call:
@@ -1114,7 +1114,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Volume
-    <environment: 0x1612439e0>
+    <environment: 0x122cfefe0>
 
 
     Call:
@@ -1145,7 +1145,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Today
-    <environment: 0x16125c9b0>
+    <environment: 0x122d17fb0>
 
 
     Call:
@@ -1183,7 +1183,7 @@ Linear Discriminant Analysis
         Lag2 * Volume + Lag2 * Today + Lag3 * Lag4 + Lag3 * Lag5 + 
         Lag3 * Volume + Lag3 * Today + Lag4 * Lag5 + Lag4 * Volume + 
         Lag4 * Today + Lag5 * Volume + Lag5 * Today + Volume * Today
-    <environment: 0x1366fa860>
+    <environment: 0x123272860>
 
 
     Call:
@@ -1265,7 +1265,7 @@ Linear Discriminant Analysis
     Formula:
     Direction ~ Year + Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume + 
         Today
-    <environment: 0x16315faa8>
+    <environment: 0x1250e62a8>
 
 
     Call:
@@ -1307,7 +1307,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Year
-    <environment: 0x16116e6a0>
+    <environment: 0x122c29ca0>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1338,7 +1338,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Lag1
-    <environment: 0x1611bce80>
+    <environment: 0x122c78480>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1369,7 +1369,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Lag2
-    <environment: 0x1611d7d28>
+    <environment: 0x122c93328>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1400,7 +1400,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Lag3
-    <environment: 0x1611f0cc0>
+    <environment: 0x122cac2c0>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1431,7 +1431,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Lag4
-    <environment: 0x161211ba0>
+    <environment: 0x122ccd1a0>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1462,7 +1462,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Lag5
-    <environment: 0x161228b38>
+    <environment: 0x122ce4138>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1493,7 +1493,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Volume
-    <environment: 0x1612439e0>
+    <environment: 0x122cfefe0>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1524,7 +1524,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Today
-    <environment: 0x16125c9b0>
+    <environment: 0x122d17fb0>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -2093,10 +2093,6 @@ using various subsets of the predictors. Describe your findings.
 <img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-5.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-6.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-7.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-8.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-9.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-10.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-11.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-12.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-13.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-14.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-15.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-16.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-17.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-18.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-19.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-20.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-21.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-22.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-23.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-24.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-25.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-26.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-27.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-28.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-29.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-30.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-31.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-32.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-33.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-34.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-35.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-36.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-37.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-38.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-39.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-40.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-41.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-42.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-43.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-44.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-45.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-46.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-47.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-48.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-49.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-50.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-51.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-52.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-53.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-54.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-55.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-56.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-57.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-58.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-59.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-60.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-61.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-62.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-63.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-64.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-65.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-66.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-67.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-68.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-69.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-70.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-71.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-72.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-73.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-74.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-75.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-76.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-77.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-78.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-79.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-80.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-81.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-82.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-83.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-84.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-85.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-86.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-87.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-88.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-89.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-90.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-91.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-92.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-93.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-94.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-95.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-96.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-97.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-98.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-99.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-100.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-101.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-102.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-103.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-104.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-105.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-106.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-107.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-108.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-109.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-110.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-111.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-112.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-113.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-114.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-115.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-116.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-117.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-118.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-119.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-120.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-121.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-122.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-123.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-124.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-125.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-126.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-127.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-128.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-129.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-130.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-131.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-132.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-133.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-134.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-135.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-136.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-137.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-138.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-139.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-140.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-141.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_4_Classification_Exercises_files/figure-gfm/unnamed-chunk-81-142.png" width="70%" style="display: block; margin: auto;" />
 
 Logistic Regression
-
-    Warning: glm.fit: algorithm did not converge
-
-    Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
 
     Confusion Matrix and Statistics
 
