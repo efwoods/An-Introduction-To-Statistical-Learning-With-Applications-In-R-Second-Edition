@@ -166,7 +166,24 @@ returns for 21 years, from the beginning of 1990 to the end of 2010.
   confu- sion matrix that appears to provide the best results on the
   held out data. Note that you should also experiment with values for K
   in the KNN classifier.
+
   - **Answer**:
+
+<!-- -->
+
+    The model with the highest accuracy was KNN Model 3 where k = 3. This model
+    has 100% accuracy and is composed of Direction regressed onto Today. This
+    is not a useful model however. Today is the percentage return for this week,
+    and Direction is a factor indicating whether the market had a positive or
+    negative return for the week. The response Direction and the predictor Today
+    are semantically the same. The model with the highest accuracy that was not
+    composed of Today in any inclusion or interaction was LDA Model 6. LDA Model 6
+    consumed a formula of Direction regressed onto Lag2 and yielded 62.5% accuracy.
+    Furthermore, it is interesting to note that the log transformation of Volume
+    increased the model performance by 10% in models where Direction was regressed
+    onto Volume exclusively. However, models which implement interactions with all
+    predictors, include all predictors individualy, and include a log transformation
+    of Volume perform much worse at 39.42%.
 
 Quadratic Discriminant Analysis
 
@@ -175,7 +192,7 @@ Quadratic Discriminant Analysis
     Formula:
     Direction ~ Year + Lag1 + Lag3 + Lag5 + Year * Lag1 + Lag1 * 
         Lag3 + Lag3 * Lag5
-    <environment: 0x1464f84b0>
+    <environment: 0x135a34488>
 
 
     Call:
@@ -205,7 +222,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Year + Lag2 + Lag4 + Year * Lag2 + Lag2 * Lag4
-    <environment: 0x146bac4b0>
+    <environment: 0x130455a18>
 
 
     Call:
@@ -234,7 +251,7 @@ Quadratic Discriminant Analysis
     Direction ~ Lag1 + Volume + Lag2 + Lag3 + Lag4 + Lag5 + Lag1 * 
         Volume + Lag2 * Volume + Lag3 * Volume + Lag4 * Volume + 
         Lag5 * Volume
-    <environment: 0x144993710>
+    <environment: 0x1369ec650>
 
 
     Call:
@@ -264,7 +281,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Year
-    <environment: 0x150a4da90>
+    <environment: 0x13156d880>
 
 
     Call:
@@ -291,7 +308,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Lag1
-    <environment: 0x150adb608>
+    <environment: 0x1369b6508>
 
 
     Call:
@@ -318,7 +335,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Lag2
-    <environment: 0x150b00ce8>
+    <environment: 0x1369d9cd8>
 
 
     Call:
@@ -345,7 +362,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Lag3
-    <environment: 0x150b263c8>
+    <environment: 0x13151fbb8>
 
 
     Call:
@@ -372,7 +389,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Lag4
-    <environment: 0x150b47b98>
+    <environment: 0x1314a8f88>
 
 
     Call:
@@ -399,7 +416,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Lag5
-    <environment: 0x150b6b278>
+    <environment: 0x131354868>
 
 
     Call:
@@ -426,7 +443,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Volume
-    <environment: 0x150b8ca48>
+    <environment: 0x1312da038>
 
 
     Call:
@@ -453,7 +470,7 @@ Quadratic Discriminant Analysis
 
     Formula:
     Direction ~ Today
-    <environment: 0x150bb0128>
+    <environment: 0x131219b18>
 
 
     Call:
@@ -487,7 +504,7 @@ Quadratic Discriminant Analysis
         Lag2 * Volume + Lag2 * Today + Lag3 * Lag4 + Lag3 * Lag5 + 
         Lag3 * Volume + Lag3 * Today + Lag4 * Lag5 + Lag4 * Volume + 
         Lag4 * Today + Lag5 * Volume + Lag5 * Today + Volume * Today
-    <environment: 0x14757d8a0>
+    <environment: 0x135bea690>
 
 
     Call:
@@ -530,7 +547,7 @@ Quadratic Discriminant Analysis
     Formula:
     Direction ~ Year + Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume + 
         Today
-    <environment: 0x122ccbad8>
+    <environment: 0x1104f8220>
 
 
     Call:
@@ -555,6 +572,234 @@ Quadratic Discriminant Analysis
       Up      0 49
     The overall fraction of correct predictions for the test set is 88.46%.
 
+    QDA Model Log Transformation on Volume alone:
+
+    Formula:
+
+    Call:
+    qda(Direction ~ log(Volume), data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+         log(Volume)
+    Down  -0.2386605
+    Up    -0.3281402
+
+    Confusion Matrix:
+
+          test.Y
+           Down Up
+      Down   16 21
+      Up     27 40
+
+    The overall fraction of correct predictions for the test set is 53.85%.
+
+    QDA Model Log Transformation on Volume with Lag1 through Lag5:
+
+    Formula:
+
+    Call:
+    qda(Direction ~ log(Volume) + Lag1 + Lag2 + Lag3 + Lag4 + Lag5, 
+        data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+         log(Volume)         Lag1        Lag2       Lag3       Lag4       Lag5
+    Down  -0.2386605  0.289444444 -0.03568254 0.17080045 0.15925624 0.21409297
+    Up    -0.3281402 -0.009213235  0.26036581 0.08404044 0.09220956 0.04548897
+
+    Confusion Matrix:
+
+          test.Y
+           Down Up
+      Down   18 25
+      Up     25 36
+
+    The overall fraction of correct predictions for the test set is 51.92%.
+
+    QDA Model Log Transformation on Volume with interactions:
+
+    Formula:
+
+    Call:
+    qda(Direction ~ log(Volume) * Lag1 * Lag2 * Lag3 * Lag4 * Lag5, 
+        data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+         log(Volume)         Lag1        Lag2       Lag3       Lag4       Lag5
+    Down  -0.2386605  0.289444444 -0.03568254 0.17080045 0.15925624 0.21409297
+    Up    -0.3281402 -0.009213235  0.26036581 0.08404044 0.09220956 0.04548897
+         log(Volume):Lag1 log(Volume):Lag2  Lag1:Lag2 log(Volume):Lag3    Lag1:Lag3
+    Down       -0.1419234       -0.3439834 -0.8014495       -0.1960383 -0.006554329
+    Up         -0.2510587       -0.1747805 -0.1393632       -0.2254085  0.687742739
+          Lag2:Lag3 log(Volume):Lag4  Lag1:Lag4  Lag2:Lag4    Lag3:Lag4
+    Down -0.1937158        -0.232498 -0.4724269 0.78824608 -0.991496916
+    Up   -0.6405132        -0.188478 -0.2036205 0.04407141  0.007162822
+         log(Volume):Lag5  Lag1:Lag5  Lag2:Lag5 Lag3:Lag5  Lag4:Lag5
+    Down      -0.31408328  0.3615693 -0.3132494 0.4913572 -0.3686248
+    Up        -0.09759327 -0.1833118 -0.3497535 0.3137873 -0.4945795
+         log(Volume):Lag1:Lag2 log(Volume):Lag1:Lag3 log(Volume):Lag2:Lag3
+    Down            -1.1260566            -0.6141979             0.4987940
+    Up               0.8850746             0.8878345            -0.4137243
+         Lag1:Lag2:Lag3 log(Volume):Lag1:Lag4 log(Volume):Lag2:Lag4 Lag1:Lag2:Lag4
+    Down      3.8074837            -0.9509487             1.1537393       4.236787
+    Up       -0.8172255            -0.1740245            -0.5696375       3.114838
+         log(Volume):Lag3:Lag4 Lag1:Lag3:Lag4 Lag2:Lag3:Lag4 log(Volume):Lag1:Lag5
+    Down            -0.5181156     0.04642292      -1.283072             0.1993040
+    Up               0.2911131    -1.61754733       3.313306             0.1377705
+         log(Volume):Lag2:Lag5 Lag1:Lag2:Lag5 log(Volume):Lag3:Lag5 Lag1:Lag3:Lag5
+    Down           -0.95346215      0.9730653            0.28519579      -4.001915
+    Up             -0.01278474     -1.6776368            0.03225806      -1.581575
+         Lag2:Lag3:Lag5 log(Volume):Lag4:Lag5 Lag1:Lag4:Lag5 Lag2:Lag4:Lag5
+    Down       4.655332            -0.5347677      4.8242312      -3.198052
+    Up         2.808660             0.2836911      0.7394158       1.011993
+         Lag3:Lag4:Lag5 log(Volume):Lag1:Lag2:Lag3 log(Volume):Lag1:Lag2:Lag4
+    Down      3.5038182                  6.9693126                   6.652397
+    Up       -0.5714136                 -0.9170187                   4.353989
+         log(Volume):Lag1:Lag3:Lag4 log(Volume):Lag2:Lag3:Lag4 Lag1:Lag2:Lag3:Lag4
+    Down                  0.2126928                  -1.258063           -0.895937
+    Up                   -2.6221925                   6.194980          -17.736294
+         log(Volume):Lag1:Lag2:Lag5 log(Volume):Lag1:Lag3:Lag5
+    Down                  0.8976374                  -7.896364
+    Up                   -0.8798938                  -1.890189
+         log(Volume):Lag2:Lag3:Lag5 Lag1:Lag2:Lag3:Lag5 log(Volume):Lag1:Lag4:Lag5
+    Down                   7.445545          13.6140337                   7.465009
+    Up                     2.588485           0.7934935                   1.738937
+         log(Volume):Lag2:Lag4:Lag5 Lag1:Lag2:Lag4:Lag5 log(Volume):Lag3:Lag4:Lag5
+    Down                  -6.699311          -11.317712                  6.1909225
+    Up                     3.132327           -7.500406                  0.1557924
+         Lag1:Lag3:Lag4:Lag5 Lag2:Lag3:Lag4:Lag5 log(Volume):Lag1:Lag2:Lag3:Lag4
+    Down           28.037893            1.201301                       0.8769175
+    Up              3.654567          -19.448239                     -32.1414428
+         log(Volume):Lag1:Lag2:Lag3:Lag5 log(Volume):Lag1:Lag2:Lag4:Lag5
+    Down                       25.253997                       -25.25206
+    Up                         -2.335075                       -17.07163
+         log(Volume):Lag1:Lag3:Lag4:Lag5 log(Volume):Lag2:Lag3:Lag4:Lag5
+    Down                       47.685444                       -2.854376
+    Up                          6.029353                      -30.414678
+         Lag1:Lag2:Lag3:Lag4:Lag5 log(Volume):Lag1:Lag2:Lag3:Lag4:Lag5
+    Down               -252.06230                            -460.3953
+    Up                   60.54167                             123.0539
+
+    Confusion Matrix:
+
+          test.Y
+           Down Up
+      Down   17 37
+      Up     26 24
+
+    The overall fraction of correct predictions for the test set is 39.42%.
+
+    QDA Model Log Transformation on Volume with interaction of Lag1:
+
+    Formula:
+
+    Call:
+    qda(Direction ~ log(Volume) * Lag1, data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+         log(Volume)         Lag1 log(Volume):Lag1
+    Down  -0.2386605  0.289444444       -0.1419234
+    Up    -0.3281402 -0.009213235       -0.2510587
+
+    Confusion Matrix:
+
+          test.Y
+           Down Up
+      Down   26 43
+      Up     17 18
+
+    The overall fraction of correct predictions for the test set is 42.31%.
+
+    QDA Model Log Transformation on Volume with interactions:
+
+    Formula:
+
+    Call:
+    qda(Direction ~ log(Volume) + Lag1, data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+         log(Volume)         Lag1
+    Down  -0.2386605  0.289444444
+    Up    -0.3281402 -0.009213235
+
+    Confusion Matrix:
+
+          test.Y
+           Down Up
+      Down   26 39
+      Up     17 22
+
+    The overall fraction of correct predictions for the test set is 46.15%.
+
+    QDA Model Log Transformation on Volume with Year predictor:
+
+    Formula:
+
+    Call:
+    qda(Direction ~ log(Volume) + Year, data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+         log(Volume)     Year
+    Down  -0.2386605 1999.295
+    Up    -0.3281402 1998.853
+
+    Confusion Matrix:
+
+          test.Y
+           Down Up
+      Down    6  8
+      Up     37 53
+
+    The overall fraction of correct predictions for the test set is 56.73%.
+
+    QDA Model Log Transformation on Volume with interaction with Year:
+
+    Formula:
+
+    Call:
+    qda(Direction ~ log(Volume) * Year, data = weekly, subset = train)
+
+    Prior probabilities of groups:
+         Down        Up 
+    0.4477157 0.5522843 
+
+    Group means:
+         log(Volume)     Year log(Volume):Year
+    Down  -0.2386605 1999.295        -471.7261
+    Up    -0.3281402 1998.853        -650.6346
+
+    Confusion Matrix:
+
+          test.Y
+           Down Up
+      Down   42 57
+      Up      1  4
+
+    The overall fraction of correct predictions for the test set is 44.23%.
+
 Linear Discriminant Analysis
 
     LDA Model 1:
@@ -562,7 +807,7 @@ Linear Discriminant Analysis
     Formula:
     Direction ~ Year + Lag1 + Lag3 + Lag5 + Year * Lag1 + Lag1 * 
         Lag3 + Lag3 * Lag5
-    <environment: 0x1464f84b0>
+    <environment: 0x135a34488>
 
 
     Call:
@@ -602,7 +847,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Year + Lag2 + Lag4 + Year * Lag2 + Lag2 * Lag4
-    <environment: 0x146bac4b0>
+    <environment: 0x130455a18>
 
 
     Call:
@@ -639,7 +884,7 @@ Linear Discriminant Analysis
     Direction ~ Lag1 + Volume + Lag2 + Lag3 + Lag4 + Lag5 + Lag1 * 
         Volume + Lag2 * Volume + Lag3 * Volume + Lag4 * Volume + 
         Lag5 * Volume
-    <environment: 0x144993710>
+    <environment: 0x1369ec650>
 
 
     Call:
@@ -683,7 +928,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Year
-    <environment: 0x150a4da90>
+    <environment: 0x13156d880>
 
 
     Call:
@@ -714,7 +959,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Lag1
-    <environment: 0x150adb608>
+    <environment: 0x1369b6508>
 
 
     Call:
@@ -745,7 +990,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Lag2
-    <environment: 0x150b00ce8>
+    <environment: 0x1369d9cd8>
 
 
     Call:
@@ -776,7 +1021,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Lag3
-    <environment: 0x150b263c8>
+    <environment: 0x13151fbb8>
 
 
     Call:
@@ -807,7 +1052,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Lag4
-    <environment: 0x150b47b98>
+    <environment: 0x1314a8f88>
 
 
     Call:
@@ -838,7 +1083,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Lag5
-    <environment: 0x150b6b278>
+    <environment: 0x131354868>
 
 
     Call:
@@ -869,7 +1114,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Volume
-    <environment: 0x150b8ca48>
+    <environment: 0x1312da038>
 
 
     Call:
@@ -900,7 +1145,7 @@ Linear Discriminant Analysis
 
     Formula:
     Direction ~ Today
-    <environment: 0x150bb0128>
+    <environment: 0x131219b18>
 
 
     Call:
@@ -938,7 +1183,7 @@ Linear Discriminant Analysis
         Lag2 * Volume + Lag2 * Today + Lag3 * Lag4 + Lag3 * Lag5 + 
         Lag3 * Volume + Lag3 * Today + Lag4 * Lag5 + Lag4 * Volume + 
         Lag4 * Today + Lag5 * Volume + Lag5 * Today + Volume * Today
-    <environment: 0x14757d8a0>
+    <environment: 0x135bea690>
 
 
     Call:
@@ -1020,7 +1265,7 @@ Linear Discriminant Analysis
     Formula:
     Direction ~ Year + Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume + 
         Today
-    <environment: 0x122ccbad8>
+    <environment: 0x1104f8220>
 
 
     Call:
@@ -1062,7 +1307,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Year
-    <environment: 0x150a4da90>
+    <environment: 0x13156d880>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1093,7 +1338,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Lag1
-    <environment: 0x150adb608>
+    <environment: 0x1369b6508>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1124,7 +1369,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Lag2
-    <environment: 0x150b00ce8>
+    <environment: 0x1369d9cd8>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1155,7 +1400,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Lag3
-    <environment: 0x150b263c8>
+    <environment: 0x13151fbb8>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1186,7 +1431,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Lag4
-    <environment: 0x150b47b98>
+    <environment: 0x1314a8f88>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1217,7 +1462,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Lag5
-    <environment: 0x150b6b278>
+    <environment: 0x131354868>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1248,7 +1493,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Volume
-    <environment: 0x150b8ca48>
+    <environment: 0x1312da038>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1279,7 +1524,7 @@ Naive Bayes
 
     Formula:
     Direction ~ Today
-    <environment: 0x150bb0128>
+    <environment: 0x131219b18>
 
     Naive Bayes Classifier for Discrete Predictors
 
@@ -1305,46 +1550,274 @@ Naive Bayes
           Up      2 61
     The overall fraction of correct predictions for the test set is 98.08%.
 
-KNN
+KNN:
+
+k = 1
+
+    KNN Model 1: k = 1
 
 
            
     knn.fit Down Up
        Down   43 61
        Up      0  0
+    Direction regressed onto predictor Year:
     The overall fraction of correct predictions for the test set is 0.41%.
            
     knn.fit Down Up
-       Down   18 31
-       Up     25 30
-    The overall fraction of correct predictions for the test set is 0.46%.
+       Down   17 32
+       Up     26 29
+    Direction regressed onto predictor Lag1:
+    The overall fraction of correct predictions for the test set is 0.44%.
            
     knn.fit Down Up
        Down   21 30
        Up     22 31
+    Direction regressed onto predictor Lag2:
     The overall fraction of correct predictions for the test set is 0.50%.
            
     knn.fit Down Up
-       Down   20 27
-       Up     23 34
+       Down   21 27
+       Up     22 34
+    Direction regressed onto predictor Lag3:
+    The overall fraction of correct predictions for the test set is 0.53%.
+           
+    knn.fit Down Up
+       Down   18 25
+       Up     25 36
+    Direction regressed onto predictor Lag4:
     The overall fraction of correct predictions for the test set is 0.52%.
            
     knn.fit Down Up
-       Down   18 26
-       Up     25 35
-    The overall fraction of correct predictions for the test set is 0.51%.
-           
-    knn.fit Down Up
-       Down   17 22
-       Up     26 39
-    The overall fraction of correct predictions for the test set is 0.54%.
+       Down   18 22
+       Up     25 39
+    Direction regressed onto predictor Lag5:
+    The overall fraction of correct predictions for the test set is 0.55%.
            
     knn.fit Down Up
        Down   16 29
        Up     27 32
+    Direction regressed onto predictor Volume:
     The overall fraction of correct predictions for the test set is 0.46%.
            
     knn.fit Down Up
        Down   43  0
        Up      0 61
+    Direction regressed onto predictor Today:
     The overall fraction of correct predictions for the test set is 1.00%.
+
+k = 2
+
+    KNN Model 2: k = 2
+
+
+           
+    knn.fit Down Up
+       Down   43 61
+       Up      0  0
+    Direction regressed onto predictor Year:
+    The overall fraction of correct predictions for the test set is 0.41%.
+           
+    knn.fit Down Up
+       Down   18 32
+       Up     25 29
+    Direction regressed onto predictor Lag1:
+    The overall fraction of correct predictions for the test set is 0.45%.
+           
+    knn.fit Down Up
+       Down   20 26
+       Up     23 35
+    Direction regressed onto predictor Lag2:
+    The overall fraction of correct predictions for the test set is 0.53%.
+           
+    knn.fit Down Up
+       Down   18 28
+       Up     25 33
+    Direction regressed onto predictor Lag3:
+    The overall fraction of correct predictions for the test set is 0.49%.
+           
+    knn.fit Down Up
+       Down   20 23
+       Up     23 38
+    Direction regressed onto predictor Lag4:
+    The overall fraction of correct predictions for the test set is 0.56%.
+           
+    knn.fit Down Up
+       Down   19 26
+       Up     24 35
+    Direction regressed onto predictor Lag5:
+    The overall fraction of correct predictions for the test set is 0.52%.
+           
+    knn.fit Down Up
+       Down   18 34
+       Up     25 27
+    Direction regressed onto predictor Volume:
+    The overall fraction of correct predictions for the test set is 0.43%.
+           
+    knn.fit Down Up
+       Down   43  0
+       Up      0 61
+    Direction regressed onto predictor Today:
+    The overall fraction of correct predictions for the test set is 1.00%.
+
+k = 3
+
+    KNN Model 3: k = 3
+
+
+           
+    knn.fit Down Up
+       Down   43 61
+       Up      0  0
+    Direction regressed onto predictor Year:
+    The overall fraction of correct predictions for the test set is 0.41%.
+           
+    knn.fit Down Up
+       Down   15 28
+       Up     28 33
+    Direction regressed onto predictor Lag1:
+    The overall fraction of correct predictions for the test set is 0.46%.
+           
+    knn.fit Down Up
+       Down   16 19
+       Up     27 42
+    Direction regressed onto predictor Lag2:
+    The overall fraction of correct predictions for the test set is 0.56%.
+           
+    knn.fit Down Up
+       Down   16 31
+       Up     27 30
+    Direction regressed onto predictor Lag3:
+    The overall fraction of correct predictions for the test set is 0.44%.
+           
+    knn.fit Down Up
+       Down   15 23
+       Up     28 38
+    Direction regressed onto predictor Lag4:
+    The overall fraction of correct predictions for the test set is 0.51%.
+           
+    knn.fit Down Up
+       Down   22 25
+       Up     21 36
+    Direction regressed onto predictor Lag5:
+    The overall fraction of correct predictions for the test set is 0.56%.
+           
+    knn.fit Down Up
+       Down   23 34
+       Up     20 27
+    Direction regressed onto predictor Volume:
+    The overall fraction of correct predictions for the test set is 0.48%.
+           
+    knn.fit Down Up
+       Down   43  0
+       Up      0 61
+    Direction regressed onto predictor Today:
+    The overall fraction of correct predictions for the test set is 1.00%.
+
+k = 4
+
+    KNN Model 4: k = 4
+
+
+           
+    knn.fit Down Up
+       Down   43 61
+       Up      0  0
+    Direction regressed onto predictor Year:
+    The overall fraction of correct predictions for the test set is 0.41%.
+           
+    knn.fit Down Up
+       Down   16 26
+       Up     27 35
+    Direction regressed onto predictor Lag1:
+    The overall fraction of correct predictions for the test set is 0.49%.
+           
+    knn.fit Down Up
+       Down   17 19
+       Up     26 42
+    Direction regressed onto predictor Lag2:
+    The overall fraction of correct predictions for the test set is 0.57%.
+           
+    knn.fit Down Up
+       Down   19 35
+       Up     24 26
+    Direction regressed onto predictor Lag3:
+    The overall fraction of correct predictions for the test set is 0.43%.
+           
+    knn.fit Down Up
+       Down   19 23
+       Up     24 38
+    Direction regressed onto predictor Lag4:
+    The overall fraction of correct predictions for the test set is 0.55%.
+           
+    knn.fit Down Up
+       Down   21 19
+       Up     22 42
+    Direction regressed onto predictor Lag5:
+    The overall fraction of correct predictions for the test set is 0.61%.
+           
+    knn.fit Down Up
+       Down   19 34
+       Up     24 27
+    Direction regressed onto predictor Volume:
+    The overall fraction of correct predictions for the test set is 0.44%.
+           
+    knn.fit Down Up
+       Down   43  1
+       Up      0 60
+    Direction regressed onto predictor Today:
+    The overall fraction of correct predictions for the test set is 0.99%.
+
+k = 5
+
+    KNN Model 5: k = 5
+
+
+           
+    knn.fit Down Up
+       Down   43 61
+       Up      0  0
+    Direction regressed onto predictor Year:
+    The overall fraction of correct predictions for the test set is 0.41%.
+           
+    knn.fit Down Up
+       Down   14 27
+       Up     29 34
+    Direction regressed onto predictor Lag1:
+    The overall fraction of correct predictions for the test set is 0.46%.
+           
+    knn.fit Down Up
+       Down   16 22
+       Up     27 39
+    Direction regressed onto predictor Lag2:
+    The overall fraction of correct predictions for the test set is 0.53%.
+           
+    knn.fit Down Up
+       Down   19 31
+       Up     24 30
+    Direction regressed onto predictor Lag3:
+    The overall fraction of correct predictions for the test set is 0.47%.
+           
+    knn.fit Down Up
+       Down   19 20
+       Up     24 41
+    Direction regressed onto predictor Lag4:
+    The overall fraction of correct predictions for the test set is 0.58%.
+           
+    knn.fit Down Up
+       Down   19 25
+       Up     24 36
+    Direction regressed onto predictor Lag5:
+    The overall fraction of correct predictions for the test set is 0.53%.
+           
+    knn.fit Down Up
+       Down   25 40
+       Up     18 21
+    Direction regressed onto predictor Volume:
+    The overall fraction of correct predictions for the test set is 0.44%.
+           
+    knn.fit Down Up
+       Down   43  1
+       Up      0 60
+    Direction regressed onto predictor Today:
+    The overall fraction of correct predictions for the test set is 0.99%.

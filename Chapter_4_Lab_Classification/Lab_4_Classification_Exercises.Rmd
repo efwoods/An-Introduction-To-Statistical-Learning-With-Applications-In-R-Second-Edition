@@ -265,7 +265,15 @@ methods. Report the variables, method, and associated confu-
 sion matrix that appears to provide the best results on the held
 out data. Note that you should also experiment with values for
 K in the KNN classifier.
+
   * **Answer**:
+  
+```{r echo=FALSE}
+
+string <- "The model with the highest accuracy was KNN Model 3 where k = 3. This model has 100%% accuracy and is composed of Direction regressed onto Today. This is not a useful model however. Today is the percentage return for this week, and Direction is a factor indicating whether the market had a positive or negative return for the week. The response Direction and the predictor Today are semantically the same.\n\n The model with the highest accuracy that was not composed of Today in any inclusion or interaction was LDA Model 6. LDA Model 6 consumed a formula of Direction regressed onto Lag2 and yielded 62.5%% accuracy. \n\n Furthermore, it is interesting to note that the log transformation of Volume increased the model performance by 10%% in models where Direction was regressed onto Volume exclusively. However, models which implement interactions with all predictors, include all predictors individualy, and include a log transformation of Volume perform much worse at 39.42%%."
+f_print(sprintf(string))
+```
+
 
 ```{r include=FALSE}
 # Build Formula: All predictors & all interactions
@@ -324,11 +332,8 @@ formula_master_list <- append(formula_master_list, formula_all_predictors_all_in
 formula_master_list <- append(formula_master_list, formula_predictors_only)
 ```
 
-```{r include=FALSE}
-qda(formula_master_list[[i]], weekly, subset = train)
-```
-
 Quadratic Discriminant Analysis
+
 ```{r echo=FALSE}
 for (i in seq_along(formula_master_list)){
   f_print(sprintf("QDA Model %0.0f:", i))
@@ -350,7 +355,141 @@ for (i in seq_along(formula_master_list)){
 }
 ```
 
+```{r echo=FALSE}
+  f_print(sprintf("QDA Model Log Transformation on Volume alone:"))
+  cat("\n\n")
+  f_print(sprintf("Formula:"))
+  cat("\n")
+  # print(formula_master_list[[i]])
+  cat("\n\n")
+  model.fit <- qda(Direction ~ log(Volume), weekly, subset = train)
+  print(model.fit)
+  cat("\n")
+  f_print(sprintf("Confusion Matrix:"))
+  cat("\n")
+  model.pred <- predict(model.fit, test.X)
+  # print(model.pred)
+  print(table(model.pred$class, test.Y))
+  accuracy_of_predictions(model.pred$class, test.Y)
+  cat("\n\n\n")
+```
+
+```{r echo=FALSE}
+  f_print(sprintf("QDA Model Log Transformation on Volume with Lag1 through Lag5:"))
+  cat("\n\n")
+  f_print(sprintf("Formula:"))
+  cat("\n")
+  # print(formula_master_list[[i]])
+  cat("\n\n")
+  model.fit <- qda(Direction ~ log(Volume) + Lag1 + Lag2 + Lag3 + Lag4 + Lag5, weekly, subset = train)
+  print(model.fit)
+  cat("\n")
+  f_print(sprintf("Confusion Matrix:"))
+  cat("\n")
+  model.pred <- predict(model.fit, test.X)
+  # print(model.pred)
+  print(table(model.pred$class, test.Y))
+  accuracy_of_predictions(model.pred$class, test.Y)
+  cat("\n\n\n")
+```
+
+```{r echo=FALSE}
+  f_print(sprintf("QDA Model Log Transformation on Volume with interactions:"))
+  cat("\n\n")
+  f_print(sprintf("Formula:"))
+  cat("\n")
+  # print(formula_master_list[[i]])
+  cat("\n\n")
+  model.fit <- qda(Direction ~ log(Volume) * Lag1 * Lag2 * Lag3 * Lag4 * Lag5, weekly, subset = train)
+  print(model.fit)
+  cat("\n")
+  f_print(sprintf("Confusion Matrix:"))
+  cat("\n")
+  model.pred <- predict(model.fit, test.X)
+  # print(model.pred)
+  print(table(model.pred$class, test.Y))
+  accuracy_of_predictions(model.pred$class, test.Y)
+  cat("\n\n\n")
+```
+
+```{r echo=FALSE}
+  f_print(sprintf("QDA Model Log Transformation on Volume with interaction of Lag1:"))
+  cat("\n\n")
+  f_print(sprintf("Formula:"))
+  cat("\n")
+  # print(formula_master_list[[i]])
+  cat("\n\n")
+  model.fit <- qda(Direction ~ log(Volume) * Lag1, weekly, subset = train)
+  print(model.fit)
+  cat("\n")
+  f_print(sprintf("Confusion Matrix:"))
+  cat("\n")
+  model.pred <- predict(model.fit, test.X)
+  # print(model.pred)
+  print(table(model.pred$class, test.Y))
+  accuracy_of_predictions(model.pred$class, test.Y)
+  cat("\n\n\n")
+```
+
+```{r echo=FALSE}
+  f_print(sprintf("QDA Model Log Transformation on Volume with interactions:"))
+  cat("\n\n")
+  f_print(sprintf("Formula:"))
+  cat("\n")
+  # print(formula_master_list[[i]])
+  cat("\n\n")
+  model.fit <- qda(Direction ~ log(Volume) + Lag1, weekly, subset = train)
+  print(model.fit)
+  cat("\n")
+  f_print(sprintf("Confusion Matrix:"))
+  cat("\n")
+  model.pred <- predict(model.fit, test.X)
+  # print(model.pred)
+  print(table(model.pred$class, test.Y))
+  accuracy_of_predictions(model.pred$class, test.Y)
+  cat("\n\n\n")
+```
+
+```{r echo=FALSE}
+  f_print(sprintf("QDA Model Log Transformation on Volume with Year predictor:"))
+  cat("\n\n")
+  f_print(sprintf("Formula:"))
+  cat("\n")
+  # print(formula_master_list[[i]])
+  cat("\n\n")
+  model.fit <- qda(Direction ~ log(Volume) + Year, weekly, subset = train)
+  print(model.fit)
+  cat("\n")
+  f_print(sprintf("Confusion Matrix:"))
+  cat("\n")
+  model.pred <- predict(model.fit, test.X)
+  # print(model.pred)
+  print(table(model.pred$class, test.Y))
+  accuracy_of_predictions(model.pred$class, test.Y)
+  cat("\n\n\n")
+```
+
+```{r echo=FALSE}
+  f_print(sprintf("QDA Model Log Transformation on Volume with interaction with Year:"))
+  cat("\n\n")
+  f_print(sprintf("Formula:"))
+  cat("\n")
+  # print(formula_master_list[[i]])
+  cat("\n\n")
+  model.fit <- qda(Direction ~ log(Volume) * Year, weekly, subset = train)
+  print(model.fit)
+  cat("\n")
+  f_print(sprintf("Confusion Matrix:"))
+  cat("\n")
+  model.pred <- predict(model.fit, test.X)
+  # print(model.pred)
+  print(table(model.pred$class, test.Y))
+  accuracy_of_predictions(model.pred$class, test.Y)
+  cat("\n\n\n")
+```
+
 Linear Discriminant Analysis
+
 ```{r echo=FALSE}
 for (i in seq_along(formula_master_list)){
   f_print(sprintf("LDA Model %0.0f:", i))
@@ -399,9 +538,14 @@ for (i in seq_along(formula_master_list_no_interaction)){
 }
 ```
 
-KNN
+KNN: 
+
+k = 1
 
 ```{r echo=FALSE}
+k <- 1
+f_print(sprintf("KNN Model %s:\n k = %s", k, k ))
+cat("\n")
 train <- (Year < 2009)
 train_y <- weekly %>% filter(Year < 2009) %>% select(Direction)
 test_y <- weekly %>% filter(Year >= 2009) %>% select(Direction)
@@ -411,10 +555,95 @@ for (i in seq_along(predictors)) {
   knn.fit <- knn(train_x, test_x, train_y[[1]], k = 1)
   cat("\n")
   print(table(knn.fit, test_y[[1]]))
+  f_print(sprintf("Direction regressed onto predictor %s:\n", predictors[i]))
+  cat("\n")
   f_print(sprintf("The overall fraction of correct predictions for the test set is %0.2f%%.", mean(knn.fit == test_y[[1]])))
 }
 ```
 
+k = 2
 
+```{r echo=FALSE}
+k <- 2
+f_print(sprintf("KNN Model %s:\n k = %s", k, k ))
+cat("\n")
+train <- (Year < 2009)
+train_y <- weekly %>% filter(Year < 2009) %>% select(Direction)
+test_y <- weekly %>% filter(Year >= 2009) %>% select(Direction)
+for (i in seq_along(predictors)) { 
+  train_x <- weekly %>% filter(Year < 2009) %>% select(predictors[i])
+  test_x <- weekly %>% filter(Year >= 2009) %>% select(predictors[i])
+  knn.fit <- knn(train_x, test_x, train_y[[1]], k = 2)
+  cat("\n")
+  print(table(knn.fit, test_y[[1]]))
+  f_print(sprintf("Direction regressed onto predictor %s:\n", predictors[i]))
+  cat("\n")
+  f_print(sprintf("The overall fraction of correct predictions for the test set is %0.2f%%.", mean(knn.fit == test_y[[1]])))
+}
+```
+
+k = 3
+
+```{r echo=FALSE}
+k <- 3
+f_print(sprintf("KNN Model %s:\n k = %s", k, k ))
+cat("\n")
+train <- (Year < 2009)
+train_y <- weekly %>% filter(Year < 2009) %>% select(Direction)
+test_y <- weekly %>% filter(Year >= 2009) %>% select(Direction)
+for (i in seq_along(predictors)) { 
+  train_x <- weekly %>% filter(Year < 2009) %>% select(predictors[i])
+  test_x <- weekly %>% filter(Year >= 2009) %>% select(predictors[i])
+  knn.fit <- knn(train_x, test_x, train_y[[1]], k = k)
+  cat("\n")
+  print(table(knn.fit, test_y[[1]]))
+  f_print(sprintf("Direction regressed onto predictor %s:\n", predictors[i]))
+  cat("\n")
+  f_print(sprintf("The overall fraction of correct predictions for the test set is %0.2f%%.", mean(knn.fit == test_y[[1]])))
+}
+```
+
+k = 4
+
+```{r echo=FALSE}
+k <- 4
+f_print(sprintf("KNN Model %s:\n k = %s", k, k ))
+cat("\n")
+train <- (Year < 2009)
+train_y <- weekly %>% filter(Year < 2009) %>% select(Direction)
+test_y <- weekly %>% filter(Year >= 2009) %>% select(Direction)
+for (i in seq_along(predictors)) { 
+  train_x <- weekly %>% filter(Year < 2009) %>% select(predictors[i])
+  test_x <- weekly %>% filter(Year >= 2009) %>% select(predictors[i])
+  knn.fit <- knn(train_x, test_x, train_y[[1]], k = 4)
+  cat("\n")
+  print(table(knn.fit, test_y[[1]]))
+  f_print(sprintf("Direction regressed onto predictor %s:\n", predictors[i]))
+  cat("\n")
+  f_print(sprintf("The overall fraction of correct predictions for the test set is %0.2f%%.", mean(knn.fit == test_y[[1]])))
+}
+```
+
+k = 5
+
+```{r echo=FALSE}
+k <- 5
+f_print(sprintf("KNN Model %s:\n k = %s", k, k ))
+cat("\n")
+train <- (Year < 2009)
+train_y <- weekly %>% filter(Year < 2009) %>% select(Direction)
+test_y <- weekly %>% filter(Year >= 2009) %>% select(Direction)
+for (i in seq_along(predictors)) { 
+  
+  train_x <- weekly %>% filter(Year < 2009) %>% select(predictors[i])
+  test_x <- weekly %>% filter(Year >= 2009) %>% select(predictors[i])
+  knn.fit <- knn(train_x, test_x, train_y[[1]], k = 5)
+  cat("\n")
+  print(table(knn.fit, test_y[[1]]))
+  f_print(sprintf("Direction regressed onto predictor %s:\n", predictors[i]))
+  cat("\n")
+  f_print(sprintf("The overall fraction of correct predictions for the test set is %0.2f%%.", mean(knn.fit == test_y[[1]])))
+}
+```
 
 
