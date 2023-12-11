@@ -296,7 +296,7 @@ create_all_custom_box_scatter_plots <- function(df, plot_types=NULL) {
 }
 ```
 
-```{r}
+```{r echo=FALSE}
 # Purpose: This method will accept a list of methods to be run, a formula to use consistently across the methods, training & testing data, and will output confusion matrices along with the minimum test error for each type of function. This function anticipates a response that is either 0 or 1. It anticipates that the data has already been split into training and test sets.
 # Inputs: 
 # enable_knn: Enables the knn method. The response and predictors are required for this method to create training and testing data for the knn function.
@@ -1040,29 +1040,26 @@ knn_auto_test_y_mpg01 <- auto_test_y %>% select(mpg01)
 ```
 
 ```{r echo=FALSE}
+set.seed(42)
 knn.fit_mpg01 <- knn(knn_auto_train_x_mpg_cyl_dis_wei, knn_auto_test_x_mpg_cyl_dis_wei, knn_auto_train_y_mpg01[[1]], k = 1)
-f_print(sprintf("The test error of the knn model where k is %0.0f is: %0.3f%%", 1, (mean(knn.fit_mpg01 != knn_auto_test_y_mpg01[[1]]) * 100)))
-```
+f_print(sprintf("The test error of the knn model where k is %0.0f is: %0.3f%%.", 1, (mean(knn.fit_mpg01 != knn_auto_test_y_mpg01[[1]]) * 100)))
+cat("\n\n\n")
 
-```{r echo=FALSE}
 knn.fit_mpg01 <- knn(knn_auto_train_x_mpg_cyl_dis_wei, knn_auto_test_x_mpg_cyl_dis_wei, knn_auto_train_y_mpg01[[1]], k = 3)
-f_print(sprintf("The test error of the knn model where k is %0.0f is: %0.3f%%", 3, (mean(knn.fit_mpg01 != knn_auto_test_y_mpg01[[1]]) * 100)))
-```
+f_print(sprintf("The test error of the knn model where k is %0.0f is: %0.3f%%.", 3, (mean(knn.fit_mpg01 != knn_auto_test_y_mpg01[[1]]) * 100)))
+cat("\n\n\n")
 
-```{r echo=FALSE}
 knn.fit_mpg01 <- knn(knn_auto_train_x_mpg_cyl_dis_wei, knn_auto_test_x_mpg_cyl_dis_wei, knn_auto_train_y_mpg01[[1]], k = 5)
-f_print(sprintf("The test error of the knn model where k is %0.0f is: %0.3f%%", 5, (mean(knn.fit_mpg01 != knn_auto_test_y_mpg01[[1]]) * 100)))
-```
+f_print(sprintf("The test error of the knn model where k is %0.0f is: %0.3f%%.", 5, (mean(knn.fit_mpg01 != knn_auto_test_y_mpg01[[1]]) * 100)))
+cat("\n\n\n")
 
-```{r echo=FALSE}
 knn.fit_mpg01 <- knn(knn_auto_train_x_mpg_cyl_dis_wei, knn_auto_test_x_mpg_cyl_dis_wei, knn_auto_train_y_mpg01[[1]], k = 7)
-f_print(sprintf("The test error of the knn model where k is %0.0f is: %0.3f%%", 7, (mean(knn.fit_mpg01 != knn_auto_test_y_mpg01[[1]]) * 100)))
-```
+f_print(sprintf("The test error of the knn model where k is %0.0f is: %0.3f%%.", 7, (mean(knn.fit_mpg01 != knn_auto_test_y_mpg01[[1]]) * 100)))
+cat("\n\n\n")
 
-
-```{r echo=FALSE}
 knn.fit_mpg01 <- knn(knn_auto_train_x_mpg_cyl_dis_wei, knn_auto_test_x_mpg_cyl_dis_wei, knn_auto_train_y_mpg01[[1]], k = 9)
-f_print(sprintf("The test error of the knn model where k is %0.0f is: %0.3f%%", 9, (mean(knn.fit_mpg01 != knn_auto_test_y_mpg01[[1]]) * 100)))
+f_print(sprintf("The test error of the knn model where k is %0.0f is: %0.3f%%.", 9, (mean(knn.fit_mpg01 != knn_auto_test_y_mpg01[[1]]) * 100)))
+cat("\n\n\n")
 ```
 
 ### Quesiton 15:
@@ -1172,7 +1169,7 @@ whether a given census tract has a crime rate above or below the me-
 dian. Explore logistic regression, LDA, naive Bayes, and KNN models
 using various subsets of the predictors. Describe your findings.
 
-```{r }
+```{r include=FALSE}
 boston <- na.omit(Boston)
 boston <- boston %>% mutate(above_med_crim = crim > median(crim)) %>% select(above_med_crim, everything())
 boston_false <- boston %>% filter(above_med_crim == FALSE) %>% mutate(above_med_crim = 0)
@@ -1181,7 +1178,7 @@ boston <- add_row(boston_false, boston_true)
 boston
 ```
 
-```{r}
+```{r include=FALSE}
 boston$train <- sample.split(boston$above_med_crim, SplitRatio = .8)
 boston_train_x <- boston %>% select(train, everything()) %>% filter(train == TRUE) %>% select(everything(), -train)
 boston_test_x <- boston %>% select(train, everything()) %>% filter(train == FALSE) %>% select(everything(), -train)
@@ -1189,13 +1186,13 @@ boston_train_y <- boston %>% select(train, above_med_crim) %>% filter(train == T
 boston_test_y <- boston %>% select(train, above_med_crim) %>% filter(train == FALSE) %>% select(everything(), -train)
 ```
 
-```{r}
+```{r include=FALSE}
 names(boston)
 head(boston)
 ?boston
 ```
 
-```{r}
+```{r include=FALSE}
 boston_formatted_plot <- boston %>% select(everything(), -train)
 attr(boston_formatted_plot, "plot_types_when_on_x_axis") <- c("box", "point", "box", "point", "box", "point", "point", "point", "point", "box", "point", "point", "point", "point")
 length(attributes(boston_formatted_plot)$plot_types_when_on_x_axis)
@@ -1204,17 +1201,17 @@ length(boston_formatted_plot)
 
 
 
-```{r warning=FALSE, message=FALSE}
+```{r warning=FALSE, message=FALSE, echo=FALSE}
 create_all_custom_box_scatter_plots(boston_formatted_plot, plot_types = TRUE)
 ```
 
-```{r}
+```{r include=FALSE}
 vect <- c("crim", "nox", "indus", "age", "dis", "rad", "tax")
 boston %>% select(vect)
 ```
 
 
-```{r}
+```{r include=FALSE}
 # crim, nox, indus, age, dis, rad, tax
 knn_boston_train_x_amc_cri_nox_ind_age_dis_rad_tax <- boston_train_x %>% select(crim, nox, indus, age, dis, rad, tax)
 knn_boston_test_x_amc_cri_nox_ind_age_dis_rad_tax <- boston_test_x %>% select(crim, nox, indus, age, dis, rad, tax)
@@ -1224,7 +1221,7 @@ knn_boston_test_y_amc <- boston_test_y %>% select(above_med_crim)
 
 
 Logistic Regression
-```{r}
+```{r echo=FALSE}
 glm.fit_amc_cri_nox_ind_age_dis_rad_tax <- glm(above_med_crim ~ crim + nox + indus + age + dis + rad + tax, data = boston_train_x, family = "binomial")
 glm.fit_amc_cri_nox_ind_age_dis_rad_tax_prob <- predict(glm.fit_amc_cri_nox_ind_age_dis_rad_tax, boston_test_x, type = "response")
 glm.fit_amc_cri_nox_ind_age_dis_rad_tax_pred <- rep(0, length(glm.fit_amc_cri_nox_ind_age_dis_rad_tax_prob))
@@ -1235,7 +1232,7 @@ f_print(sprintf("The logistic regression model test error is: %0.3f%%.",(mean(gl
 
 
 LDA
-```{r}
+```{r echo=FALSE}
 lda.fit_amc_cri_nox_ind_age_dis_rad_tax <- lda(above_med_crim ~ crim + nox + indus + age + dis + rad + tax, data = boston_train_x)
 lda.fit_amc_cri_nox_ind_age_dis_rad_tax_pred <- predict(lda.fit_amc_cri_nox_ind_age_dis_rad_tax, boston_test_x)
 confusionMatrix(lda.fit_amc_cri_nox_ind_age_dis_rad_tax_pred$class, as.factor(boston_test_y[[1]]))
@@ -1251,7 +1248,7 @@ f_print(sprintf("The LDA model test error is: %0.3f%%.",(mean(lda.fit_amc_cri_no
 ```
 
 Naive Bayes
-```{r}
+```{r echo=FALSE}
 nb.fit_amc_cri_nox_ind_age_rad_tax <- naiveBayes(above_med_crim ~ crim + nox + indus + age + dis + rad + tax, data = boston_train_x)
 nb.fit_amc_cri_nox_ind_age_rad_tax_pred <- predict(nb.fit_amc_cri_nox_ind_age_rad_tax, boston_test_x)
 confusionMatrix(nb.fit_amc_cri_nox_ind_age_rad_tax_pred, as.factor(boston_test_y[[1]]))
@@ -1260,47 +1257,69 @@ f_print(sprintf("The naive bayes model test error is: %0.3f%%.",(mean(nb.fit_amc
 
 KNN
 
-```{r}
+```{r echo=FALSE}
+set.seed(42)
 # k = 1
 knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 <- knn(knn_boston_train_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_test_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_train_y_amc[[1]], k = 1)
 confusionMatrix(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1, as.factor(knn_boston_test_y_amc[[1]]))
 f_print(sprintf("The KNN model test error for k = %s is: %0.3f%%.", 1, (mean(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 != knn_boston_test_y_amc[[1]]) * 100)))
-```
+cat("\n\n\n")
 
-```{r}
 # k = 3
 knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 <- knn(knn_boston_train_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_test_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_train_y_amc[[1]], k = 3)
 confusionMatrix(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1, as.factor(knn_boston_test_y_amc[[1]]))
 f_print(sprintf("The KNN model test error for k = %s is: %0.3f%%.", 3, (mean(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 != boston_test_y[[1]]) * 100)))
-```
+cat("\n\n\n")
 
-
-```{r}
 # k = 5
 knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 <- knn(knn_boston_train_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_test_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_train_y_amc[[1]], k = 5)
 confusionMatrix(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1, as.factor(knn_boston_test_y_amc[[1]]))
 f_print(sprintf("The KNN model test error for k = %s is: %0.3f%%.", 5, (mean(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 != boston_test_y[[1]]) * 100)))
-```
+cat("\n\n\n")
 
-
-```{r}
 # k = 7
 knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 <- knn(knn_boston_train_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_test_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_train_y_amc[[1]], k = 7)
 confusionMatrix(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1, as.factor(knn_boston_test_y_amc[[1]]))
 f_print(sprintf("The KNN model test error for k = %s is: %0.3f%%.", 7, (mean(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 != boston_test_y[[1]]) * 100)))
+cat("\n\n\n")
+
+# k = 9
+knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 <- knn(knn_boston_train_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_test_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_train_y_amc[[1]], k = 9)
+confusionMatrix(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1, as.factor(knn_boston_test_y_amc[[1]]))
+f_print(sprintf("The KNN model test error for k = %s is: %0.3f%%.", 9, (mean(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 != boston_test_y[[1]]) * 100)))
+cat("\n\n\n")
+
+# k = 11
+knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 <- knn(knn_boston_train_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_test_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_train_y_amc[[1]], k = 10)
+confusionMatrix(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1, as.factor(knn_boston_test_y_amc[[1]]))
+f_print(sprintf("The KNN model test error for k = %s is: %0.3f%%.", 10, (mean(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 != boston_test_y[[1]]) * 100)))
+cat("\n\n\n")
+
+# k = 11
+knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 <- knn(knn_boston_train_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_test_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_train_y_amc[[1]], k = 11)
+confusionMatrix(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1, as.factor(knn_boston_test_y_amc[[1]]))
+f_print(sprintf("The KNN model test error for k = %s is: %0.3f%%.", 11, (mean(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 != boston_test_y[[1]]) * 100)))
+cat("\n\n\n")
+
+# k = 12
+knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 <- knn(knn_boston_train_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_test_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_train_y_amc[[1]], k = 12)
+confusionMatrix(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1, as.factor(knn_boston_test_y_amc[[1]]))
+f_print(sprintf("The KNN model test error for k = %s is: %0.3f%%.", 12, (mean(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 != boston_test_y[[1]]) * 100)))
+cat("\n\n\n")
+
+# k = 13
+knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 <- knn(knn_boston_train_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_test_x_amc_cri_nox_ind_age_dis_rad_tax, knn_boston_train_y_amc[[1]], k = 13)
+confusionMatrix(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1, as.factor(knn_boston_test_y_amc[[1]]))
+f_print(sprintf("The KNN model test error for k = %s is: %0.3f%%.", 13, (mean(knn.fit_amc_cri_nox_ind_age_dis_rad_tax_k_1 != boston_test_y[[1]]) * 100)))
+cat("\n\n\n")
 ```
 
 
 
-```{r}
+```{r include=FALSE}
 names(boston_formatted_plot)
 predictors <- c("nox", "indus", "age", "dis", "rad", "tax")
 nox_indus_age_dis_rad_tax <- create.formula(outcome.name = "above_med_crim", input.names = predictors)$formula
-```
-
-
-```{r}
-
 ```
 
 
@@ -1318,9 +1337,6 @@ response <- "above_med_crim"
 create_categorical_models(methods, nox_indus_age_dis_rad_tax, boston_train_x, boston_test_x, boston_train_y, boston_test_y, enable_knn = TRUE, response = response, predictors = predictors)
 ```
 
-
-```{r}
-```
 
 
 
