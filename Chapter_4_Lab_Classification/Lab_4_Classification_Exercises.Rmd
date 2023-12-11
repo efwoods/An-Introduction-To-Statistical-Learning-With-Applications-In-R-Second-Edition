@@ -647,3 +647,22 @@ for (i in seq_along(predictors)) {
 ```
 
 
+### Question 14:
+In this problem, you will develop a model to predict whether a given car gets high or low gas mileage based on the Auto data set.
+
+* **Question 14-a**: Create a binary variable, mpg01, that contains a 1 if mpg contains
+a value above its median, and a 0 if mpg contains a value below
+its median. You can compute the median using the median()
+function. Note you may find it helpful to use the data.frame()
+function to create a single data set containing both mpg01 and
+the other Auto variables.
+  * **Answer**: 
+
+```{r echo=FALSE}
+auto <- na.omit(Auto)
+auto <- auto %>% mutate(mpg01 = mpg > median(mpg)) %>% select(mpg01, everything())
+auto_true <- auto %>% filter(mpg01 == TRUE) %>% mutate(mpg01 = 1)
+auto_false <- auto %>% filter(mpg01 == FALSE) %>% mutate(mpg01 = 0)
+auto <- add_row(auto_true, auto_false)
+head(auto)
+```
