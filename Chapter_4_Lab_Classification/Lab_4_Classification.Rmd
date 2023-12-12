@@ -278,6 +278,23 @@ train.Direction <- Direction[train] # labels for the training observations
 ```
 
 ```{r}
+length(train.X)
+typeof(train.X)
+dim(train.X)
+nrow(train.X)
+
+length(train.Direction)
+
+```
+
+```{r}
+attributes(train.X)
+attributes(train.Direction)
+```
+
+
+
+```{r}
 set.seed(1)
 knn.pred <- knn(train.X, test.X, train.Direction, k = 1)
 table(knn.pred, Direction.2005)
@@ -285,6 +302,7 @@ table(knn.pred, Direction.2005)
 # Test Error
 mean(knn.pred != Direction.2005)
 ```
+
 
 ```{r}
 knn.pred_k3 <- knn(train.X, test.X, train.Direction, k = 3)
@@ -361,11 +379,21 @@ table(knn.pred_standardized_k5, test.Y)
 ```
 
 ```{r}
+Caravan
+```
+
+
+```{r}
 glm.fits <- glm(Purchase ~ ., data = Caravan, family = binomial, subset = -test)
 ```
 
 ```{r}
 glm.probs <- predict(glm.fits, Caravan[test, ], type = "response")
+glm.probs
+```
+
+
+```{r}
 glm.pred <- rep("No", 1000)
 glm.pred[glm.probs > .5] <- "Yes"
 table(glm.pred, test.Y)

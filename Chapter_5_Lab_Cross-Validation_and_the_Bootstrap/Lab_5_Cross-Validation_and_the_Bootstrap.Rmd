@@ -209,6 +209,6 @@ boot(Auto, boot.fn, R = 1000)
 ```
 
 ```{r}
-
+summary(lm(mpg ~ horsepower, data = Auto))$coef
 ```
 
