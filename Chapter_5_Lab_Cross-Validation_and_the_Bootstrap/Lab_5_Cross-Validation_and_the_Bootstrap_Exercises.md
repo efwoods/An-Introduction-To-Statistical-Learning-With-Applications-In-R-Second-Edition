@@ -448,3 +448,66 @@ f_print(sprintf("With a new seed, the LOOCV errors that result from fitting the 
     model increased test error. These same models were also observed to not have
     statistical significance with respect to the coefficients of the same predictors
     as shown from the model summaries.
+
+### Question 9:
+
+We will now consider the Boston housing dataset, from the ISLR2 library.
+
+- **Question 9-a**: Based on this data set, provide an estimate for the
+  population mean of medv. Call this estimate ˆμ.
+  - **Answer**:
+
+``` r
+  μ_ˆ <- mean(boston$medv)
+```
+
+- **Question 9-b**: Provide an estimate of the standard error of ˆμ.
+  Interpret this result.
+  - **Answer**:
+
+``` r
+  sd(boston$medv)/sqrt(length(boston$medv))
+```
+
+    [1] 0.4088611
+
+- **Question 9-c**: Now estimate the standard error of ˆμ using the
+  bootstrap. How does this compare to your answer from the previous
+  question?
+  - **Answer**:
+
+``` r
+R = 1000
+mean_c <- c()
+for (i in seq(1,R)) {
+  mean_c <- c(mean_c,mean(boston$medv[sample(392, 392, replace=TRUE)]))
+}
+se <- (sd(mean_c)) / sqrt(length(mean_c))
+f_print(sprintf("The standard error of %0.0f bootstrapped sample means is: %e. This standard error is much smaller than the estimated standard error of the population mean.", R, se))
+```
+
+    The standard error of 1000 bootstrapped sample means is: 1.460754e-02. This
+    standard error is much smaller than the estimated standard error of the
+    population mean.
+
+- **Question 9-d**: Based on your bootstrap estimate from the previous
+  question, provide a 95 % con- fidence interval for the mean of medv.
+  Compare it to the results obtained using t.test(Boston\$medv).
+  - **Answer**:
+
+``` r
+conf_int <- c(μ_ˆ- 2*se, μ_ˆ+ 2*se)
+t.test(boston$medv)
+```
+
+
+        One Sample t-test
+
+    data:  boston$medv
+    t = 55.111, df = 505, p-value < 2.2e-16
+    alternative hypothesis: true mean is not equal to 0
+    95 percent confidence interval:
+     21.72953 23.33608
+    sample estimates:
+    mean of x 
+     22.53281 

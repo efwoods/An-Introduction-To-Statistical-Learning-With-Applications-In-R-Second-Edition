@@ -462,7 +462,6 @@ for (i in seq(1,R)) {
 }
 se <- (sd(mean_c)) / sqrt(length(mean_c))
 f_print(sprintf("The standard error of %0.0f bootstrapped sample means is: %e. This standard error is much smaller than the estimated standard error of the population mean.", R, se))
-f_print(sprintf("The standard error of %0.0f bootstrapped sample means is: %e"))
 ```
 
 * **Question 9-d**: Based on your bootstrap estimate from the previous question, provide a 95 % con-
