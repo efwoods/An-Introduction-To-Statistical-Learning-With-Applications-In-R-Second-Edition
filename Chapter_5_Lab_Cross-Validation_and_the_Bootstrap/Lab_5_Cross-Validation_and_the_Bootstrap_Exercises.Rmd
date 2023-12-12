@@ -26,7 +26,9 @@ if(!require("class")) install.packages("class") # knn
 if(!require("formulaic")) install.packages("formulaic")
 if(!require("caTools")) install.packages("caTools")
 if(!require("caret")) install.packages("caret")
+if(!require("boot")) install.packages("boot")
 
+library(boot)
 library(formulaic)
 library(class)
 library(e1071)
@@ -75,3 +77,366 @@ f_print <- function(string){
   cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
 }
 ```
+
+```{r include=FALSE}
+set.seed(42)
+attach(Default)
+```
+
+
+## Applied
+
+### Question 5:
+In Chapter 4, we used logistic regression to predict the probability of
+default using income and balance on the Default data set. We will
+now estimate the test error of this logistic regression model using the
+validation set approach. Do not forget to set a random seed before
+beginning your analysis.
+
+
+* **Question-5a**: Fit a logistic regression model that uses income and balance to predict default.
+  * **Answer**:
+```{r}
+glm.fit <- glm(default ~ income + balance, data = Default, family = "binomial")
+```
+
+
+* **Question-5b**: Using the validation set approach, estimate the test error of this model. In order to do this, you must perform the following steps:
+    i. Split the sample set into a training set and a validation set. 
+    ii. Fit a multiple logistic regression model using only the training observations.
+    iii. Obtain a prediction of default status for each individual in
+the validation set by computing the posterior probability of
+default for that individual, and classifying the individual to
+the default category if the posterior probability is greater
+than 0.5.
+    iv. Compute the validation set error, which is the fraction of
+the observations in the validation set that are misclassified.
+  * **Answer**:
+```{r}
+# Split the sample set into a training set and a validation set.
+train <- sample(nrow(Default), (nrow(Default) * .8))
+```
+
+```{r}
+# Fit a multiple logistic regression model using only the training observations.
+glm.fit <- glm(default ~ income + balance, data = Default, family = "binomial", subset = train)
+```
+
+```{r}
+# Obtain a prediction of default status for each individual in the validation set by computing the posterior probability of default for that individual, and classifying the individual to the default category if the posterior probability is greater than 0.5. 
+glm.prob <- predict(glm.fit, Default[-train, 2:4], type = "response")
+glm.pred <- rep("No", length(Default$default))
+glm.pred[glm.prob > .5] <- "Yes"
+```
+
+```{r echo=FALSE}
+# Compute the validation set error, which is the fraction of the observations in the validation set that are misclassified. 
+# as.factor(Default$default[-train])
+f_print(sprintf("The validation set error is: %0.3f%%.", (mean(glm.pred != Default$default[-train]) * 100)))
+```
+
+* **Question 5-c**: Repeat the process in the last question three times, using three different splits of the observations into a training set and a validation set. Comment on the results obtained. 
+  * **Answer**: 
+```{r warning=FALSE, echo=FALSE}
+set.seed(42)
+split <- c(.6, .7, .9)
+for (i in rep(1:3)){
+  train <- sample(nrow(Default), (nrow(Default) * split[[i]]))
+  glm.fit <- glm(default ~ income + balance, data = Default, family = "binomial", subset = train) 
+  glm.prob <- predict(glm.fit, Default[-train, 2:4], type = "response")
+  glm.pred <- rep("No", length(Default$default))
+  glm.pred[glm.prob > .5] <- "Yes"
+  
+  f_print(sprintf("The validation set error is: %0.3f%% for the split of %0.2f%%.", (mean(glm.pred != Default$default[-train]) * 100), split[[i]]))
+  cat("\n")
+}
+```
+
+```{r echo=FALSE}
+f_print(sprintf("The validation set error is greatest for the 60%% split. The validation set error is smallest when using a 70%% split."))
+```
+
+
+* **Question 5-d**: Now consider a logistic regression model that predicts the probability of default using income, balance, and a dummy variable for student. Estimate the test error for this model using the validation set approach. Comment on whether or not including a dummy variable for student leads to a reduction in the test error rate. 
+  * **Answer**:
+```{r echo=FALSE}
+set.seed(42)
+
+default_yes <- Default %>% filter(student == "Yes") %>% mutate(d_student = 1) %>% select(d_student, everything())
+default_no <- Default %>% filter(student == "No") %>% mutate(d_student = 0) %>% select(d_student, everything())
+default <- add_row(default_yes, default_no)
+default <- default %>% select(default, d_student, balance, income, student)
+default_train <- default %>% mutate(train = sample.split(default, .8))
+train <- default_train %>% filter(train == TRUE) %>% select(everything(), -train)
+test <- default_train %>% filter(train == FALSE) %>% select(everything(), -train)
+
+glm.fit <- glm(default ~ income + balance + d_student, data = train, family = "binomial")
+glm.prob <- predict(glm.fit, test[2:4], type = "response")
+glm.pred <- rep("No", length(test$default))
+glm.pred[glm.prob > 0.5] <- "Yes"
+f_print(sprintf("The test error using the validation set approach with a dummy variable is: %0.2f%%.",(mean(glm.pred != test$default) * 100)))
+cat("\n\n")
+
+glm.fit <- glm(default ~ income + balance + student, data = train, family = "binomial")
+glm.prob <- predict(glm.fit, test[3:5], type = "response")
+glm.pred <- rep("No", length(test$default))
+glm.pred[glm.prob > 0.5] <- "Yes"
+f_print(sprintf("The test error using the validation set approach with a student variable as a factor is the same at: %0.2f%%.",(mean(glm.pred != test$default) * 100)))
+cat("\n\n")
+
+glm.fit <- glm(default ~ income + balance, data = train, family = "binomial")
+glm.prob <- predict(glm.fit, test[3:4], type = "response")
+glm.pred <- rep("No", length(test$default))
+glm.pred[glm.prob > 0.5] <- "Yes"
+f_print(sprintf("The test error using the validation set approach without a dummy student variable results in decreased test error observed at: %0.2f%%.",(mean(glm.pred != test$default) * 100)))
+cat("\n\n")
+
+f_print(sprintf("The inclusion of a dummy variable for the student predictor lowers the test error."))
+```
+
+### Question 6: We continue to consider the use of a logistic regression model to
+predict the probability of default using income and balance on the
+Default data set. In particular, we will now compute estimates for
+the standard errors of the income and balance logistic regression coef-
+ficients in two different ways: (1) using the bootstrap, and (2) using
+the standard formula for computing the standard errors in the glm()
+function. Do not forget to set a random seed before beginning your
+analysis.
+
+* **Question 6-a**: Using the summary() and the glm() functions, determine the standard errors for the coefficients associated with income and balance in a multiple logistic regression model that uses both predictors. 
+  * **Answer**:
+  
+```{r echo=FALSE}
+set.seed(42)
+summary_fn <- summary(glm(default ~ income + balance, data = train, family = "binomial"))$coefficients
+```
+* **Question 6-b**: Write a function, boot.fn(), that takes as input the Default data
+set as well as an index of the observations, and that outputs
+the coefficient estimates for income and balance in the multiple
+logistic regression model.
+  * **Answer**:
+```{r}
+boot.fn <- function(data, index) {
+  coef(glm(default ~ income + balance, data = data, subset = index, family = "binomial"))
+}
+```
+
+* **Question 6-c**: Use the boot() function together with your boot.fn() function to
+estimate the standard errors of the logistic regression coefficients
+for income and balance.
+  * **Answer**:
+```{r echo=FALSE}
+set.seed(42)
+bootstrap_fn <- boot(Default, boot.fn, R = 1000)
+bootstrap_fn
+```
+
+
+
+
+* **Question 6-d**: Comment on the estimated standard errors obtained using the
+glm() function and using your bootstrap function.
+  * **Answer**:
+```{r echo=FALSE}
+f_print(sprintf("The standard errors obtained for the coefficients while using the summary function are: %0.3e and %0.3e respectively.", summary_fn[2,2], summary_fn[3,2]))
+f_print(sprintf("The standard errors obtained for the coefficients while using the bootstrapped datasets are lower for both coefficients."))
+```
+
+### Question 7: In Sections 5.3.2 and 5.3.3, we saw that the cv.glm() function can be
+used in order to compute the LOOCV test error estimate. Alterna-
+tively, one could compute those quantities using just the glm() and
+predict.glm() functions, and a for loop. You will now take this ap-
+proach in order to compute the LOOCV error for a simple logistic
+regression model on the Weekly data set. Recall that in the context
+of classification problems, the LOOCV error is given in (5.4).
+
+```{r include=FALSE}
+weekly <- na.omit(Weekly)
+attach(weekly)
+```
+
+* **Question 7-a**: Fit a logistic regression model that predicts Direction using Lag1
+and Lag2.
+  * **Answer**:
+```{r echo=FALSE}
+glm(Direction ~ Lag1 + Lag2, data = Direction, family = "binomial")
+```
+
+* **Question 7-b**: Fit a logistic regression model that predicts Direction using Lag1
+and Lag2 using all but the first observation.
+  * **Answer**:
+```{r}
+glm.fit_loo <- glm(Direction ~ Lag1 + Lag2, data = weekly[-1,], family = "binomial")
+```
+
+* **Question 7-c**: Use the model from the previous question to predict the direction of the first obser-
+vation. You can do this by predicting that the first observation
+will go up if P (Direction = "Up"|Lag1, Lag2) > 0.5. Was this
+observation correctly classified?
+  * **Answer**:
+```{r echo=FALSE}
+glm.fit_loo_pred <- rep("Down", 1)
+glm.fit_loo_prob <- predict(glm.fit_loo, weekly[1,], type = "response")
+glm.fit_loo_pred[glm.fit_loo_prob > 0.5] <- "Up"
+f_print(sprintf("The statement that this prediction was correctly classified is: %s", (glm.fit_loo_pred == weekly$Direction[1])))
+```
+
+
+* **Question 7-d**: Write a for loop from i = 1 to i = n, where n is the number of
+observations in the data set, that performs each of the following
+steps:
+  i. Fit a logistic regression model using all but the ith obser-
+vation to predict Direction using Lag1 and Lag2.
+  ii. Compute the posterior probability of the market moving up
+for the ith observation.
+  iii. Use the posterior probability for the ith observation in order
+to predict whether or not the market moves up.
+  iv. Determine whether or not an error was made in predicting
+the direction for the ith observation. If an error was made,
+then indicate this as a 1, and otherwise indicate it as a 0.
+  * **Answer**:
+```{r}
+loocv <- function(n) {
+    truthiness <- c()
+    for (i in seq(1, n)) {
+      glm.fit_loo <- glm(Direction ~ Lag1 + Lag2, data = weekly[-i,], family = "binomial")      
+      glm.fit_loo_pred <- rep("Down", 1)
+      glm.fit_loo_prob <- predict(glm.fit_loo, weekly[i,], type = "response")
+      glm.fit_loo_pred[glm.fit_loo_prob > 0.5] <- "Up"
+      
+      if(glm.fit_loo_pred != weekly$Direction[i]){
+        truthiness <- c(truthiness, 1)
+      } else {
+        truthiness <- c(truthiness, 0)
+      }
+    }
+    return(truthiness)
+  }
+```
+* **Question 7-e**: Take the average of the n numbers obtained in (d)iv in order to
+obtain the LOOCV estimate for the test error. Comment on the
+results.
+  * **Answer**: 
+```{r echo=FALSE}
+n = 1000
+f_print(sprintf("The average error of the %0.0f numbers obtained in the custom leave-one-out-cross-validation function is: %0.2f%%. This appears to be an appropriate level of error for this dataset.", n, mean(loocv(n)) * 100))
+```
+
+### Question 8: We will now perform cross-validation on a simulated data set. 
+
+* **Question 8-a**: Generate the simulated data set. In this dataset, what is _n_ and what is _p_?
+  * **Answer**:
+```{r}
+set.seed(1)
+x <- rnorm(100)
+y <- x - 2 * x^2 + rnorm(100)
+```
+
+```{r echo=FALSE}
+  f_print(sprintf("In this dataset, there are 100 observations, n, & 2 predictors, p."))
+```
+
+* **Question 8-b**: Create a scatterplot of _X_ against _Y_. Comment on what you find. 
+  * **Answer**:
+```{r echo=FALSE}
+ggplot() +
+  geom_point(aes(x, y)) +
+  labs(title = expression('ƒ(x) = x - 2 * x'^{2} * + 'ε'), y = "ƒ(x)", x = 'x') +
+  theme_linedraw()
+f_print(sprintf("The resulting function is a quadratic with an upside-down parabolic curve. There is observable noise in the scatterplot."))
+```
+
+
+* **Question 8-c**: Set a random seed, and then compute the LOOCV errors that
+result from fitting the following four models using least squares.
+  i. Y = β~0~ + β~1~X + ε
+  ii. Y = β~0~ + β~1~X + β~2~X^2^ + ε
+  iii. Y = β~0~ + β~1~X + β~2~X^2^ + β~3~X^3^ + ε
+  iv. Y = β~0~ + β~1~X + β~2~X^2^ + β~3~X^3^ + β~4~X^4^ + ε
+  * **Answer**:
+
+```{r}
+set.seed(1)
+x <- rnorm(100)
+y <- x - 2 * x^2 + rnorm(100)
+df <- tibble(x,y)
+# i.
+glm.fit_i <- glm(y ~ x, data = df)
+cv.error.i <- cv.glm(df, glm.fit_i)$delta[1]
+
+# ii.
+glm.fit_ii <- glm(y ~ x + I(x^2), data = df)
+cv.error.ii <- cv.glm(df, glm.fit_ii)$delta[1]
+
+# iii.
+glm.fit_iii <- glm(y ~ x + I(x^2) + I(x^3), data = df)
+cv.error.iii <- cv.glm(df, glm.fit_iii)$delta[1]
+
+# iv.
+glm.fit_iv <- glm(y ~ x + I(x^2) + I(x^3) + I(x^4), data = df)
+cv.error.iv <- cv.glm(df, glm.fit_iv)$delta[1]
+f_print(sprintf("The LOOCV errors that result from fitting the four models are as follows: %0.03f%%, %0.03f%%, %0.03f%%, %0.03f%%", cv.error.i, cv.error.ii, cv.error.iii, cv.error.iv))
+```
+
+
+* **Question 8-d**: Repeat the previous question using another random seed, and report your results.
+Are your results the same as what you got in the previous question? Why?
+  * **Answer**:
+
+```{r}
+set.seed(42)
+x <- rnorm(100)
+y <- x - 2 * x^2 + rnorm(100)
+df <- tibble(x,y)
+# i.
+glm.fit_i <- glm(y ~ x, data = df)
+cv.error.i <- cv.glm(df, glm.fit_i)
+
+# ii.
+glm.fit_ii <- glm(y ~ x + I(x^2), data = df)
+cv.error.ii <- cv.glm(df, glm.fit_ii)$delta[1]
+
+# iii.
+
+glm.fit_iii <- glm(y ~ x + I(x^2) + I(x^3), data = df)
+cv.error.iii <- cv.glm(df, glm.fit_iii)$delta[1]
+
+# iv.
+glm.fit_iv <- glm(y ~ x + I(x^2) + I(x^3) + I(x^4), data = df)
+cv.error.iv <- cv.glm(df, glm.fit_iv)$delta[1]
+f_print(sprintf("With a new seed, the LOOCV errors that result from fitting the four models are as follows: %0.03f%%, %0.03f%%, %0.03f%%, %0.03f%%", cv.error.i$delta[1], cv.error.ii, cv.error.iii, cv.error.iv))
+```
+
+```{r echo=FALSE}
+f_print(sprintf("The results differ from the previous question. With a new seed, new random number are generated. The variability in the error term is irreducible error that persists between models. It is simulated when new data is pseudo-randomly generated by setting a new seed, this irreducible error is observable in the differing values of the test errors the models exhibited.")) 
+```
+* **Question 8-e**: Which of the models had the smallest LOOCV error? Is this what was expected? Explain your answer.
+  * **Answer**:
+```{r echo=FALSE}
+f_print(sprintf("The model whose formula was composed of a highest degree of 2 had the smallest error as expected. This predictors of this model match that of the true function of f which is itself comprised of predictors x and x squared as well."))
+```
+
+* **Question 8-f**: Comment on the statistical significance of the coefficient esti-
+mates that results from fitting each of the models using
+least squares. Do these results agree with the conclusions drawn
+based on the cross-validation results?
+  * **Answer**:
+
+```{r echo=FALSE}
+summary(glm.fit_i)
+summary(glm.fit_ii)
+summary(glm.fit_iii)
+summary(glm.fit_iv)
+f_print(sprintf("In all models, when present, the predictors x and x-squared were found to be statistically significant predictors of the response, y. These results agree with the conclusions drawn based on the cross-validation results where the test error was least significant when these two variables were exclusively present. Models which included additional predictors that did not add value to the model increased test error. These same models were also observed to not have statistical significance with respect to the coefficients of the same predictors as shown from the model summaries."))
+```
+### Question 9:
+We will now consider the Boston housing dataset, from the ISLR2 library.
+
+* **Question 9-a**: Based on this data set, provide an estimate for the population
+mean of medv. Call this estimate ˆμ.
+  * **Answer**:
+```{r include = FALSE}
+boston <- na.omit(Boston)
+attach(boston)
+```
+
