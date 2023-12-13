@@ -4,3 +4,4 @@ My Work on "An Introduction to Statistical Learning with Applications in R Secon
 - [Lab 2: Introduction to R Exercises](./Chapter_2_Lab_Introduction_to_R/Lab_2_Introduction_to_R_Exercises.md)
 - [Lab 3: Linear Regression Exercises](./Chapter_3_Lab_Linear_Regression/Lab_3_Linear_Regression_Exercises.md)
 - [Lab 4: Classification Exercises](./Chapter_4_Lab_Classification/Lab_4_Classification_Exercises.md)
+- [Lab 5: Cross-Validation and the Bootstrap](./Chapter_5_Lab_Cross-Validation_and_the_Bootstrap/Lab_5_Cross-Validation_and_the_Bootstrap_Exercises.md)
