@@ -497,7 +497,14 @@ f_print(sprintf("The standard error of %0.0f bootstrapped sample means is: %e. T
 
 ``` r
 conf_int <- c(μ_ˆ- 2*se, μ_ˆ+ 2*se)
-t.test(boston$medv)
+conf_int
+```
+
+    [1] 22.50359 22.56202
+
+``` r
+t_test <- t.test(boston$medv)
+t_test
 ```
 
 
@@ -511,3 +518,25 @@ t.test(boston$medv)
     sample estimates:
     mean of x 
      22.53281 
+
+``` r
+f_print(sprintf("The calculated confidence interval ranges from %0.3f to %0.3f. These values are within the 95%% confidence interval as calculated by the t test.", conf_int[1], conf_int[2]))
+```
+
+    The calculated confidence interval ranges from 22.504 to 22.562. These values
+    are within the 95% confidence interval as calculated by the t test.
+
+- **Question 9-e**: Based on this data set, provide an estimate, ˆμmed,
+  for the median value of medv in the population.
+  - **Answer**:
+
+<!-- -->
+
+    The estimate of the median of the population mean of the boston medv variable
+    is: 21.20.
+
+- **Question 9-f**: We now would like to estimate the standard error of
+  ˆμmed. Unfor- tunately, there is no simple formula for computing the
+  standard error of the median. Instead, estimate the standard error of
+  the median using the bootstrap. Comment on your findings.
+  - **Answer**:
