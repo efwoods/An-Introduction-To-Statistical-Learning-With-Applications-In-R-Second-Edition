@@ -458,37 +458,41 @@ We will now consider the Boston housing dataset, from the ISLR2 library.
   - **Answer**:
 
 ``` r
-  μ_ˆ <- mean(boston$medv)
+μ_ˆ <- mean(boston$medv)
 ```
+
+    The estimate of the population mean of medv is: 22.533.
 
 - **Question 9-b**: Provide an estimate of the standard error of ˆμ.
   Interpret this result.
   - **Answer**:
 
-``` r
-  sd(boston$medv)/sqrt(length(boston$medv))
-```
+<!-- -->
 
-    [1] 0.4088611
+    The estimated standard error, ˆμ, is: 0.409.
 
 - **Question 9-c**: Now estimate the standard error of ˆμ using the
   bootstrap. How does this compare to your answer from the previous
   question?
   - **Answer**:
 
-``` r
-R = 1000
-mean_c <- c()
-for (i in seq(1,R)) {
-  mean_c <- c(mean_c,mean(boston$medv[sample(392, 392, replace=TRUE)]))
-}
-se <- (sd(mean_c)) / sqrt(length(mean_c))
-f_print(sprintf("The standard error of %0.0f bootstrapped sample means is: %e. This standard error is much smaller than the estimated standard error of the population mean.", R, se))
-```
+<!-- -->
 
-    The standard error of 1000 bootstrapped sample means is: 1.460754e-02. This
-    standard error is much smaller than the estimated standard error of the
-    population mean.
+
+    ORDINARY NONPARAMETRIC BOOTSTRAP
+
+
+    Call:
+    boot(data = boston$medv, statistic = boot.fn, R = 1000)
+
+
+    Bootstrap Statistics :
+        original     bias    std. error
+    t1* 22.53281 0.02671186   0.4009216
+
+    The standard error of 1000 bootstrapped sample means is: 0.401. The estimated
+    standard error using the bootstrap is approximately the same as the estimated
+    standard error with a value of: 0.409.
 
 - **Question 9-d**: Based on your bootstrap estimate from the previous
   question, provide a 95 % con- fidence interval for the mean of medv.
@@ -500,7 +504,7 @@ conf_int <- c(μ_ˆ- 2*se, μ_ˆ+ 2*se)
 conf_int
 ```
 
-    [1] 22.50359 22.56202
+    [1] 21.73096 23.33465
 
 ``` r
 t_test <- t.test(boston$medv)
@@ -519,12 +523,8 @@ t_test
     mean of x 
      22.53281 
 
-``` r
-f_print(sprintf("The calculated confidence interval ranges from %0.3f to %0.3f. These values are within the 95%% confidence interval as calculated by the t test.", conf_int[1], conf_int[2]))
-```
-
-    The calculated confidence interval ranges from 22.504 to 22.562. These values
-    are within the 95% confidence interval as calculated by the t test.
+    The calculated confidence interval ranges from 21.731 to 23.335. These values
+    are very similar to the 95% confidence interval as calculated by the t test.
 
 - **Question 9-e**: Based on this data set, provide an estimate, ˆμmed,
   for the median value of medv in the population.
@@ -540,3 +540,50 @@ f_print(sprintf("The calculated confidence interval ranges from %0.3f to %0.3f. 
   standard error of the median. Instead, estimate the standard error of
   the median using the bootstrap. Comment on your findings.
   - **Answer**:
+
+<!-- -->
+
+
+    ORDINARY NONPARAMETRIC BOOTSTRAP
+
+
+    Call:
+    boot(data = boston$medv, statistic = boot.fn, R = 1000)
+
+
+    Bootstrap Statistics :
+        original  bias    std. error
+    t1*     21.2  0.0106   0.3661785
+
+    The standard error of 1000 bootstrapped sample medians is: 0.366.
+
+- **Question 9-g**: Based on this data set, provide an estimate for the
+  tenth per- centile of medv in Boston census tracts. Call this quantity
+  ˆμ0.1. (You can use the quantile() function.)
+  - **Answer**:
+
+<!-- -->
+
+    The estimate for the tenth percentile of medv in Boston census tracts, ˆμ0.1,
+    is: 12.75.
+
+- **Question 9-h**:
+  - **Answer**:
+
+<!-- -->
+
+
+    ORDINARY NONPARAMETRIC BOOTSTRAP
+
+
+    Call:
+    boot(data = boston$medv, statistic = boot.fn, R = 1000)
+
+
+    Bootstrap Statistics :
+        original  bias    std. error
+    t1*    12.75  0.0215   0.4948966
+
+    The bootstrapped estimate of the tenth percentile of medv in the Boston census
+    tracts is identical to the estimate created using the quantile function. The
+    standard error is 0.494.
