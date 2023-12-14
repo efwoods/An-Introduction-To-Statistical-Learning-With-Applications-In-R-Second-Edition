@@ -27,8 +27,9 @@ if(!require("formulaic")) install.packages("formulaic")
 if(!require("caTools")) install.packages("caTools")
 if(!require("caret")) install.packages("caret")
 if(!require("boot")) install.packages("boot")
+if(!require("leaps")) install.packages("leaps") # regsubsets; best subset selection
 
-
+library(leaps)
 library(formulaic)
 library(class)
 library(e1071)
@@ -78,3 +79,155 @@ f_print <- function(string){
   cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
 }
 ```
+
+
+## Subset Selection Methods
+### Best Subset Selection
+```{r include=FALSE}
+library(ISLR2)
+# View(Hitters)
+```
+
+
+```{r include=FALSE}
+names(Hitters)
+dim(Hitters)
+sum(is.na(Hitters$Salary))
+Hitters <- na.omit(Hitters)
+dim(Hitters)
+sum(is.na(Hitters))
+```
+
+```{r}
+library(leaps)
+regfit.full <- regsubsets(Salary ~ ., Hitters)
+summary(regfit.full)
+```
+
+```{r}
+# length(Hitters)
+regfit.full <- regsubsets(Salary ~ ., data = Hitters, nvmax = 19)
+reg.summary <- summary(regfit.full)
+names(reg.summary)
+```
+```{r}
+reg.summary$rsq
+```
+
+```{r}
+par(mfrow = c(2,2))
+plot(reg.summary$rss, xlab = "Number of Variables", ylab = "RSS", type = "l")
+plot(reg.summary$adjr2, xlab = "Number of Variables", ylab = "Adj. RSq", type = "l")
+
+which.max(reg.summary$adjr2)
+points(11, reg.summary$adjr2[11], col = "red", cex = 2)
+```
+
+```{r}
+plot(reg.summary$cp, xlab = "Number of Variables", ylab = "Cp", type = "l")
+which.min(reg.summary$cp)
+points(10, reg.summary$cp[10], col = "red", cex = 2, pch = 20)
+which.min(reg.summary$bic)
+plot(reg.summary$bic, xlab = "Number of Variables", ylab = "BIC", type = "l")
+points(6, reg.summary$bic[6], col = "red", cex = 2, pch = 20)
+```
+
+```{r}
+plot(regfit.full, scale = "r2")
+plot(regfit.full, scale = "adjr2")
+plot(regfit.full, scale = "Cp")
+plot(regfit.full, scale = "bic")
+```
+
+### Forward and Backward Stepwise Selection
+```{r}
+regfit.fwd <- regsubsets(Salary ~ ., data = Hitters, nvmax = 19, method = "forward")
+regfit.bwd <- regsubsets(Salary ~ ., data = Hitters, method = "backward", nvmax  = 19)
+summary(regfit.bwd)
+```
+
+```{r}
+coef(regfit.full, 7)
+coef(regfit.fwd, 7)
+coef(regfit.bwd, 7)
+```
+## Model Selection with Cross Validation and Validation Set
+### Best Subset Selection using Validations Set
+```{r}
+set.seed(1)
+train <- sample(c(TRUE, FALSE), nrow(Hitters), replace = TRUE)
+test <- (!train)
+```
+
+```{r}
+regfit.best <- regsubsets(Salary ~ ., data = Hitters[train,], nvmax = 19)
+```
+
+```{r}
+test.mat <- model.matrix(Salary ~ ., data = Hitters[test, ]) # model.matrix transforms a data.frame into a matrix
+```
+
+```{r}
+val.errors <- rep(NA, 19)
+for (i in 1:19) {
+  coefi <- coef(regfit.best, id = i)
+  pred <- test.mat[, names(coefi)] %*% coefi
+  val.errors[i] <- mean((Hitters$Salary[test] - pred)^2)
+}
+
+val.errors
+which.min(val.errors)
+coef(regfit.best, 7)
+```
+
+```{r}
+predict.regsubsets <- function(object, newdata, id, ...) {
+  form <- as.formula(object$call[[2]])
+  mat <- model.matrix(form, newdata)
+  coefi <- coef(object, id = id)
+  xvars <- names(coefi)
+  mat[, xvars] %*% coefi
+}
+```
+
+```{r}
+regfit.best <- regsubsets(Salary ~ ., data = Hitters, nvmax = 19)
+coef(regfit.best, 7)
+```
+
+
+K-Fold Cross-Validation Selection
+```{r}
+k <- 10
+n <- nrow(Hitters)
+set.seed(1)
+folds <- sample(rep(1:k, length = n)) # grouping each observation into k groups
+cv.errors <- matrix(NA, k, 19, dimnames = list(NULL, paste(1:19)))
+```
+
+```{r}
+for (j in 1:k) {
+  best.fit <- regsubsets(Salary ~ .,
+                         data = Hitters[folds != j, ], nvmax = 19) # Training on all but k.
+  for (i in 1:19) {
+    pred <- predict(best.fit, Hitters[folds == j, ], id = i) # Predict using k. This will use the custom predict function above. Best i variable model.
+    cv.errors[j, i] <-
+      mean((Hitters$Salary[folds == j] - pred) ^2) # Mean Square Error of each predictor within a k fold.
+  }
+}
+```
+
+```{r}
+mean.cv.errors <- apply(cv.errors, 2, mean) # Identify the k which has the lowest mean test error
+mean.cv.errors
+par(mfrow = c(1,1))
+plot(mean.cv.errors, type = "b")
+```
+
+```{r}
+# Best Subset Selection of the full dataset to obtain the 10 variable model.
+reg.best <- regsubsets(Salary ~ ., data = Hitters, nvmax = 19)
+coef(reg.best, 10)
+```
+
+
