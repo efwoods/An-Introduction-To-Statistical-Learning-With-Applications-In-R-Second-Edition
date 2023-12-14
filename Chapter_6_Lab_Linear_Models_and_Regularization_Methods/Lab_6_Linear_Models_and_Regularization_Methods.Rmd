@@ -28,7 +28,11 @@ if(!require("caTools")) install.packages("caTools")
 if(!require("caret")) install.packages("caret")
 if(!require("boot")) install.packages("boot")
 if(!require("leaps")) install.packages("leaps") # regsubsets; best subset selection
+if(!require("glmnet")) install.packages("glmnet")
+if(!require("pls")) install.packages("pls") # Partial Least Squares Regression & Principal Components Regression
 
+library(pls)
+library(glmnet)
 library(leaps)
 library(formulaic)
 library(class)
@@ -230,4 +234,201 @@ reg.best <- regsubsets(Salary ~ ., data = Hitters, nvmax = 19)
 coef(reg.best, 10)
 ```
 
+## Ridge Regression and the Lasso
+
+```{r}
+x <- model.matrix(Salary ~ ., data = Hitters)[, -1] # -1 removes the intercept
+y <- Hitters$Salary
+```
+
+### Ridge Regression
+```{r}
+grid <- 10^seq(10, -2, length = 100)
+ridge.mod <- glmnet(x, y, alpha = 0, lambda = grid)
+```
+
+
+```{r}
+dim(coef(ridge.mod))
+```
+
+```{r}
+ridge.mod$lambda[50] # Lambda = 11,498; the 50th Lambda
+coef(ridge.mod)[,50] # Coefficients @ Lambda = 11,498; intercepts are rows, the columns are coefficients.
+sqrt(sum(coef(ridge.mod)[-1, 50]^2)) # L2 norm
+```
+
+```{r}
+ridge.mod$lambda[60]
+coef(ridge.mod)[, 60]
+sqrt(sum(coef(ridge.mod)[-1, 60]^2))
+```
+
+```{r}
+predict(ridge.mod, s = 50, type = "coefficients")[1:20, ] # Selecting the value of lambda = 50. This is a prediction using the full dataset.
+```
+
+```{r}
+# Creating a ridge regression prediction using a validation set.
+set.seed(1)
+train <- sample(1:nrow(x), nrow(x) / 2)
+test <- (-train)
+y.test <- y[test]
+```
+
+```{r}
+ridge.mod <- glmnet(x[train, ], y[train], alpha = 0, lambda = grid, thresh = 1e-12)
+ridge.pred <- predict(ridge.mod, s = 4, newx = x[test, ]) # use newx to select the test set when making predictions.
+mean((ridge.pred - y.test)^2) # The intercept is included when calculating the MSE.
+```
+
+```{r}
+# Computing the test error if the model only used the intercept. (The Null Model)
+mean((mean(y[train]) - y.test)^2)
+```
+
+```{r}
+# Computing the test error if the model only used the intercept by reducing the predictors in a ridge regression using a very large value of lambda.
+ridge.pred <- predict(ridge.mod, s = 1e10, newx = x[test, ])
+mean((ridge.pred - y.test)^2)
+```
+
+```{r}
+# Least Squares Regression: λ = 0
+ridge.pred <- predict(ridge.mod, s = 0, newx = x[test, ], exact = TRUE, x = x[train, ], y = y[train])
+mean((ridge.pred - y.test)^2)
+```
+
+
+```{r}
+# Comparing linear model least squares regression to a least squares regression using a ridge regression.
+lm(y ~ x, subset = train)
+predict(ridge.mod, s = 0, exact = TRUE, type = "coefficients", x = x[train, ], y = y[train])[1:20, ] # Exact = True: Choose precise values for the coefficients. The difference between lm and glmnet with respect to the decimal place is an estimation using glmnet.
+```
+
+```{r}
+# Using cross-validation to select the optimal value of lambda to minimize test error.
+set.seed(1)
+cv.out <- cv.glmnet(x[train, ], y[train], alpha = 0)
+plot(cv.out)
+min_lambda <- cv.out$lambda.min
+min_lambda
+```
+
+```{r}
+# Test error using the optimal value of lambda
+ridge.pred <- predict(ridge.mod, s = 326, newx = x[test, ])
+mean((ridge.pred - y[test])^2)
+```
+
+
+```{r}
+# Fitting the entire dataset using the optimal value of lambda.
+out <- glmnet(x, y, alpha = 0)
+out.pred <- predict(out, s = min_lambda, type = "coefficients")[1:20, ]
+out.pred
+```
+
+
+
+
+
+```{r}
+# Create a validation set
+set.seed(1)
+train <- sample(1:nrow(x), nrow(x)/2)
+test <- (-train)
+y.test <- y[test]
+```
+
+```{r}
+set.seed(1)
+# Cross validation 
+ridge_regression_model <- cv.glmnet(x[train, ], y[train], alpha = 0)
+ridge_regression_model$lambda.min
+ridge_regression_model.pred <- predict(ridge_regression_model, s = ridge_regression_model$lambda.min, newx = x[test, ])
+mean((ridge_regression_model.pred - y[test])^2)
+
+ridge_regression <- glmnet(x, y, alpha = 0)
+ridge_regression.pred <- predict(ridge_regression, s = ridge_regression_model$lambda.min, type = "coefficients")[1:20, ]
+ridge_regression.pred
+```
+
+
+# Lasso Regression
+```{r}
+set.seed(1)
+lasso.mod <- glmnet(x[train, ], y[train], alpha = 1, lambda = grid)
+plot(lasso.mod)
+
+```
+```{r}
+set.seed(1)
+cv.out <- cv.glmnet(x[train, ], y[train], alpha = 1)
+plot(cv.out)
+cv.out$lambda.min
+lasso.pred <- predict(lasso.mod, s = cv.out$lambda.min, newx = x[test, ])
+mean((lasso.pred - y.test)^2)
+```
+
+
+```{r}
+ out <- glmnet(x, y, lambda = grid, alpha = 1)
+lasso.coef <- predict(out, s = cv.out$lambda.min, type = "coefficients")[1:20, ]
+lasso.coef
+```
+
+## PCR & PLS Regression
+### Principal Components Regression
+```{r}
+library(pls)
+set.seed(2)
+```
+
+```{r}
+pcr.fit <- pcr(Salary ~ ., data = Hitters, scale = TRUE, validation = "CV") # Setting scale = TRUE will standardize each predictor. validation = "CV" means using a ten-fold cross-validation for each number of principle components.
+summary(pcr.fit)
+```
+
+
+```{r}
+# Printing the cross validation scores
+validationplot(pcr.fit, val.type = "MSEP")
+```
+
+```{r}
+set.seed(1)
+pcr.fit <- pcr(Salary ~ ., data = Hitters, subset = train, scale = TRUE, validation = "CV")
+validationplot(pcr.fit, val.type = "MSEP")
+```
+
+```{r}
+# Calculating the means squared error after making predictions using the ideal number of components.
+pcr.pred <- predict(pcr.fit, x[test, ], ncomp = 5)
+mean((pcr.pred - y.test)^2)
+```
+
+```{r}
+# Fitting a Principal Component Regression to all the data
+pcr.fit <- pcr(y ~ x, scale = TRUE, ncomp = 5)
+summary(pcr.fit)
+```
+
+### Partial Least Squares
+```{r}
+set.seed(1)
+pls.fit <- plsr(Salary ~ ., data = Hitters, validation  = "CV", scale = TRUE)
+summary(pls.fit)
+validationplot(pls.fit, val.type = "MSEP")
+```
+
+
+```{r}
+pls.pred <- predict(pls.fit, x[test, ], ncomp = 1)
+mean((pls.pred - y.test)^2)
+```
+```{r}
+plt.fit <- plsr(Salary ~ ., data = Hitters, scale = TRUE, ncomp = 1)
+summary(pls.fit)
+```
 
