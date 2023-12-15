@@ -1,7 +1,7 @@
 Lab 6 Linear Models and Regularization Methods Exercises
 ================
 Evan Woods
-2023-12-14
+2023-12-15
 
 ## Applied:
 
@@ -15,7 +15,6 @@ this data to perform best subset selection.
   - **Answer**:
 
 ``` r
-set.seed(1)
 X = rnorm(100)
 ε = rnorm(100)
 ```
@@ -273,11 +272,6 @@ In this exercise, we will predict the number of applications received
 using the other variables in the College dataset. \* **Question 9-a**:
 Split the data into a training set and a test set.
 
-``` r
-train <- sample(nrow(college), nrow(college)/2)
-test <- (-train)
-```
-
 - **Question 9-b**: Fit a linear model using least squares on the
   training set, and report the test error obtained.
   - **Answer**:
@@ -302,7 +296,207 @@ test <- (-train)
 
 <!-- -->
 
-    The test error for the lasso model is 342942.031 for the chosen value of λ:
-    18.738.
+    The test error for the lasso model is 330281.104 for the chosen value of λ:
+    4.642.
 
     The number of non-zero coefficient estimates is 8.
+
+- **Question 9-e**: Fit a PCR model on the training set, with M chosen
+  by cross-validation. Report the test error obtained, along with the
+  value of M selected by cross-validation.
+  - **Answer**:
+
+<!-- -->
+
+    Data:   X dimension: 388 17 
+        Y dimension: 388 1
+    Fit method: svdpc
+    Number of components considered: 17
+
+    VALIDATION: RMSEP
+    Cross-validated using 10 random segments.
+           (Intercept)  1 comps  2 comps  3 comps  4 comps  5 comps  6 comps
+    CV            2185     2135     1090     1084    999.4    951.4    799.9
+    adjCV         2185     2135     1087     1082    994.7    955.2    795.0
+           7 comps  8 comps  9 comps  10 comps  11 comps  12 comps  13 comps
+    CV       795.8    783.1    764.3     721.8     623.2     628.8     621.8
+    adjCV    791.3    779.2    755.4     721.2     619.3     626.2     618.7
+           14 comps  15 comps  16 comps  17 comps
+    CV        623.5     623.2     593.2     584.5
+    adjCV     620.8     629.5     589.9     580.9
+
+    TRAINING: % variance explained
+            1 comps  2 comps  3 comps  4 comps  5 comps  6 comps  7 comps  8 comps
+    X        34.716    59.67    66.71    72.12    77.07    81.80    85.46    88.67
+    Accept    5.083    76.56    77.06    81.75    83.44    88.22    88.37    88.63
+            9 comps  10 comps  11 comps  12 comps  13 comps  14 comps  15 comps
+    X         91.06     93.35     95.23     96.88     97.86     98.75     99.24
+    Accept    89.87     90.44     92.87     92.87     93.07     93.08     93.13
+            16 comps  17 comps
+    X          99.72    100.00
+    Accept     94.03     94.38
+
+<img src="Lab_6_Linear_Models_and_Regularization_Methods_Exercises_files/figure-gfm/unnamed-chunk-27-1.png" width="70%" style="display: block; margin: auto;" />
+
+    The test error of the predictions generated from the pcr model is: 330681.9
+    where the value of M that captures most of the variability in the response is:
+    17
+
+- **Question 9-f**: Fit a PLS model on the dataset with M chosen by
+  cross-validation. Report the test error obtained, along with the value
+  of M selected by cross-validation.
+  - **Answer**:
+
+<!-- -->
+
+    Data:   X dimension: 388 17 
+        Y dimension: 388 1
+    Fit method: kernelpls
+    Number of components considered: 17
+
+    VALIDATION: RMSEP
+    Cross-validated using 10 random segments.
+           (Intercept)  1 comps  2 comps  3 comps  4 comps  5 comps  6 comps
+    CV            2185    984.0    852.0    643.9    596.0    584.7    575.8
+    adjCV         2185    981.8    852.3    641.5    593.7    582.7    573.5
+           7 comps  8 comps  9 comps  10 comps  11 comps  12 comps  13 comps
+    CV       574.8    572.5    573.0     572.4     574.3     572.2     572.4
+    adjCV    571.8    569.6    569.9     569.4     571.1     569.2     569.4
+           14 comps  15 comps  16 comps  17 comps
+    CV        572.3     572.3     572.3     572.3
+    adjCV     569.3     569.3     569.3     569.3
+
+    TRAINING: % variance explained
+            1 comps  2 comps  3 comps  4 comps  5 comps  6 comps  7 comps  8 comps
+    X         25.99    53.38    64.53    68.06    73.25    76.22    79.41    82.07
+    Accept    80.93    85.98    92.18    93.50    93.83    94.13    94.30    94.35
+            9 comps  10 comps  11 comps  12 comps  13 comps  14 comps  15 comps
+    X         84.59     87.16     90.38     92.03     94.63     96.80     97.96
+    Accept    94.36     94.37     94.38     94.38     94.38     94.38     94.38
+            16 comps  17 comps
+    X          99.26    100.00
+    Accept     94.38     94.38
+
+<img src="Lab_6_Linear_Models_and_Regularization_Methods_Exercises_files/figure-gfm/unnamed-chunk-29-1.png" width="70%" style="display: block; margin: auto;" />
+
+    The test error of the partial least squares function is: 326736.5. The ideal
+    value of M that captures the most variablility in the response with the least
+    number of components is: 11
+
+- **Question 9-g**: Comment on the results obtained. How accurately can
+  we predict the number of college applications received? Is there much
+  difference resulting from the test errors among these five approaches?
+  - **Answer**:
+
+<!-- -->
+
+    Among the five methods, the mean test error is: 332265. The standard deviation
+    of the test error is: 6195. There is not much difference among the test errors
+    between these five approaches. The the principal component regression and the
+    linear model had precisely the same test error. This is because all principal
+    components were used to capture the most variability in the response, and
+    using all principal components results in a model that has no dimensionality
+    reduction. This means that the PCR does not differ from a least squares linear
+    model fit. The ridge regression was penalized for the extra predictors, and the
+    partial least squares resulted in the lowest test error. This is due to the fact
+    that partial least squares required less components to capture the variability
+    in the response than the principal component regression and therefore there was
+    a dimensionality reduction which reduced the inclusion of predictors that did
+    not contribute to predicting the response.
+
+    # A tibble: 1 × 3
+      linear_model_test_error ridge_model_test_error lasso_model_test_error
+                        <dbl>                  <dbl>                  <dbl>
+    1                 330682.                342942.                330281.
+
+    # A tibble: 1 × 2
+      PCR_test_error PLS_test_error
+               <dbl>          <dbl>
+    1        330682.        326737.
+
+    # A tibble: 1 × 6
+      set_tolerance lm_accuracy ridge_accuracy lasso_accuracy pcr_accuracy
+              <dbl>       <dbl>          <dbl>          <dbl>        <dbl>
+    1           0.1       0.328          0.334          0.339        0.329
+    # ℹ 1 more variable: pls_accuracy <dbl>
+
+    The model accuracies have been calculated with respect to a set tolerance of
+    0.1 from the true number of accepted applications as shown above. Predictions
+    greater than or less than this tolerance have been classified as inaccurate, and
+    predictions within this tolerance were classified as accurate predictions. Given
+    a tolerance of 0.1, the accuracies of the models range from 31.877% to 33.933%
+    accurate. At this given tolerance, these models are inaccurate more often
+    than not. The full spectrum of model accuracies among the five models between
+    tolerances of 0 to 1 is plotted below.
+
+<img src="Lab_6_Linear_Models_and_Regularization_Methods_Exercises_files/figure-gfm/unnamed-chunk-33-1.png" width="70%" style="display: block; margin: auto;" />
+
+### Question 10:
+
+We have seen that as the number of features in a model increases, the
+training error will necessarily decrease, but the test error may not. We
+will now explore this in a simulated dataset.
+
+- **Question 10-a**:
+  - **Answer**:
+
+``` r
+set.seed(42) 
+X <- rnorm(1000)
+ε <- rnorm(100)
+df <- tibble(X, X^2, X^3, X^4, X^5, X^6, X^7, X^8, X^9, X^10, X^11, X^12, X^13, X^14, X^15, X^16, X^17, X^18, X^19, X^20)
+
+β_0 <- 10
+β_1 <- 1
+β_2 <- 2
+β_3 <- 3
+n = 100
+Y <- β_0 + (β_1 * X) + (β_2 * X^2) + (β_3 * X^3) + ε
+```
+
+- **Question 10-b**: Split your data into a training set containing 100
+  observations and a test set containing 900 observations.
+  - **Answer**:
+
+``` r
+set.seed(42) 
+train <- sample(1:900)
+test <- (-train)
+```
+
+- **Question 10-c**: Perform best subset selection on the training set,
+  and plot the training set MSE associated with the best model of each
+  size.
+  - **Answer**:
+
+<img src="Lab_6_Linear_Models_and_Regularization_Methods_Exercises_files/figure-gfm/unnamed-chunk-41-1.png" width="70%" style="display: block; margin: auto;" />
+
+<img src="Lab_6_Linear_Models_and_Regularization_Methods_Exercises_files/figure-gfm/unnamed-chunk-43-1.png" width="70%" style="display: block; margin: auto;" />
+
+- **Question 10-e**:
+  - **Answer**:
+
+<!-- -->
+
+    The test set MSE takes on its minimum value for the model with 4 predictors.
+
+              1           2           3           4           5           6 
+      10.463074    1.524774    1.018057    1.017061    1.020076    1.027204 
+              7           8           9          10          11          12 
+       1.023571    1.525666    7.014276   38.091228   43.928379   66.400944 
+             13          14          15          16          17          18 
+     503.468591 1809.442345 1117.290837 4680.150725 4720.169459 4689.997269 
+             19          20 
+    4678.907701 4620.821832 
+
+- **Question 10-f**:
+  - **Answer**:
+
+<!-- -->
+
+    This is close to the true function of ƒ which is comprised of 3 predictors and
+    an intercept. The selected predictors of the model with the best fit from best
+    subset selection and estimated coefficients thereof are included below.
+
+      (Intercept)             X         `X^2`         `X^3`         `X^8` 
+     9.889559e+00  1.023076e+00  2.015311e+00  2.991725e+00 -4.291354e-05 

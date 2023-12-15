@@ -172,25 +172,30 @@ test.mat <- model.matrix(Salary ~ ., data = Hitters[test, ]) # model.matrix tran
 ```
 
 ```{r}
+# Calculating the test error of the models at each size.
 val.errors <- rep(NA, 19)
 for (i in 1:19) {
   coefi <- coef(regfit.best, id = i)
   pred <- test.mat[, names(coefi)] %*% coefi
   val.errors[i] <- mean((Hitters$Salary[test] - pred)^2)
 }
-
+#q10
 val.errors
 which.min(val.errors)
 coef(regfit.best, 7)
 ```
 
 ```{r}
+coef(regfit.best, 1)
+```
+
+```{r}
 predict.regsubsets <- function(object, newdata, id, ...) {
-  form <- as.formula(object$call[[2]])
-  mat <- model.matrix(form, newdata)
-  coefi <- coef(object, id = id)
-  xvars <- names(coefi)
-  mat[, xvars] %*% coefi
+  form <- as.formula(object$call[[2]]) # Identify the formula of the fit of the model. 
+  mat <- model.matrix(form, newdata) # Create a matrix using the formula and the subset of the data
+  coefi <- coef(object, id = id) # select the coefficients of the model with i number of predictors
+  xvars <- names(coefi) # identify the predictors by name
+  mat[, xvars] %*% coefi # make a prediction by all the observations in the matrix of observations that is subset by the predictors included in each i model with the corresponding coefficients of that model.
 }
 ```
 
@@ -198,7 +203,6 @@ predict.regsubsets <- function(object, newdata, id, ...) {
 regfit.best <- regsubsets(Salary ~ ., data = Hitters, nvmax = 19)
 coef(regfit.best, 7)
 ```
-
 
 K-Fold Cross-Validation Selection
 ```{r}
@@ -209,26 +213,50 @@ folds <- sample(rep(1:k, length = n)) # grouping each observation into k groups
 cv.errors <- matrix(NA, k, 19, dimnames = list(NULL, paste(1:19)))
 ```
 
+```{r include=FALSE}
+# nrow(Hitters)
+```
+
+```{r include=FALSE}
+# Hitters[folds, ]
+```
+
+```{r include=FALSE}
+# Explaination of the algorithm below & example:
+# folds is a list with a length that matches the number of observations of the Hitters dataframe. The values within folds range from 1 to 10. From the perspective of folds != j, for each selection of j,  folds not equal to the value of j will return TRUE. Folds equal to the value of j will return FALSE. This means that wherever there is a value of k that is equal to j in the algorithm below, then that value is excluded from the dataset because the value is FALSE, and the remaining indices are returned as a subset of the larger dataframe. This allows for the same number of observations to be excluded from the dataframe where each group of observations is identified by a value 1 to k. The folds select indices via their order in the folds matrix, and the value of a particular fold identifies which group the observation at that position belongs to. 
+folds != 1
+```
+
 ```{r}
+# This performs training and testing 10 times. For each trained group of models this algorithm will make a prediction for each of the best models for i number of predictors. There are p models with 1 to n number of predictors used in each model where p is the number of predictors and n is the number of predictors used in the model.
 for (j in 1:k) {
   best.fit <- regsubsets(Salary ~ .,
-                         data = Hitters[folds != j, ], nvmax = 19) # Training on all but k.
+                         data = Hitters[folds != j, ], nvmax = 19) # Training on all but k. Returns the best fit for 1 to 19 number of predictors. 
   for (i in 1:19) {
-    pred <- predict(best.fit, Hitters[folds == j, ], id = i) # Predict using k. This will use the custom predict function above. Best i variable model.
+    pred <- predict(best.fit, Hitters[folds == j, ], id = i) # Predict using k as test. This will use the custom predict function above. Best i variable model. This is making predictions for all 19 models 10 times. 
     cv.errors[j, i] <-
       mean((Hitters$Salary[folds == j] - pred) ^2) # Mean Square Error of each predictor within a k fold.
   }
 }
 ```
 
+```{r include=FALSE}
+# Each column represents a model. Identify the average of the ten rows for each column
+mean(cv.errors[,1])
+```
+
+
 ```{r}
-mean.cv.errors <- apply(cv.errors, 2, mean) # Identify the k which has the lowest mean test error
+mean.cv.errors <- apply(cv.errors, 2, mean) # Identify the k which has the lowest mean test error. 2 selects the average of the rows using each column. 1 selects the average of the columns using each row.
 mean.cv.errors
 par(mfrow = c(1,1))
 plot(mean.cv.errors, type = "b")
 ```
+```{r include=FALSE}
+mean.cv.errors
+```
 
-```{r}
+```{r include=FALSE}
 Hitters
 ```
 
@@ -385,7 +413,7 @@ set.seed(2)
 ```
 
 ```{r}
-pcr.fit <- pcr(Salary ~ ., data = Hitters, scale = TRUE, validation = "CV") # Setting scale = TRUE will standardize each predictor. validation = "CV" means using a ten-fold cross-validation for each number of principle components.
+pcr.fit <- pcr(Salary ~ ., data = Hitters, scale = TRUE, validation = "CV") # Setting scale = TRUE will standardize each predictor. validation = "CV" means using a ten-fold cross-validation for each number of principal components.
 summary(pcr.fit)
 ```
 
@@ -420,7 +448,6 @@ pls.fit <- plsr(Salary ~ ., data = Hitters, validation  = "CV", scale = TRUE)
 summary(pls.fit)
 validationplot(pls.fit, val.type = "MSEP")
 ```
-
 
 ```{r}
 pls.pred <- predict(pls.fit, x[test, ], ncomp = 1)

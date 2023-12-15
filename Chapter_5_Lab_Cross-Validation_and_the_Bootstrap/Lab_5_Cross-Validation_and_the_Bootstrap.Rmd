@@ -105,12 +105,22 @@ mean((mpg - predict(lm.fit, Auto))[-train]^2)
 ```
 
 ```{r}
+mean((mpg - predict(lm.fit, Auto))[-train]^2) 
+
+# length()
+predict(lm.fit, Auto)
+
+```
+
+
+```{r}
 lm.fit2 <- lm(mpg ~ poly(horsepower, 2), data = Auto, subset = train)
 mean((mpg - predict(lm.fit2, Auto))[-train]^2)
 ```
 
 ```{r}
-mean((mpg - predict(lm.fit2, Auto))[-train]^2)
+(mpg - predict(lm.fit2, Auto))[-train]
+
 ```
 
 

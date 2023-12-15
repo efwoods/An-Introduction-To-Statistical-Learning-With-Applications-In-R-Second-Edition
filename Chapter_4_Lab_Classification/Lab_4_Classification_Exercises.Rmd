@@ -441,7 +441,7 @@ glm.pred <- rep("Down", 1089)
 glm.pred[glm.probs > 0.5] = "Up"
 table(glm.pred, Direction)
 
-f_print(sprintf("Among the training set, there is an average training error of %0.2f%%. The model gave correct responses on average %0.2f%% of the time. The model predicted made false positive predictions of an Upwards direction when the true direction was Down 430 times. The model made false negative predictions of the Downwards direction when the true direction was Up 48 times.", ((1-((54+557)/length(Direction))) * 100), ((((54+557)/length(Direction))) * 100)))
+f_print(sprintf("Among the training set, there is an average training error of %0.2f%%. The model gave correct responses on average %0.2f%% of the time. The model made false positive predictions of an Upwards direction when the true direction was Down 430 times. The model made false negative predictions of the Downwards direction when the true direction was Up 48 times.", ((1-((54+557)/length(Direction))) * 100), ((((54+557)/length(Direction))) * 100)))
 ```
 
 ```{r include = FALSE}

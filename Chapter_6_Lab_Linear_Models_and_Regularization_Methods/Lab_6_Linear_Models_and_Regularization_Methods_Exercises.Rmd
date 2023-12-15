@@ -6,7 +6,7 @@ output: github_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 knitr::opts_chunk$set(fig.width = 6)
 knitr::opts_chunk$set(fig.asp = 0.618)
 knitr::opts_chunk$set(out.width = "70%")
@@ -93,15 +93,14 @@ In this exercise, we will generate simulated data, and will then use this data t
 
 * **Question 8-a**: Use the rnorm() function to generate a predictor X of length n = 100, as well as a noise vector ε of length n = 100.
   * **Answer**:
-```{r}
-set.seed(1)
+```{r echo=TRUE}
 X = rnorm(100)
 ε = rnorm(100)
 ```
 
 * **Question 8-b**: Generate a response vector Y of length n = 100 according to the model Y = β~0~ + β~1~X + β~2~X^2^ + β~3~X^3^ + ε, where β~0~,  β~1~,  β~2~, and  β~3~ are constants of your choice.
   * **Answer**:
-```{r}
+```{r echo=TRUE}
 β_0 <- 10
 β_1 <- 1
 β_2 <- 2
@@ -164,8 +163,6 @@ cat("\n")
 f_print(sprintf("The best model obtained implementing forward stepwise selection according to Adjusted R-squared is model %0.0f.", which.max(forward.summary$adjr2)))
 cat("\n")
 ```
-
-
 
 ```{r echo=FALSE}
 plot(forward.summary$cp, type = "l", main = "Forward Stepwise: Mallows' Cp vs. Model Index", xlab = "Model Index", ylab = "Mallows' Cp")
@@ -297,7 +294,8 @@ test <- (-train)
 ```{r echo=FALSE}
 glm_9.fit <- glm(Accept ~ ., data = college, subset = train)
 glm_9.pred <- predict(glm_9.fit, college)
-f_print(sprintf("The test error of the linear model is: %0.1f.", mean((glm_9.pred - college$Accept)[-train]^2)))
+glm_9.test_error <- mean((glm_9.pred - college$Accept)[-train]^2)
+f_print(sprintf("The test error of the linear model is: %0.1f.", glm_9.test_error))
 ```
 
 * **Question 9-c**: Fit a ridge regression model on the training set, with λ chosen by cross-validation. Report the test error obtained.
@@ -320,10 +318,230 @@ set.seed(42)
 lasso.model <- cv.glmnet(x[train, ], y[train], lambda = grid, alpha = 1)
 lasso.model.predict <- predict(lasso.model, s = lasso.model$lambda.min, newx = x[test, ])
 lasso.model.mse <- mean((lasso.model.predict - y[test])^2)
-f_print(sprintf("The test error for the lasso model is %0.3f for the chosen value of λ: %0.3f.", ridge.model.mse, ridge.model$lambda.min))
-# coef(lasso.model)
+f_print(sprintf("The test error for the lasso model is %0.3f for the chosen value of λ: %0.3f.", lasso.model.mse, lasso.model$lambda.min))
 cat("\n")
 f_print(sprintf("The number of non-zero coefficient estimates is 8."))
 ```
 
+* **Question 9-e**: Fit a PCR model on the training set, with M chosen by cross-validation. Report the test error obtained, along with the value of M selected by cross-validation.
+  * **Answer**:
+
+```{r echo=FALSE}
+college.pcr.fit <- pcr(Accept ~ ., data = college, subset = train, scale = TRUE, validation = "CV")
+summary(college.pcr.fit)
+validationplot(college.pcr.fit, val.type = "MSEP")
+# M = 17
+```
+
+
+```{r echo=FALSE}
+college.pcr.pred <- predict(college.pcr.fit, college[test, ], ncomp = 17)
+college.pcr.test_error <- mean((college$Accept[test] - college.pcr.pred)^2)
+f_print(sprintf("The test error of the predictions generated from the pcr model is: %0.1f where the value of M that captures most of the variability in the response is: 17", college.pcr.test_error))
+```
+
+* **Question 9-f**: Fit a PLS model on the dataset with M chosen by cross-validation. Report the test error obtained, along with the value of M selected by cross-validation.
+  * **Answer**:
+```{r echo=FALSE}
+college.pls.fit <- plsr(Accept ~ ., data = college, subset = train, scale = TRUE, validation = "CV")
+summary(college.pls.fit)
+validationplot(college.pls.fit, val.type = "MSEP")
+# M = 11
+college.pls.pred <- predict(college.pls.fit, college[test, ], ncomp = 11)
+
+college.pls.test_error <- mean((college.pls.pred - college$Accept[test])^2)
+f_print(sprintf("The test error of the partial least squares function is: %0.1f. The ideal value of M that captures the most variablility in the response with the least number of components is: 11", college.pls.test_error))
+```
+* **Question 9-g**: Comment on the results obtained. How accurately can we predict the number of college applications received? Is there much difference resulting from the test errors among these five approaches?
+  * **Answer**:
+```{r echo=FALSE}
+test_errors <- tibble(
+  linear_model_test_error  = glm_9.test_error,
+  ridge_model_test_error = ridge.model.mse,
+  lasso_model_test_error = lasso.model.mse,
+  PCR_test_error = college.pcr.test_error,
+  PLS_test_error = college.pls.test_error
+)
+
+mean_test_error <- sum(test_errors) / length(test_errors)
+sd_test_error <- sd(test_errors)
+f_print(sprintf("Among the five methods, the mean test error is: %0.0f. The standard deviation of the test error is: %0.0f. There is not much difference among the test errors between these five approaches. The the principal component regression and the linear model had precisely the same test error. This is because all principal components were used to capture the most variability in the response, and using all principal components results in a model that has no dimensionality reduction. This means that the PCR does not differ from a least squares linear model fit. The ridge regression was penalized for the extra predictors, and the partial least squares resulted in the lowest test error. This is due to the fact that partial least squares required less components to capture the variability in the response than the principal component regression and therefore there was a dimensionality reduction which reduced the inclusion of predictors that did not contribute to predicting the response.", mean_test_error, sd_test_error))
+test_errors %>% select(everything(), -'PCR_test_error', -'PLS_test_error')
+test_errors %>% select(everything(), -'linear_model_test_error', -'ridge_model_test_error', -'lasso_model_test_error')
+```
+
+
+```{r echo=FALSE}
+calculate_accuracy_within_tolerance <- function(truth_df, pred_df, tolerance){
+  all_tolerance <- truth_df * tolerance
+  predictions <- abs(truth_df - pred_df) < all_tolerance
+  n_accurate_predictions <- length(predictions[predictions == 'TRUE'])
+  n_inaccurate_predictions <- length(predictions[predictions == 'FALSE'])
+  total_predictions <- length(predictions)
   
+  accuracy <- n_accurate_predictions / total_predictions
+  return(accuracy)
+}
+
+
+model_accuracies <- tibble(
+  set_tolerance = 0,
+  lm_accuracy = calculate_accuracy_within_tolerance(college[, "Accept"], glm_9.pred, set_tolerance),
+  ridge_accuracy = calculate_accuracy_within_tolerance(y[test], ridge.model.predict, set_tolerance),
+  lasso_accuracy = calculate_accuracy_within_tolerance(y[test], lasso.model.predict, set_tolerance),
+  pcr_accuracy = calculate_accuracy_within_tolerance(college$Accept[test], college.pcr.pred, set_tolerance),
+  pls_accuracy = calculate_accuracy_within_tolerance(college$Accept[test], college.pls.pred, set_tolerance)
+)
+
+for(tolerance in seq(0.05:1, by = 0.05)) {
+model_accuracies <- add_row(tibble(
+  set_tolerance = tolerance,
+  lm_accuracy = calculate_accuracy_within_tolerance(college[, "Accept"], glm_9.pred, tolerance),
+  ridge_accuracy = calculate_accuracy_within_tolerance(y[test], ridge.model.predict, tolerance),
+  lasso_accuracy = calculate_accuracy_within_tolerance(y[test], lasso.model.predict, tolerance),
+  pcr_accuracy = calculate_accuracy_within_tolerance(college$Accept[test], college.pcr.pred, tolerance),
+  pls_accuracy = calculate_accuracy_within_tolerance(college$Accept[test], college.pls.pred, tolerance)
+), model_accuracies)  
+}
+
+```
+
+```{r echo=FALSE}
+model_accuracies %>% filter(set_tolerance == 0.1)
+
+f_print(sprintf("The model accuracies have been calculated with respect to a set tolerance of 0.1 from the true number of accepted applications as shown above. Predictions greater than or less than this tolerance have been classified as inaccurate, and predictions within this tolerance were classified as accurate predictions. Given a tolerance of 0.1, the accuracies of the models range from 31.877%% to 33.933%% accurate. At this given tolerance, these models are inaccurate more often than not. The full spectrum of model accuracies among the five models between tolerances of 0 to 1 is plotted below."))
+```
+
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+size = 0.2
+ggplot(model_accuracies) + 
+  geom_point(aes(model_accuracies$set_tolerance, model_accuracies$lm_accuracy), color = 'red') + 
+  geom_smooth(aes(set_tolerance, model_accuracies$lm_accuracy), se = FALSE, color = 'red', size = size) +
+  geom_point(aes(set_tolerance, model_accuracies$ridge_accuracy), color = 'green') +
+  geom_smooth(aes(set_tolerance, model_accuracies$ridge_accuracy), se = FALSE, color = 'green', size = size) +
+  geom_point(aes(set_tolerance, model_accuracies$lasso_accuracy), color = 'blue') +
+  geom_smooth(aes(set_tolerance, model_accuracies$lasso_accuracy), se = FALSE, color = 'blue', size = size) +
+  geom_point(aes(set_tolerance, model_accuracies$pcr_accuracy), color = 'gold') +
+  geom_smooth(aes(set_tolerance, model_accuracies$pcr_accuracy), se = FALSE, color = 'gold', size = size) + 
+  geom_point(aes(set_tolerance, model_accuracies$pls_accuracy), color = 'purple') +
+  geom_smooth(aes(set_tolerance, model_accuracies$pls_accuracy), se = FALSE, color = 'purple', size = size) +
+  labs(title = "Accuracies vs. Tolerance From Number of Accepted Applications", x = "Percent Tolerance From True Number of Accepted Applications", y = "Model Accuracy", subtitle = "Linear Model Accuracy: Red\nRidge Accuracy: Green\nLasso Accuracy: Blue\nPCR Accuracy: Gold\nPLS Accuracy: Purple") +
+  theme_linedraw() 
+  
+```
+
+### Question 10: 
+We have seen that as the number of features in a model increases, the training error will necessarily decrease, but the test error may not. We will now explore this in a simulated dataset.
+
+```{r}
+set.seed(42) 
+```
+
+
+* **Question 10-a**:
+  * **Answer**:
+```{r echo=TRUE}
+set.seed(42) 
+X <- rnorm(1000)
+ε <- rnorm(100)
+df <- tibble(X, X^2, X^3, X^4, X^5, X^6, X^7, X^8, X^9, X^10, X^11, X^12, X^13, X^14, X^15, X^16, X^17, X^18, X^19, X^20)
+
+β_0 <- 10
+β_1 <- 1
+β_2 <- 2
+β_3 <- 3
+n = 100
+Y <- β_0 + (β_1 * X) + (β_2 * X^2) + (β_3 * X^3) + ε
+
+```
+
+```{r}
+df_10 <- df %>% mutate(Y = Y) %>% select(Y, everything())
+```
+
+* **Question 10-b**: Split your data into a training set containing 100 observations and a test set containing 900 observations.
+  * **Answer**:
+```{r echo=TRUE}
+set.seed(42) 
+train <- sample(1:900)
+test <- (-train)
+```
+
+* **Question 10-c**: Perform best subset selection on the training set, and plot the training set MSE associated with the best model of each size.
+  * **Answer**:
+
+```{r echo=FALSE}
+predict.regsubsets <- function(object, newdata, id, ...) {
+  form <- as.formula(object$call[[2]]) # Identify the formula of the fit of the model. 
+  mat <- model.matrix(form, newdata) # Create a matrix using the formula and the subset of the data
+  coefi <- coef(object, id = id) # select the coefficients of the model with i number of predictors
+  xvars <- names(coefi) # identify the predictors by name
+  mat[, xvars] %*% coefi # make a prediction by all the observations in the matrix of observations that is subset by the predictors included in each i model with the corresponding coefficients of that model.
+}
+```
+
+
+```{r echo=FALSE}
+k <- 10  
+n <- nrow(df_10)
+set.seed(1)
+p <- length(df_10) - 1
+folds <- sample(rep(1:k, length = n)) # grouping each observation into k groups
+cv.errors <- matrix(NA, k, p, dimnames = list(NULL, paste(1:p))) # Creating a matrix to store the errors
+```
+
+```{r echo=FALSE}
+# This performs training and testing 10 times. For each trained group of models this algorithm will make a prediction for each of the best models for i number of predictors. There are p models with 1 to n number of predictors used in each model where p is the number of predictors and n is the number of predictors used in the model.
+for (j in 1:k) {
+  best.fit <- regsubsets(Y ~ .,
+                         data = df_10[folds != j, ], nvmax = 20) # Training on all but k. Returns the best fit for 1 to 20 predictors. 
+  for (i in 1:20) {
+    pred <- predict(best.fit, df_10[folds != j, ], id = i) # Predict using k as the training set. This will use the custom predict function above. Best i variable model. This is making predictions for all 20 models 10 times. 
+    cv.errors[j, i] <-
+      mean((df_10$Y[folds != j] - pred) ^2) # Mean Square Error of each predictor within a k fold.
+  }
+}
+```
+
+```{r}
+mean.cv.errors.train <- apply(cv.errors, 2, mean) # Identify the k which has the lowest mean train error. 2 selects the average of the rows using each column. 1 selects the average of the columns using each row.
+par(mfrow = c(1,1))
+plot(mean.cv.errors.train, type = "b", main = "Training Set Mean Squared Error Per Model Of Each Size", ylab = "Average Train MSE", xlab = "Number of Predictors in Model")
+```
+
+```{r}
+# This performs training and testing 10 times. For each trained group of models this algorithm will make a prediction for each of the best models for i number of predictors. There are p models with 1 to n number of predictors used in each model where p is the number of predictors and n is the number of predictors used in the model.
+for (j in 1:k) {
+  best.fit <- regsubsets(Y ~ .,
+                         data = df_10[folds != j, ], nvmax = 20) # Training on all but k. Returns the best fit for 1 to 20 number of predictors. 
+  for (i in 1:20) {
+    pred <- predict(best.fit, df_10[folds == j, ], id = i) # Predict using k as test. This will use the custom predict function above. Best i variable model. This is making predictions for all 20 models 10 times. 
+    cv.errors[j, i] <-
+      mean((df_10$Y[folds == j] - pred) ^2) # Mean Square Error of each predictor within a k fold.
+  }
+}
+```
+
+```{r}
+mean.cv.errors.test <- apply(cv.errors, 2, mean) # Identify the k which has the lowest mean test error. 2 selects the average of the rows using each column. 1 selects the average of the columns using each row.
+par(mfrow = c(1,1))
+plot(mean.cv.errors.test, type = "b", main = "Test Set Mean Squared Error Per Model Of Each Size", ylab = "Average Test MSE", xlab = "Number of Predictors in Model")
+```
+
+* **Question 10-e**:
+  * **Answer**:
+```{r}
+f_print(sprintf("The test set MSE takes on its minimum value for the model with %0.0f predictors.",which.min(mean.cv.errors.test)))
+cat("\n")
+mean.cv.errors.test
+```
+
+* **Question 10-f**:
+  * **Answer**:
+```{r}
+f_print(sprintf("This is close to the true function of ƒ which is comprised of 3 predictors and an intercept. The selected predictors of the model with the best fit from best subset selection and estimated coefficients thereof are included below."))
+coef(best.fit, which.min(mean.cv.errors.test))
+```
+
+
