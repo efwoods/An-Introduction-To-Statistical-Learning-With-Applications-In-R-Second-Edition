@@ -397,7 +397,6 @@ glm.fit_ii <- glm(y ~ x + I(x^2), data = df)
 cv.error.ii <- cv.glm(df, glm.fit_ii)$delta[1]
 
 # iii.
-
 glm.fit_iii <- glm(y ~ x + I(x^2) + I(x^3), data = df)
 cv.error.iii <- cv.glm(df, glm.fit_iii)$delta[1]
 

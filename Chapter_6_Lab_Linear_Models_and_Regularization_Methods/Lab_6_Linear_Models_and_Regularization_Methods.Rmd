@@ -156,7 +156,7 @@ coef(regfit.fwd, 7)
 coef(regfit.bwd, 7)
 ```
 ## Model Selection with Cross Validation and Validation Set
-### Best Subset Selection using Validations Set
+### Best Subset Selection using a Validation Set
 ```{r}
 set.seed(1)
 train <- sample(c(TRUE, FALSE), nrow(Hitters), replace = TRUE)
@@ -229,13 +229,17 @@ plot(mean.cv.errors, type = "b")
 ```
 
 ```{r}
+Hitters
+```
+
+
+```{r}
 # Best Subset Selection of the full dataset to obtain the 10 variable model.
 reg.best <- regsubsets(Salary ~ ., data = Hitters, nvmax = 19)
 coef(reg.best, 10)
 ```
 
 ## Ridge Regression and the Lasso
-
 ```{r}
 x <- model.matrix(Salary ~ ., data = Hitters)[, -1] # -1 removes the intercept
 y <- Hitters$Salary
@@ -244,7 +248,6 @@ y <- Hitters$Salary
 ### Ridge Regression
 ```{r}
 grid <- 10^seq(10, -2, length = 100)
-ridge.mod <- glmnet(x, y, alpha = 0, lambda = grid)
 ```
 
 
@@ -328,10 +331,6 @@ out <- glmnet(x, y, alpha = 0)
 out.pred <- predict(out, s = min_lambda, type = "coefficients")[1:20, ]
 out.pred
 ```
-
-
-
-
 
 ```{r}
 # Create a validation set

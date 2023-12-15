@@ -27,8 +27,13 @@ if(!require("formulaic")) install.packages("formulaic")
 if(!require("caTools")) install.packages("caTools")
 if(!require("caret")) install.packages("caret")
 if(!require("boot")) install.packages("boot")
+if(!require("leaps")) install.packages("leaps") # regsubsets
+if(!require("glmnet")) install.packages("glmnet") # Ridge and Lasso Regression
+if(!require("pls")) install.packages("pls") # Partial Least Squares & Principal Component Regression
 
-
+library(glmnet)
+library(pls)
+library(leaps)
 library(formulaic)
 library(class)
 library(e1071)
@@ -72,11 +77,253 @@ custom_lightblue = "#34ABEB"
 custom_red = "#a60808"
 ```
 
-
 ```{r include=FALSE}
 f_print <- function(string){
   cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
 }
 ```
 
-## Exercises
+```{r echo=FALSE}
+set.seed(1)
+```
+
+## Applied:
+### Question 8: 
+In this exercise, we will generate simulated data, and will then use this data to perform best subset selection.
+
+* **Question 8-a**: Use the rnorm() function to generate a predictor X of length n = 100, as well as a noise vector ε of length n = 100.
+  * **Answer**:
+```{r}
+set.seed(1)
+X = rnorm(100)
+ε = rnorm(100)
+```
+
+* **Question 8-b**: Generate a response vector Y of length n = 100 according to the model Y = β~0~ + β~1~X + β~2~X^2^ + β~3~X^3^ + ε, where β~0~,  β~1~,  β~2~, and  β~3~ are constants of your choice.
+  * **Answer**:
+```{r}
+β_0 <- 10
+β_1 <- 1
+β_2 <- 2
+β_3 <- 3
+n = 100
+Y <- β_0 + (β_1 * X) + (β_2 * X^2) + (β_3 * X^3) + ε
+```
+
+* **Question 8-c**: Use the regsubsets() function to perform best subset selection in order to choose the best model containing the predictors X, X^2^, ..., X^10^. What is the best model obtained according to C~p~, BIC, and adjusted R^2^? Show plots to provide evidence for your answer, and report the coefficients of the best model obtained. Note you will need to use the data.frame() function to create a single data set containing both X and Y.
+  * **Answer**:
+
+```{r echo=FALSE}
+df <- tibble(Y, X, X^2, X^3, X^4, X^5, X^6, X^7, X^8, X^9, X^10)
+best_subset <- regsubsets(Y ~ ., data = df, nvmax = 10)
+summary_best_subset <- summary(best_subset)
+summary_best_subset
+```
+
+
+```{r echo=FALSE}
+f_print(sprintf("The best model obtained according to Mallows' Cp is model %0.0f.", which.min(summary_best_subset$cp)))
+cat("\n")
+f_print(sprintf("The best model obtained according to Bayesian Information Criterion is model %0.0f.", which.min(summary_best_subset$bic)))
+cat("\n")
+f_print(sprintf("The best model obtained according to Adjusted R-squared is model %0.0f.", which.max(summary_best_subset$adjr2)))
+cat("\n")
+```
+
+```{r echo=FALSE}
+plot(summary_best_subset$cp, type = "l", ylab = "Mallows' Cp", xlab = "Model Index", main = "Best Subset: Mallows' Cp vs. Model Index")
+points(which.min(summary_best_subset$cp), summary_best_subset$cp[which.min(summary_best_subset$cp)], col = "red", cex = 2, pch = 20)
+plot(summary_best_subset$bic, type = "l", xlab = "Model Index", ylab = "Bayesian Information Criterion", main = "Best Subset: BIC vs. Model Index")
+points(which.min(summary_best_subset$bic), summary_best_subset$bic[which.min(summary_best_subset$bic)], col = "red", cex = 2, pch = 20)
+plot(summary_best_subset$adjr2, type = "l", xlab = "Model Index", ylab = "Adjusted R-squared", main = "Best Subset: Adjusted R-squared vs. Model Index")
+points(which.max(summary_best_subset$adjr2), summary_best_subset$adjr2[which.max(summary_best_subset$adjr2)], col = "red", cex = 2, pch = 20)
+```
+
+```{r echo=FALSE}
+f_print(sprintf("The coefficients for the best model obtained:"))
+cat("\n")
+coef(best_subset, which.max(summary_best_subset$adjr2))
+```
+
+* **Question 8-d**: Repeat the previous question using forward stepwise selection and also using backwards stepwise selection. How does your answer compare to the results in the previous question?
+  * **Answer**:
+```{r echo=FALSE}
+forward <- regsubsets(Y ~ ., data = df, nvmax = 10, method = "forward")
+backward <- regsubsets(Y ~ ., data = df, nvmax = 10, method = "backward")
+
+forward.summary <- summary(forward)
+backward.summary <- summary(backward)
+```
+
+```{r echo=FALSE}
+forward.summary
+f_print(sprintf("The best model obtained implementing forward stepwise selection according to Mallows' Cp is model %0.0f.", which.min(forward.summary$cp)))
+cat("\n")
+f_print(sprintf("The best model obtained implementing forward stepwise selection according to Bayesian Information Criterion is model %0.0f.", which.min(forward.summary$bic)))
+cat("\n")
+f_print(sprintf("The best model obtained implementing forward stepwise selection according to Adjusted R-squared is model %0.0f.", which.max(forward.summary$adjr2)))
+cat("\n")
+```
+
+
+
+```{r echo=FALSE}
+plot(forward.summary$cp, type = "l", main = "Forward Stepwise: Mallows' Cp vs. Model Index", xlab = "Model Index", ylab = "Mallows' Cp")
+points(which.min(forward.summary$cp), forward.summary$cp[which.min(forward.summary$cp)], col = "red", cex = 2, pch = 20)
+
+plot(forward.summary$bic, type = "l", main = "Forward Stepwise: BIC vs. Model Index", xlab = "Model Index", ylab = "Bayesian Information Criterion")
+points(which.min(forward.summary$bic), forward.summary$bic[which.min(forward.summary$bic)], col = "red", cex = 2, pch = 20)
+
+plot(forward.summary$adjr2, type = "l", main = "Forward Stepwise: Adjusted R-squared vs. Model Index", xlab = "Model Index", ylab = "Adjusted R-squared")
+points(which.max(forward.summary$adjr2), forward.summary$adjr2[which.max(forward.summary$adjr2)], col = "red", cex = 2, pch = 20)
+
+```
+
+```{r echo=FALSE}
+backward.summary
+f_print(sprintf("The best model obtained implementing backward stepwise selection according to Mallows' Cp is model %0.0f.", which.min(backward.summary$cp)))
+cat("\n")
+f_print(sprintf("The best model obtained implementing backward stepwise selection according to Bayesian Information Criterion is model %0.0f.", which.min(backward.summary$bic)))
+cat("\n")
+f_print(sprintf("The best model obtained implementing backward stepwise selection according to Adjusted R-squared is model %0.0f.", which.max(backward.summary$adjr2)))
+cat("\n")
+```
+
+
+```{r echo=FALSE}
+plot(backward.summary$cp, type = "l", main = "Backward Stepwise: Mallows' Cp vs. Model Index", xlab = "Model Index", ylab = "Mallows' Cp")
+points(which.min(backward.summary$cp), backward.summary$cp[which.min(backward.summary$cp)], col = "red", cex = 2, pch = 20)
+
+plot(backward.summary$bic, type = "l", main = "Backward Stepwise: BIC vs. Model Index", xlab = "Model Index", ylab = "Bayesian Information Criterion")
+points(which.min(backward.summary$bic), backward.summary$bic[which.min(backward.summary$bic)], col = "red", cex = 2, pch = 20)
+
+plot(backward.summary$adjr2, type = "l", main = "Backward Stepwise: Adjusted R-squared vs. Model Index", xlab = "Model Index", ylab = "Adjusted R-squared")
+points(which.max(backward.summary$adjr2), backward.summary$adjr2[which.max(backward.summary$adjr2)], col = "red", cex = 2, pch = 20)
+```
+
+
+```{r echo=FALSE}
+f_print(sprintf("3 different rubrics (Mallows' Cp, Bayesian Information Criterion, and Adjusted R-squared) identified the same best models independent of whether those models were created using the forward stepwise selection method or the best subset selection method. Those models were models 4, 3, & 4 respectively. However, the same three metrics identified models 7, 5, & 7 as the best models when those models were created using backward stepwise selection."))
+```
+* **Question 8-e**: Now fit a lasso model to the simulated data, again using X, X^2^, ..., X^10^ as predictors. Use cross-validation to select the optimal value of λ. Create plots of the cross-validation error as a function of λ. Report the resulting coefficient estimates, and discuss the results obtained. 
+  * **Answer**:
+```{r echo=FALSE}
+set.seed(42)
+x <- model.matrix(Y ~ ., data = df)
+
+train <- sample(nrow(x), nrow(x)/2)
+test <- (!train)
+y.test <- Y[test]
+
+grid <- 10^seq(10, -2, length = 100)
+lasso_cv_fit <- cv.glmnet(x[train, ], Y[train], alpha = 1)
+plot(lasso_cv_fit)
+
+lasso_full_fit <- glmnet(x, Y, data = df, alpha = 1, lambda = grid)
+lasso_full_fit_pred <- predict(lasso_full_fit, s = lasso_cv_fit$lambda.min, type = "coefficients")[1:11, ]
+f_print(sprintf("The coefficient estimates of the full model fit for the best value of lambda that minimizes mean square error are the following:"))
+cat("\n")
+lasso_full_fit_pred
+```
+* **Question 8-f**: Now generate a response vector Y according to the model Y = β~0~ + β~7~X^7^ + ε and perform best subset selection and the lasso. Discuss the results obtained. 
+  * **Answer**:
+  
+```{r echo=FALSE}
+set.seed(1)
+# Best Subset Selection
+X = rnorm(100)
+ε = rnorm(100)
+β_7 <- 7
+Y <- β_0 + (β_7*(X^7)) + ε
+
+df <- tibble(Y, X, X^2, X^3, X^4, X^5, X^6, X^7, X^8, X^9, X^10)
+
+best_subset <- regsubsets(Y ~ ., data = df, nvmax = 10)
+summary_best_subset <- summary(best_subset)
+summary_best_subset
+
+f_print(sprintf("The best model obtained according to Mallows' Cp is model %0.0f.", which.min(summary_best_subset$cp)))
+cat("\n")
+f_print(sprintf("The best model obtained according to Bayesian Information Criterion is model %0.0f.", which.min(summary_best_subset$bic)))
+cat("\n")
+f_print(sprintf("The best model obtained according to Adjusted R-squared is model %0.0f.", which.max(summary_best_subset$adjr2)))
+cat("\n")
+
+plot(summary_best_subset$cp, type = "l", ylab = "Mallows' Cp", xlab = "Model Index", main = "Best Subset: Mallows' Cp vs. Model Index")
+points(which.min(summary_best_subset$cp), summary_best_subset$cp[which.min(summary_best_subset$cp)], col = "red", cex = 2, pch = 20)
+plot(summary_best_subset$bic, type = "l", xlab = "Model Index", ylab = "Bayesian Information Criterion", main = "Best Subset: BIC vs. Model Index")
+points(which.min(summary_best_subset$bic), summary_best_subset$bic[which.min(summary_best_subset$bic)], col = "red", cex = 2, pch = 20)
+plot(summary_best_subset$adjr2, type = "l", xlab = "Model Index", ylab = "Adjusted R-squared", main = "Best Subset: Adjusted R-squared vs. Model Index")
+points(which.max(summary_best_subset$adjr2), summary_best_subset$adjr2[which.max(summary_best_subset$adjr2)], col = "red", cex = 2, pch = 20)
+
+
+```
+```{r echo=FALSE}
+set.seed(42)
+x <- model.matrix(Y ~ ., data = df)
+
+train <- sample(nrow(x), nrow(x)/2)
+test <- (!train)
+y.test <- Y[test]
+
+grid <- 10^seq(10, -2, length = 100)
+lasso_cv_fit <- cv.glmnet(x[train, ], Y[train], alpha = 1)
+plot(lasso_cv_fit)
+
+lasso_full_fit <- glmnet(x, Y, data = df, alpha = 1, lambda = grid)
+lasso_full_fit_pred <- predict(lasso_full_fit, s = lasso_cv_fit$lambda.min, type = "coefficients")[1:11, ]
+f_print(sprintf("The coefficient estimates of the full model fit for the best value of lambda that minimizes mean square error are the following:"))
+cat("\n")
+lasso_full_fit_pred
+```
+```{r echo=FALSE}
+f_print(sprintf("Using best subset selection to generate models, Mallows' Cp, Bayesian Information Criterion, & Adjusted R-squared all indicated distinct best models. BIC indicated that model 1, which was composed of a predictor of only X^7, was the best model. This was followed by Mallows' Cp which indicated X^7 paired with X^2 best modeled the true function of ƒ. Adjusted R-squared was the poorest indicator of the best model. Adjusted R-squared indicated that model 4 (composed of X, X^2, X^3, & X^7) was the best model. Lasso Regression, however, indicated the true function of ƒ where the selected coefficients of the model which is fit for the best value of lambda are the intercept and X^7. This indicates that in a real world scenario, it is best (if feasable) to fit muliple models to compare and contrast between the selected coefficients so as to determine the true function of ƒ. Had the true function of ƒ not been known, it would have been clear that X^7 and the intercept are related to the response in a significant way due to the fact that both lasso regression and another statistic, BIC in this case, identified these coefficients as pertinent to a model which predicts the desired response."))
+```
+```{r include = FALSE}
+college <- na.omit(College)
+attach(college)
+```
+
+### Question 9: 
+In this exercise, we will predict the number of applications received using the other variables in the College dataset. 
+* **Question 9-a**: Split the data into a training set and a test set.
+```{r}
+train <- sample(nrow(college), nrow(college)/2)
+test <- (-train)
+```
+
+* **Question 9-b**: Fit a linear model using least squares on the training set, and report the test error obtained.
+  * **Answer**:
+```{r echo=FALSE}
+glm_9.fit <- glm(Accept ~ ., data = college, subset = train)
+glm_9.pred <- predict(glm_9.fit, college)
+f_print(sprintf("The test error of the linear model is: %0.1f.", mean((glm_9.pred - college$Accept)[-train]^2)))
+```
+
+* **Question 9-c**: Fit a ridge regression model on the training set, with λ chosen by cross-validation. Report the test error obtained.
+  * **Answer**:
+```{r echo=FALSE}
+grid <- 10^seq(10, -2, length = 100)
+x <- model.matrix(Accept ~ ., data = college)[, -1]
+y <- college$Accept
+
+ridge.model <- cv.glmnet(x[train, ], y[train], lambda = grid, alpha = 0)
+ridge.model.predict <- predict(ridge.model, s = ridge.model$lambda.min, newx = x[test, ])
+ridge.model.mse <- mean((ridge.model.predict - y[test])^2)
+f_print(sprintf("The test error for the ridge regression model is %0.3f for the chosen value of λ: %0.3f.", ridge.model.mse, ridge.model$lambda.min))
+```
+
+* **Question 9-d**: Fit a lasso model on the training set, with λ chosen by cross-validation. Report the test error obtained, along with the number of non-zero coefficient estimates. 
+  * **Answer**:
+```{r echo=FALSE}
+set.seed(42)
+lasso.model <- cv.glmnet(x[train, ], y[train], lambda = grid, alpha = 1)
+lasso.model.predict <- predict(lasso.model, s = lasso.model$lambda.min, newx = x[test, ])
+lasso.model.mse <- mean((lasso.model.predict - y[test])^2)
+f_print(sprintf("The test error for the lasso model is %0.3f for the chosen value of λ: %0.3f.", ridge.model.mse, ridge.model$lambda.min))
+# coef(lasso.model)
+cat("\n")
+f_print(sprintf("The number of non-zero coefficient estimates is 8."))
+```
+
+  
