@@ -437,7 +437,9 @@ We have seen that as the number of features in a model increases, the
 training error will necessarily decrease, but the test error may not. We
 will now explore this in a simulated dataset.
 
-- **Question 10-a**:
+- **Question 10-a**: Generate a data set with p = 20 features, n = 1,000
+  observa- tions, and an associated quantitative response vector
+  generated according to the model Y = Xβ + ε
   - **Answer**:
 
 ``` r
@@ -471,9 +473,18 @@ test <- (-train)
 
 <img src="Lab_6_Linear_Models_and_Regularization_Methods_Exercises_files/figure-gfm/unnamed-chunk-41-1.png" width="70%" style="display: block; margin: auto;" />
 
+- **Question 10-d**: Plot the test set MSE associated with the best
+  model of each size.
+  - **Answer**:
+
 <img src="Lab_6_Linear_Models_and_Regularization_Methods_Exercises_files/figure-gfm/unnamed-chunk-43-1.png" width="70%" style="display: block; margin: auto;" />
 
-- **Question 10-e**:
+- **Question 10-e**: For which model size does the test set MSE take on
+  its minimum value? Comment on your results. If it takes on its minimum
+  value for a model containing only an intercept or a model containing
+  all of the features, then work with the way that you are generating
+  the data in question 10-a until you come up with a scenario in which
+  the test set MSE is minimized for an intermediate model size.
   - **Answer**:
 
 <!-- -->
@@ -489,14 +500,261 @@ test <- (-train)
              19          20 
     4678.907701 4620.821832 
 
-- **Question 10-f**:
+- **Question 10-f**: How does the model at which the test set MSE is
+  minimized compare to the true model used to generate the data? Comment
+  on the coefficient values.
   - **Answer**:
 
 <!-- -->
 
-    This is close to the true function of ƒ which is comprised of 3 predictors and
-    an intercept. The selected predictors of the model with the best fit from best
-    subset selection and estimated coefficients thereof are included below.
+    The model with 4 predictors is close to the true function of ƒ which is
+    comprised of 3 predictors and an intercept. The selected predictors of the model
+    with the best fit from best subset selection and estimated coefficients thereof
+    are included below.
 
       (Intercept)             X         `X^2`         `X^3`         `X^8` 
      9.889559e+00  1.023076e+00  2.015311e+00  2.991725e+00 -4.291354e-05 
+
+- **Question 10-g**: Create a plot displaying the square root of the sum
+  of squared errors for a range of values, r, where the prediction is
+  the jth coefficient estimate for the best model containing r
+  coefficients. Comment on what you observe. How does this compare to
+  the test MSE plot?
+  - **Answer**:
+
+<img src="Lab_6_Linear_Models_and_Regularization_Methods_Exercises_files/figure-gfm/unnamed-chunk-48-1.png" width="70%" style="display: block; margin: auto;" />
+
+    The minimal value of the root of the sum of the square errors is equal to the
+    true number of coefficients in the true function of ƒ. The shape of this graph
+    resembles that of the graph of the Test Set Mean Squared Error Per Model of Each
+    Size for models which have 3 to 15 coefficients. Furthermore, there is an upward
+    trend after 15 coefficients in both plots.
+
+<img src="Lab_6_Linear_Models_and_Regularization_Methods_Exercises_files/figure-gfm/unnamed-chunk-49-1.png" width="70%" style="display: block; margin: auto;" />
+
+### Question 11:
+
+We will now try to predict per capita crime rate in teh Boston data set.
+
+- **Question 11-a**: Implement regression methods explored in this
+  chapter, such as best subset selection, the lasso, ridge regression,
+  and PCR. Present and discuss results for the approaches that you
+  consider.
+  - **Answer**:
+
+<img src="Lab_6_Linear_Models_and_Regularization_Methods_Exercises_files/figure-gfm/unnamed-chunk-53-1.png" width="70%" style="display: block; margin: auto;" />
+
+    (Intercept)          zn        chas          rm         age         dis 
+    -9.37754736  0.02161796 -1.33622418  1.95039523 -0.02271595 -0.44447193 
+            rad       lstat        medv 
+     0.55305386  0.17820814 -0.15346984 
+
+<img src="Lab_6_Linear_Models_and_Regularization_Methods_Exercises_files/figure-gfm/unnamed-chunk-54-1.png" width="70%" style="display: block; margin: auto;" />
+
+    (Intercept)          rm         rad       lstat        medv 
+    -12.3963391   1.8933172   0.5599621   0.1619373  -0.1372887 
+
+<img src="Lab_6_Linear_Models_and_Regularization_Methods_Exercises_files/figure-gfm/unnamed-chunk-55-1.png" width="70%" style="display: block; margin: auto;" />
+
+    (Intercept)          zn        chas         nox          rm         age 
+    -2.40735587  0.01756331 -1.30564203 -4.85082509  1.87634938 -0.01799680 
+            dis         rad     ptratio       lstat        medv 
+    -0.52222301  0.59199312 -0.19449449  0.17236115 -0.17573730 
+
+    Subset selection object
+    Call: regsubsets.formula(crim ~ ., data = boston, subset = train, nvmax = length(boston) - 
+        1)
+    12 Variables  (and intercept)
+            Forced in Forced out
+    zn          FALSE      FALSE
+    indus       FALSE      FALSE
+    chas        FALSE      FALSE
+    nox         FALSE      FALSE
+    rm          FALSE      FALSE
+    age         FALSE      FALSE
+    dis         FALSE      FALSE
+    rad         FALSE      FALSE
+    tax         FALSE      FALSE
+    ptratio     FALSE      FALSE
+    lstat       FALSE      FALSE
+    medv        FALSE      FALSE
+    1 subsets of each size up to 12
+    Selection Algorithm: exhaustive
+              zn  indus chas nox rm  age dis rad tax ptratio lstat medv
+    1  ( 1 )  " " " "   " "  " " " " " " " " "*" " " " "     " "   " " 
+    2  ( 1 )  " " " "   " "  " " " " " " " " "*" " " " "     "*"   " " 
+    3  ( 1 )  " " " "   " "  " " "*" " " " " "*" " " " "     " "   "*" 
+    4  ( 1 )  " " " "   " "  " " "*" " " " " "*" " " " "     "*"   "*" 
+    5  ( 1 )  " " " "   "*"  " " "*" " " " " "*" " " " "     "*"   "*" 
+    6  ( 1 )  " " " "   "*"  " " "*" " " " " "*" " " "*"     "*"   "*" 
+    7  ( 1 )  "*" " "   " "  " " "*" "*" "*" "*" " " " "     "*"   "*" 
+    8  ( 1 )  "*" " "   "*"  " " "*" "*" "*" "*" " " " "     "*"   "*" 
+    9  ( 1 )  "*" " "   "*"  " " "*" "*" "*" "*" " " "*"     "*"   "*" 
+    10  ( 1 ) "*" " "   "*"  "*" "*" "*" "*" "*" " " "*"     "*"   "*" 
+    11  ( 1 ) "*" "*"   "*"  "*" "*" "*" "*" "*" " " "*"     "*"   "*" 
+    12  ( 1 ) "*" "*"   "*"  "*" "*" "*" "*" "*" "*" "*"     "*"   "*" 
+
+<img src="Lab_6_Linear_Models_and_Regularization_Methods_Exercises_files/figure-gfm/unnamed-chunk-61-1.png" width="70%" style="display: block; margin: auto;" />
+
+    The model with the lowest average MSE when using k-fold cross validation
+    in conjuction with best subset selection is comprised of 11 predictors. The
+    predictors and their corresponding coefficients include the following:
+
+    (Intercept)          zn       indus 
+    11.01151874  0.04449184 -0.04575862 
+
+         chas       nox        rm 
+    -0.964449 -8.710625  0.717378 
+
+             rad          tax 
+     0.591774673 -0.003972659 
+
+       ptratio      lstat       medv 
+    -0.2681005  0.1455363 -0.2003351 
+
+    13 x 1 sparse Matrix of class "dgCMatrix"
+                          s1
+    (Intercept)  0.733006045
+    zn          -0.001242217
+    indus        0.012668438
+    chas        -0.013718416
+    nox          0.786223751
+    rm          -0.047806771
+    age          0.002312381
+    dis         -0.035104220
+    rad          0.025420247
+    tax          0.001134086
+    ptratio      0.022952517
+    lstat        0.013960138
+    medv        -0.007505446
+
+    The test error for the ridge regression model is 130.902 for the chosen value of
+    λ: 0.163.
+
+    The test error for the lasso model is 131.009 for the chosen value of λ: 0.010.
+
+    13 x 1 sparse Matrix of class "dgCMatrix"
+                        s1
+    (Intercept) 1.35920582
+    zn          .         
+    indus       .         
+    chas        .         
+    nox         .         
+    rm          .         
+    age         .         
+    dis         .         
+    rad         0.08199204
+    tax         .         
+    ptratio     .         
+    lstat       .         
+    medv        .         
+
+    The number of non-zero coefficient estimates is 2 including the intercept. The
+    predictor is rad in the lasso model.
+
+    Data:   X dimension: 404 12 
+        Y dimension: 404 1
+    Fit method: svdpc
+    Number of components considered: 12
+
+    VALIDATION: RMSEP
+    Cross-validated using 10 random segments.
+           (Intercept)  1 comps  2 comps  3 comps  4 comps  5 comps  6 comps
+    CV           6.227    5.386    5.398    4.903    4.863    4.854    4.831
+    adjCV        6.227    5.383    5.395    4.896    4.880    4.848    4.823
+           7 comps  8 comps  9 comps  10 comps  11 comps  12 comps
+    CV       4.795    4.856    4.759     4.737     4.738     4.678
+    adjCV    4.787    4.852    4.747     4.725     4.725     4.664
+
+    TRAINING: % variance explained
+          1 comps  2 comps  3 comps  4 comps  5 comps  6 comps  7 comps  8 comps
+    X       45.57    61.14    71.27    78.64    85.96    89.55    92.54    94.60
+    crim    26.40    26.41    40.71    40.71    42.06    42.88    44.04    44.66
+          9 comps  10 comps  11 comps  12 comps
+    X       96.48     98.03     99.26    100.00
+    crim    47.00     47.33     47.76     49.33
+
+<img src="Lab_6_Linear_Models_and_Regularization_Methods_Exercises_files/figure-gfm/unnamed-chunk-64-1.png" width="70%" style="display: block; margin: auto;" />
+
+    The test error of the predictions generated from the pcr model is: 131.2 where
+    the value of M that captures most of the variability in the response is: 12
+
+    Data:   X dimension: 404 12 
+        Y dimension: 404 1
+    Fit method: kernelpls
+    Number of components considered: 12
+
+    VALIDATION: RMSEP
+    Cross-validated using 10 random segments.
+           (Intercept)  1 comps  2 comps  3 comps  4 comps  5 comps  6 comps
+    CV           6.227    5.152    4.750    4.682    4.650    4.641    4.632
+    adjCV        6.227    5.148    4.742    4.665    4.638    4.631    4.621
+           7 comps  8 comps  9 comps  10 comps  11 comps  12 comps
+    CV       4.625    4.624    4.624     4.625     4.624     4.624
+    adjCV    4.614    4.613    4.613     4.614     4.614     4.614
+
+    TRAINING: % variance explained
+          1 comps  2 comps  3 comps  4 comps  5 comps  6 comps  7 comps  8 comps
+    X       44.57    55.32    59.36    69.01    79.23    83.01    84.90    87.59
+    crim    33.39    44.98    48.08    48.68    48.95    49.21    49.32    49.33
+          9 comps  10 comps  11 comps  12 comps
+    X       90.28     96.48     98.29    100.00
+    crim    49.33     49.33     49.33     49.33
+
+<img src="Lab_6_Linear_Models_and_Regularization_Methods_Exercises_files/figure-gfm/unnamed-chunk-66-1.png" width="70%" style="display: block; margin: auto;" />
+
+    The test error of the partial least squares function is: 131.0. The ideal value
+    of M that captures the most variablility in the response with the least number
+    of components is: 8
+
+- **Question 11-b**: Propose a model (or set of models) that seem to
+  perform well on this data set, and justify your answer. Make sure that
+  you are evaluating model performance using validation set error,
+  cross-validation, or some other reasonable alternative, as opposed to
+  using training error.
+  - **Answer**:
+
+<!-- -->
+
+    The mean test error of the 5 selected methods (best subset selection, ridge
+    model, lasso model, PCR, and PLS) is 113.229 with a standard deviation of
+    39.800. The lowest test MSE is derived from the best subset selection using
+    k-fold cross validation. This best subset selection model is composed of 11
+    out of 12 predictors, and has a test MSE of 42.033. The lasso, ridge, and PCR
+    all share similar test errors. The principal component regression implements
+    all principal components, indicating that there is a strong relationship
+    between all the predictors. This supports the hypothesis that true function of
+    ƒ is best described by a model with the majority of predictors in the boston
+    dataset. In the partial least squares model, 8 to 12 out of 12 components
+    capture the majority of variability in the response. This indicates that there
+    is a strong relationship between nearly all the predictors and the response.
+    The lasso regression results in nearly average test error, but supports a best
+    model composed of only a single predictor: rad. Given the majority of models
+    supporting many predictors, multiple models supporting 11 predictors, and the
+    lowest test error being held by the best subset selection model implementing
+    11 predictors, it is reasonable to conclude that the ideal model among those
+    that have been created is the best subset selection model which implements 11
+    predictors. The values of all 5 test errors are observable as follows:
+
+    # A tibble: 1 × 3
+      best_subset_selection_test_error ridge_model_test_error lasso_model_test_error
+                                 <dbl>                  <dbl>                  <dbl>
+    1                             42.0                   131.                   131.
+
+    # A tibble: 1 × 2
+      PCR_test_error PLS_test_error
+               <dbl>          <dbl>
+    1           131.           131.
+
+- **Question 11-c**: Does your chosen model involve all of the features
+  in the data set? Why or why not?
+  - **Answer**:
+
+<!-- -->
+
+    The model chosen by best subset selection includes most but not all the features
+    in the dataset. The ridge model, best subset selection, lasso, PLS, and PCR all
+    support models with most if not all of the features in the data set. Because
+    best subset selection has the lowest test error & is in consensus with the
+    number of predictors in other models, the chosen model of best subset selection
+    includes most, but not all predictors.

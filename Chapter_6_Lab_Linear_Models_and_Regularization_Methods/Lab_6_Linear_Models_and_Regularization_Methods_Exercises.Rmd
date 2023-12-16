@@ -252,8 +252,6 @@ plot(summary_best_subset$bic, type = "l", xlab = "Model Index", ylab = "Bayesian
 points(which.min(summary_best_subset$bic), summary_best_subset$bic[which.min(summary_best_subset$bic)], col = "red", cex = 2, pch = 20)
 plot(summary_best_subset$adjr2, type = "l", xlab = "Model Index", ylab = "Adjusted R-squared", main = "Best Subset: Adjusted R-squared vs. Model Index")
 points(which.max(summary_best_subset$adjr2), summary_best_subset$adjr2[which.max(summary_best_subset$adjr2)], col = "red", cex = 2, pch = 20)
-
-
 ```
 ```{r echo=FALSE}
 set.seed(42)
@@ -439,7 +437,9 @@ set.seed(42)
 ```
 
 
-* **Question 10-a**:
+* **Question 10-a**: Generate a data set with p = 20 features, n = 1,000 observa-
+tions, and an associated quantitative response vector generated
+according to the model Y = Xβ + ε
   * **Answer**:
 ```{r echo=TRUE}
 set.seed(42) 
@@ -510,6 +510,8 @@ par(mfrow = c(1,1))
 plot(mean.cv.errors.train, type = "b", main = "Training Set Mean Squared Error Per Model Of Each Size", ylab = "Average Train MSE", xlab = "Number of Predictors in Model")
 ```
 
+* **Question 10-d**: Plot the test set MSE associated with the best model of each size. 
+  * **Answer**:
 ```{r}
 # This performs training and testing 10 times. For each trained group of models this algorithm will make a prediction for each of the best models for i number of predictors. There are p models with 1 to n number of predictors used in each model where p is the number of predictors and n is the number of predictors used in the model.
 for (j in 1:k) {
@@ -529,19 +531,236 @@ par(mfrow = c(1,1))
 plot(mean.cv.errors.test, type = "b", main = "Test Set Mean Squared Error Per Model Of Each Size", ylab = "Average Test MSE", xlab = "Number of Predictors in Model")
 ```
 
-* **Question 10-e**:
+* **Question 10-e**: For which model size does the test set MSE take on its minimum
+value? Comment on your results. If it takes on its minimum value
+for a model containing only an intercept or a model containing
+all of the features, then work with the way that you are
+generating the data in question 10-a until you come up with a scenario in
+which the test set MSE is minimized for an intermediate model
+size.
   * **Answer**:
 ```{r}
-f_print(sprintf("The test set MSE takes on its minimum value for the model with %0.0f predictors.",which.min(mean.cv.errors.test)))
+f_print(sprintf("The test set MSE takes on its minimum value for the model with %0.0f predictors.", which.min(mean.cv.errors.test)))
 cat("\n")
 mean.cv.errors.test
 ```
 
-* **Question 10-f**:
+* **Question 10-f**: How does the model at which the test set MSE is minimized compare to the true model used to generate the data? Comment on the coefficient values.
   * **Answer**:
 ```{r}
-f_print(sprintf("This is close to the true function of ƒ which is comprised of 3 predictors and an intercept. The selected predictors of the model with the best fit from best subset selection and estimated coefficients thereof are included below."))
+f_print(sprintf("The model with %0.0f predictors is close to the true function of ƒ which is comprised of 3 predictors and an intercept. The selected predictors of the model with the best fit from best subset selection and estimated coefficients thereof are included below.", which.min(mean.cv.errors.test)))
 coef(best.fit, which.min(mean.cv.errors.test))
 ```
+* **Question 10-g**: Create a plot displaying the square root of the sum of squared errors for a range of values, r, where the prediction is the jth coefficient estimate for the best model containing r coefficients. Comment on what you observe. How does this compare to the test MSE plot?
+  * **Answer**:
 
+```{r}
+true_coefficients <- c(β_0, β_1, β_2, β_3, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+val <- c(integer(20))
+for (r in seq(1,20)) {
+coef_estimates <- c(coef(best.fit,r), rep(0, length(true_coefficients) - length(coef(best.fit,r))))
+delta <- true_coefficients - coef_estimates
+ val[r] <- (sqrt(sum(delta^2)))
+}
+data <- tibble(y = val, x = seq(1, 20))
+```
+
+
+```{r}
+# data %>% mutate(row_number = row_number()) %>% filter(row_number == 21)
+# data
+```
+
+
+```{r}
+ggplot(data) +
+  geom_point(aes(x, y, color = y)) +
+  geom_line(aes(x, y, color = y)) +
+  labs(x = "Number of Coefficients in Model", y = "ƒ(x) = Root of the Sum of Square Errors", title = "Root of the Sum of Square Errors Per Best Fit Model", color = "ƒ(x)") + 
+  theme_linedraw()
+f_print(sprintf("The minimal value of the root of the sum of the square errors is equal to the true number of coefficients in the true function of ƒ. The shape of this graph resembles that of the graph of the Test Set Mean Squared Error Per Model of Each Size for models which have 3 to 15 coefficients. Furthermore, there is an upward trend after 15 coefficients in both plots."))
+```
+
+```{r}
+plot(mean.cv.errors.test, type = "b", main = "Test Set Mean Squared Error Per Model Of Each Size", ylab = "Average Test MSE", xlab = "Number of Predictors in Model")
+```
+
+
+### Question 11:
+We will now try to predict per capita crime rate in teh Boston data set.
+
+* **Question 11-a**: Implement regression methods explored in this chapter, such as best subset selection, the lasso, ridge regression, and PCR. Present and discuss results for the approaches that you consider.
+  * **Answer**:
+```{r}
+boston <- na.omit(Boston)
+attach(boston)
+```
+
+```{r}
+train <- sample(nrow(boston)*.8)
+test <- (-train)
+```
+
+
+```{r}
+boston.best_fit <- regsubsets(crim ~ . , data = boston, subset = train, nvmax = length(boston)-1)
+boston.best_fit_summary <- summary(boston.best_fit)
+```
+
+
+```{r}
+plot(boston.best_fit_summary$cp, type = "b", xlab = "Model Index", ylab = "Mallows' Cp", main = "Mallows' Cp vs. Model Index")
+points(which.min(boston.best_fit_summary$cp), boston.best_fit_summary$cp[which.min(boston.best_fit_summary$cp)], col = "red", cex = 2, pch = 20)
+coef(boston.best_fit, 8)
+```
+
+
+```{r}
+plot(boston.best_fit_summary$bic, type = "b", xlab = "Model Index", ylab = "Bayesian Information Criterion", main = "Bayesian Information Criterion vs. Model Index")
+points(which.min(boston.best_fit_summary$bic), boston.best_fit_summary$bic[which.min(boston.best_fit_summary$bic)], col = "red", cex = 2, pch = 20)
+coef(boston.best_fit, 4)
+```
+
+
+```{r}
+plot(boston.best_fit_summary$adjr2, type = "b", xlab = "Model Index", ylab = "Adjusted R-squared", main = "Adjusted R-squared vs. Model Index")
+points(which.max(boston.best_fit_summary$adjr2), boston.best_fit_summary$adjr2[which.max(boston.best_fit_summary$adjr2)], col = "red", cex = 2, pch = 20)
+coef(boston.best_fit, 10)
+```
+
+```{r}
+boston.best_fit_summary
+```
+
+```{r echo=FALSE}
+predict.regsubsets <- function(object, newdata, id, ...) {
+  form <- as.formula(object$call[[2]]) # Identify the formula of the fit of the model. 
+  mat <- model.matrix(form, newdata) # Create a matrix using the formula and the subset of the data
+  coefi <- coef(object, id = id) # select the coefficients of the model with i number of predictors
+  xvars <- names(coefi) # identify the predictors by name
+  mat[, xvars] %*% coefi # make a prediction by all the observations in the matrix of observations that is subset by the predictors included in each i model with the corresponding coefficients of that model.
+}
+```
+
+```{r echo=FALSE}
+k <- 10  
+n <- nrow(boston)
+set.seed(42)
+p <- length(boston) - 1
+folds <- sample(rep(1:k, length = n)) # grouping each observation into k groups
+cv.errors <- matrix(NA, k, p, dimnames = list(NULL, paste(1:p))) # Creating a matrix to store the errors
+```
+
+```{r}
+# boston[folds, ]
+```
+
+
+```{r}
+# This performs training and testing 10 times. For each trained group of models this algorithm will make a prediction for each of the best models for i number of predictors. There are p models with 1 to n number of predictors used in each model where p is the number of predictors and n is the number of predictors used in the model.
+for (j in 1:k) {
+  best.fit <- regsubsets(crim ~ .,
+                         data = boston[folds != j, ], nvmax = 12) # Training on all but k. Returns the best fit for 1 to 12 number of predictors. 
+  for (i in 1:12) {
+    pred <- predict(best.fit, boston[folds == j, ], id = i) # Predict using k as test. This will use the custom predict function above. Best i variable model. This is making predictions for all 20 models 10 times. 
+    cv.errors[j, i] <-
+      mean((boston$crim[folds == j] - pred) ^2) # Mean Square Error of each predictor within a k fold.
+  }
+}
+```
+
+```{r}
+mean.cv.errors.test <- apply(cv.errors, 2, mean) # Identify the k which has the lowest mean test error. 2 selects the average of the rows using each column. 1 selects the average of the columns using each row.
+par(mfrow = c(1,1))
+plot(mean.cv.errors.test, type = "b", main = "Test Set Mean Squared Error Per Model Of Each Size", ylab = "Average Test MSE", xlab = "Number of Predictors in Model")
+points(which.min(mean.cv.errors.test), mean.cv.errors.test[which.min(mean.cv.errors.test)], col = "red", cex = 2, pch = 20)
+
+f_print(sprintf("The model with the lowest average MSE when using k-fold cross validation in conjuction with best subset selection is comprised of %0.0f predictors. The predictors and their corresponding coefficients include the following:", which.min(mean.cv.errors.test)))
+
+cat("\n\n")
+coef(best.fit, 11)[1:3]
+cat("\n")
+coef(best.fit, 11)[4:6]
+cat("\n")
+coef(best.fit, 11)[8:9]
+cat("\n")
+coef(best.fit, 11)[10:12]
+```
+
+```{r}
+grid <- 10^seq(10, -2, length = 100)
+x <- model.matrix(crim ~ ., data = boston)[, -1]
+y <- boston$crim
+
+ridge.model <- cv.glmnet(x[train, ], y[train], lambda = grid, alpha = 0)
+ridge.model.predict <- predict(ridge.model, s = ridge.model$lambda.min, newx = x[test, ])
+ridge.model.mse <- mean((ridge.model.predict - y[test])^2)
+coef(ridge.model)
+f_print(sprintf("The test error for the ridge regression model is %0.3f for the chosen value of λ: %0.3f.", ridge.model.mse, ridge.model$lambda.min))
+```
+```{r echo=FALSE}
+lasso.model <- cv.glmnet(x[train, ], y[train], lambda = grid, alpha = 1)
+lasso.model.predict <- predict(lasso.model, s = lasso.model$lambda.min, newx = x[test, ])
+lasso.model.mse <- mean((lasso.model.predict - y[test])^2)
+f_print(sprintf("The test error for the lasso model is %0.3f for the chosen value of λ: %0.3f.", lasso.model.mse, lasso.model$lambda.min))
+cat("\n")
+coef(lasso.model)
+f_print(sprintf("The number of non-zero coefficient estimates is 2 including the intercept. The predictor is rad in the lasso model."))
+```
+
+```{r echo=FALSE}
+boston.pcr.fit <- pcr(crim ~ ., data = boston, subset = train, scale = TRUE, validation = "CV")
+summary(boston.pcr.fit)
+validationplot(boston.pcr.fit, val.type = "MSEP", main = "Crime: MSEP vs. Number of Components", xlab = "Number of Components")
+# M = 12
+```
+
+
+```{r echo=FALSE}
+boston.pcr.pred <- predict(boston.pcr.fit, boston[test, ], ncomp = 12)
+boston.pcr.test_error <- mean((boston$crim[test] - boston.pcr.pred)^2)
+f_print(sprintf("The test error of the predictions generated from the pcr model is: %0.1f where the value of M that captures most of the variability in the response is: 12", boston.pcr.test_error))
+```
+
+```{r echo=FALSE}
+boston.pls.fit <- plsr(crim ~ ., data = boston, subset = train, scale = TRUE, validation = "CV")
+summary(boston.pls.fit)
+validationplot(boston.pls.fit, val.type = "MSEP", main = "Crime: MSEP vs. Number of Components", xlab = "Number of Components")
+
+# M = 8
+```
+
+
+```{r echo=FALSE}
+boston.pls.pred <- predict(boston.pls.fit, boston[test, ], ncomp = 8)
+boston.pls.test_error <- mean((boston.pls.pred - boston$crim[test])^2)
+f_print(sprintf("The test error of the partial least squares function is: %0.1f. The ideal value of M that captures the most variablility in the response with the least number of components is: 8", boston.pls.test_error))
+```
+
+* **Question 11-b**: Propose a model (or set of models) that seem to perform well on this data set, and justify your answer. Make sure that you are evaluating model performance using validation set error, cross-validation, or some other reasonable alternative, as opposed to using training error. 
+  * **Answer**:
+
+```{r echo=FALSE}
+test_errors <- tibble(
+  best_subset_selection_test_error  = mean.cv.errors.test[11],
+  ridge_model_test_error = ridge.model.mse,
+  lasso_model_test_error = lasso.model.mse,
+  PCR_test_error = boston.pcr.test_error,
+  PLS_test_error = boston.pls.test_error
+)
+
+mean_test_error <- sum(test_errors) / length(test_errors)
+sd_test_error <- sd(test_errors)
+
+f_print(sprintf("The mean test error of the 5 selected methods (best subset selection, ridge model, lasso model, PCR, and PLS) is %0.3f with a standard deviation of %0.03f. The lowest test MSE is derived from the best subset selection using k-fold cross validation. This best subset selection model is composed of 11 out of 12 predictors, and has a test MSE of %0.3f. The lasso, ridge, and PCR all share similar test errors. The principal component regression implements all principal components, indicating that there is a strong relationship between all the predictors. This supports the hypothesis that true function of ƒ is best described by a model with the majority of predictors in the boston dataset.  In the partial least squares model, 8 to 12 out of 12 components capture the majority of variability in the response. This indicates that there is a strong relationship between nearly all the predictors and the response. The lasso regression results in nearly average test error, but supports a best model composed of only a single predictor: rad. Given the majority of models supporting many predictors, multiple models supporting 11 predictors, and the lowest test error being held by the best subset selection model implementing 11 predictors, it is reasonable to conclude that the ideal model among those that have been created is the best subset selection model which implements 11 predictors. The values of all 5 test errors are observable as follows:", mean_test_error, sd_test_error, test_errors$best_subset_selection_test_error))
+test_errors %>% select(everything(), -PCR_test_error, -PLS_test_error)
+test_errors %>% select(everything(), -best_subset_selection_test_error, -ridge_model_test_error, -lasso_model_test_error)
+
+```
+  
+* **Question 11-c**: Does your chosen model involve all of the features in the data set? Why or why not?
+  * **Answer**:
+```{r}
+f_print(sprintf("The model chosen by best subset selection includes most but not all the features in the dataset. The ridge model, best subset selection, lasso, PLS, and PCR all support models with most if not all of the features in the data set. Because best subset selection has the lowest test error & is in consensus with the number of predictors in other models, the chosen model of best subset selection includes most, but not all predictors."))
+```
 

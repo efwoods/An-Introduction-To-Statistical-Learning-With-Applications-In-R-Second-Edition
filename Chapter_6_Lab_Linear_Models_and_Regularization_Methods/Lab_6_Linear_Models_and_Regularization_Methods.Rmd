@@ -77,13 +77,11 @@ custom_lightblue = "#34ABEB"
 custom_red = "#a60808"
 ```
 
-
 ```{r include=FALSE}
 f_print <- function(string){
   cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
 }
 ```
-
 
 ## Subset Selection Methods
 ### Best Subset Selection
@@ -179,7 +177,6 @@ for (i in 1:19) {
   pred <- test.mat[, names(coefi)] %*% coefi
   val.errors[i] <- mean((Hitters$Salary[test] - pred)^2)
 }
-#q10
 val.errors
 which.min(val.errors)
 coef(regfit.best, 7)
@@ -389,6 +386,7 @@ lasso.mod <- glmnet(x[train, ], y[train], alpha = 1, lambda = grid)
 plot(lasso.mod)
 
 ```
+
 ```{r}
 set.seed(1)
 cv.out <- cv.glmnet(x[train, ], y[train], alpha = 1)
