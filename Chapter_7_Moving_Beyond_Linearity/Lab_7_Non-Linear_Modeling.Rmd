@@ -276,6 +276,8 @@ gam.lo.i <- gam(wage ~ lo(year, age, span = 0.5) + education, data = Wage)
 library(akima)
 plot(gam.lo.i)
 ```
+
+
 ```{r}
 gam.lr <- gam(
   I(wage > 250) ~ year + s(age, df = 5) + education, family = binomial, data = Wage

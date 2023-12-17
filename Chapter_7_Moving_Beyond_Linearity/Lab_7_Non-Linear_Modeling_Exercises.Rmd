@@ -172,6 +172,53 @@ ggplot(Wage) +
   geom_line(aes(age, lm.cut_pred, color = lm.cut_pred), color = "white", size = 1) + 
   theme_dark() +
   scale_x_continuous(breaks = breaks) + 
-  labs(title = "Step Function of Wage vs. Age", x = "Age", y = "Wage")
+  labs(title = "Step Function of Wage vs. Age", x = "Age", y = "Wage", subtitle = "Optimal ")
 ```
+
+### Question 7:
+The Wage data set contains a number of other features not explored
+in this chapter, such as marital status (maritl), job class (jobclass),
+and others. Explore the relationships between these other
+predictors and wage, and use non-linear fitting techniques in order to
+fit flexible models to the data. Create plots of the results obtained,
+and write a summary of your findings.
+
+
+```{r}
+# maritl, jobclass, region
+ggplot(Wage) + 
+  geom_violin(aes(maritl, wage), fill = custom_lightblue) +
+  geom_boxplot(aes(maritl, wage), color = custom_darkblue, fill = custom_lightblue, alpha = 0.3) +
+  labs(title = "Marital Status vs. Wage", x = "Marital Status", y = "Wage ($1000s)")
+```
+
+```{r}
+# maritl, jobclass, region
+ggplot(Wage) + 
+  geom_violin(aes(jobclass, wage), fill = custom_lightblue) +
+  geom_boxplot(aes(jobclass, wage), color = custom_darkblue, fill = custom_lightblue, alpha = 0.3) +
+  labs(title = "Wage vs. Job Class", x = "Job Class", y = "Wage ($1000s)")
+```
+
+```{r}
+# Remove Widowed
+wage_not_widowed <- Wage %>% filter(maritl != "Widowed")
+# wage_not_widowed
+```
+
+
+
+```{r}
+gam.maritl <- gam(wage ~ maritl + jobclass + s(year, 5), data = Wage)
+par(mfrow = c(1, 1))
+plot(gam.maritl, se = TRUE, col = "green")
+```
+
+
+```{r}
+f_print(sprintf("There is a strong relationship between marital status & Information job class with respect to wage. There is a positive trend with increasing years with respect to wage."))
+```
+
+
+
 
