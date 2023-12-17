@@ -67,76 +67,12 @@ wage, and use non-linear fitting techniques in order to fit flexible
 models to the data. Create plots of the results obtained, and write a
 summary of your findings.
 
-    Warning in leaps.setup(x, y, wt = wt, nbest = nbest, nvmax = nvmax, force.in =
-    force.in, : 8 linear dependencies found
+<img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-13-1.png" width="70%" style="display: block; margin: auto;" />
 
-    Reordering variables and trying again:
+<img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-14-1.png" width="70%" style="display: block; margin: auto;" />
 
-    [1] 11
+<img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-16-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-16-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-16-3.png" width="70%" style="display: block; margin: auto;" />
 
-           year age           maritl     race       education             region
-    231655 2006  18 1. Never Married 1. White    1. < HS Grad 2. Middle Atlantic
-    86582  2004  24 1. Never Married 1. White 4. College Grad 2. Middle Atlantic
-    161300 2003  45       2. Married 1. White 3. Some College 2. Middle Atlantic
-    155159 2003  43       2. Married 3. Asian 4. College Grad 2. Middle Atlantic
-    11443  2005  50      4. Divorced 1. White      2. HS Grad 2. Middle Atlantic
-    376662 2008  54       2. Married 1. White 4. College Grad 2. Middle Atlantic
-                 jobclass         health health_ins  logwage      wage
-    231655  1. Industrial      1. <=Good      2. No 4.318063  75.04315
-    86582  2. Information 2. >=Very Good      2. No 4.255273  70.47602
-    161300  1. Industrial      1. <=Good     1. Yes 4.875061 130.98218
-    155159 2. Information 2. >=Very Good     1. Yes 5.041393 154.68529
-    11443  2. Information      1. <=Good     1. Yes 4.318063  75.04315
-    376662 2. Information 2. >=Very Good     1. Yes 4.845098 127.11574
-
-    Warning in leaps.setup(x, y, wt = wt, nbest = nbest, nvmax = nvmax, force.in =
-    force.in, : 8 linear dependencies found
-
-    Reordering variables and trying again:
-
-    Warning in leaps.setup(x, y, wt = wt, nbest = nbest, nvmax = nvmax, force.in =
-    force.in, : 8 linear dependencies found
-
-    Reordering variables and trying again:
-
-    Warning in leaps.setup(x, y, wt = wt, nbest = nbest, nvmax = nvmax, force.in =
-    force.in, : 8 linear dependencies found
-
-    Reordering variables and trying again:
-
-    Warning in leaps.setup(x, y, wt = wt, nbest = nbest, nvmax = nvmax, force.in =
-    force.in, : 8 linear dependencies found
-
-    Reordering variables and trying again:
-
-    Warning in leaps.setup(x, y, wt = wt, nbest = nbest, nvmax = nvmax, force.in =
-    force.in, : 8 linear dependencies found
-
-    Reordering variables and trying again:
-
-    Warning in leaps.setup(x, y, wt = wt, nbest = nbest, nvmax = nvmax, force.in =
-    force.in, : 8 linear dependencies found
-
-    Reordering variables and trying again:
-
-    Warning in leaps.setup(x, y, wt = wt, nbest = nbest, nvmax = nvmax, force.in =
-    force.in, : 8 linear dependencies found
-
-    Reordering variables and trying again:
-
-    Warning in leaps.setup(x, y, wt = wt, nbest = nbest, nvmax = nvmax, force.in =
-    force.in, : 8 linear dependencies found
-
-    Reordering variables and trying again:
-
-    Warning in leaps.setup(x, y, wt = wt, nbest = nbest, nvmax = nvmax, force.in =
-    force.in, : 8 linear dependencies found
-
-    Reordering variables and trying again:
-
-    Warning in leaps.setup(x, y, wt = wt, nbest = nbest, nvmax = nvmax, force.in =
-    force.in, : 8 linear dependencies found
-
-    Reordering variables and trying again:
-
-<img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-19-1.png" width="70%" style="display: block; margin: auto;" />
+    There is a strong relationship between marital status & Information job class
+    with respect to wage. There is a positive trend with increasing years with
+    respect to wage.
