@@ -1,7 +1,7 @@
 Lab 7 Non-Linear Modeling
 ================
 Evan Woods
-2023-12-17
+2023-12-18
 
                     Estimate Std. Error    t value     Pr(>|t|)
     (Intercept)    111.70361  0.7287409 153.283015 0.000000e+00
