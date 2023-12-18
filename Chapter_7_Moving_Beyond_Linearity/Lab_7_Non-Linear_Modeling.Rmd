@@ -100,18 +100,18 @@ fit <- lm(wage ~ poly(age, 4), data = Wage)
 coef(summary(fit))
 ```
 ```{r}
-fit2 <- lm(wage ~ poly(age, 4, raw = TRUE), data = wage)
+fit2 <- lm(wage ~ poly(age, 4, raw = TRUE), data = Wage)
 coef(summary(fit2))
 ```
 
 ```{r}
-fit2a <- lm(wage ~ age + I(age^2) + I(age^3) + I(age^4), data = wage)
+fit2a <- lm(wage ~ age + I(age^2) + I(age^3) + I(age^4), data = Wage)
 coef(fit2a)
 ```
 
 
 ```{r}
-fit2b <- lm(wage ~ cbind(age, age^2, age^3, age^4), data = wage)
+fit2b <- lm(wage ~ cbind(age, age^2, age^3, age^4), data = Wage)
 coef(fit2b)
 ```
 
@@ -298,6 +298,9 @@ plot(gam.lr.s, se = TRUE, col = "green")
 ```
 
 ```{r}
-
+# loess: local regression
+# ns(): natural spline
+# bs(): spline; see page 328
+# gam(): Generative Additive Model; s() to use a smoothing spline.
 ```
 

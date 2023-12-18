@@ -90,6 +90,169 @@ f_print <- function(string){
 }
 ```
 
+```{r}
+# Input: Dataframe, x (a numerical that is converted to a factor), y (double), title, x-axis title, y-axis title
+# Output: Transparent violin plots overlayed onto colored yoxplots of y onto each x factor. Each boxplot is of a single x factor. 
+create_custom_geom_box_grouped_by_x_factor <- function(df, x, y, title, x_title, y_title){
+    ggplot(df, aes(as.factor(x), y)) +
+      geom_boxplot(color = custom_darkblue, fill = custom_lightblue) +
+      geom_violin(alpha = .1) + 
+      theme_linedraw() +
+      labs(title = title, x = x_title, y = y_title)  
+}
+```
+
+
+```{r}
+# Input: Dataframe, x, y, title of the plot, title of the x-axis, title of the y-axis
+# Output: Scatterplot of x and y variables with correlation between the two on the grid & a smooth line of best fit to the data points. 
+create_custom_geom_point <- function(df, x, y, title, x_title, y_title){
+    correlation <- sprintf("r: %0.3f", cor(x,y))
+    label <- df %>% summarise(x = max(x), y = max(y), label = correlation)
+    ggplot(df, aes(x, y)) +
+      geom_point(color = custom_darkblue) + 
+      theme_linedraw() +
+      geom_smooth(se = FALSE, color = custom_lightblue) +
+      labs(title = title, x = x_title, y = y_title) + 
+      geom_text(aes(label = label), data = label, vjust = "top", hjust = "right", color = "#a60808") 
+}
+
+```
+
+```{r}
+# Input: 
+    # df: dataframe containing x and y values to be plotted. 
+    # plot_types: indicator (TRUE or NULL) that attributes of the the type of plot to create has been added to the dataframe before calling this function. All predictors must be included. The number of columns in the dataframe must equal the number of columns in the attribute that has been added. The name of the attribute must be "plot_types_when_on_x_axis". All variables will be plotted against another as in a pairs plot. Accepted values of the plot_types_when_on_x_axis include "point", and "box". Accepted values of plot_types_when_on_x_axis must be verbatim. When plot_types is NULL, the x axis will assume integers are categorical and convert them to factors in the custom plotting functions before creating box plots. 
+
+# Example of adding attibutes to a dataframe:
+# attr(auto_plot_formatted, "plot_types_when_on_x_axis") <- c("point", "box", "point", "point", "point", "point", "box", "box")
+# attributes(auto_plot_formatted)
+
+# Example df: $names
+#  "mpg"          "cylinders"    "displacement" "horsepower"   "weight"       "acceleration" "year"         "origin"     
+
+# Example attribute: $plot_types_when_on_x_axis
+#  "point" "box"   "point" "point" "point" "point" "box"   "box" 
+# In the example, when mpg is on the x axis, a scatter plot will be created. When origin is on the x axis, a box plot will be created. 
+
+
+# Output: returns plots of all pairs of variables using ggplot. Plots are either of type scatter or box. 
+
+create_all_custom_box_scatter_plots <- function(df, plot_types=NULL) {
+    if(!is.null(plot_types)) {
+    for (i in seq_along(df)) {
+      current_x_axis_name <- names(df[i])
+      current_x_axis <- df[[i]]
+      current_plot_type <- attributes(df)$plot_types_when_on_x_axis
+      # print(sprintf("current_x_axis_name: %s", current_x_axis_name))
+      # print(sprintf("current_plot_type: %s", current_plot_type[[i]]))
+      for (j in seq_along(df)) {
+          
+            current_y_axis_name <- names(df[j])
+            
+            if(identical(current_x_axis_name, current_y_axis_name)) {
+              next
+            }
+            current_y_axis <- df[[j]]
+          if (identical(current_plot_type[[i]], "point")) {
+            if(identical(current_plot_type[[j]], "box")) {
+              next
+            # print("Dependent variable is a box plot & independent variable is a point plot.")
+          } else {
+              
+              # print("Create Scatterplot 1")
+              custom_plot <- create_custom_geom_point(
+                df = df, 
+                x = df[[i]], 
+                y = df[[j]], 
+                title = sprintf("%s vs. %s", current_x_axis_name, current_y_axis_name), 
+                x_title = current_x_axis_name, 
+                y_title = current_y_axis_name
+              )
+              # print(sprintf("j: %0.0f", j))
+              # print(sprintf("current_plot_type[[j]]: %s", current_plot_type[[j]]))
+              # print("create_custom_geom_point defined in 1")
+            }
+          } else if(identical(current_plot_type[[i]], "box")){
+              # print("# Plot x as factor boxplot with double y 3.")
+              custom_plot <- create_custom_geom_box_grouped_by_x_factor(
+                df = df, 
+                x = df[[i]], 
+                y = df[[j]], 
+                title = sprintf("%s vs. %s", current_x_axis_name, current_y_axis_name), 
+                x_title = current_x_axis_name, 
+                y_title = current_y_axis_name
+              )
+              # print(sprintf("j: %0.0f", j))
+              # print(sprintf("current_plot_type[[j]]: %s", current_plot_type[[j]]))
+              # print("create_custom_geom_box_grouped_by_x_factor defined in 3")
+          } else {
+            # print("Error in plot type. Plot type is neither scatter nor box.")
+            next
+          }
+            print(custom_plot)
+        }
+    }
+    } else {
+    for (i in seq_along(df)) {
+      current_x_axis_name <- names(df[i])
+      current_x_axis <- df[[i]]
+      # print(sprintf("current_x_axis_name: %s", current_x_axis_name))
+      for (j in seq_along(df)) {
+          
+            current_y_axis_name <- names(df[j])
+            
+            if(identical(current_x_axis_name, current_y_axis_name)) {
+              next
+            }
+            current_y_axis <- df[[j]]
+          if (identical(typeof(df[[i]]), "double")) {
+            if(identical(typeof(df[[j]]), "double")) {
+              # print("Create Scatterplot 1")
+              custom_plot <- create_custom_geom_point(
+                df = df, 
+                x = df[[i]], 
+                y = df[[j]], 
+                title = sprintf("%s vs. %s", current_x_axis_name, current_y_axis_name), 
+                x_title = current_x_axis_name, 
+                y_title = current_y_axis_name
+              )
+              # print("create_custom_geom_point defined in 1")
+            } else if(identical(typeof(df[[j]]), "integer")) {
+              # print("# Next: X is double, y is integer; Use y as x in boxplot. 2")
+              next
+            } else {
+              # print("Error: X is a double. Y is neither a double nor an integer. Unhandled.")
+            }
+          } else if(identical(typeof(df[[i]]), "integer")){
+            if(identical(typeof(df[[j]]), "integer")){
+              # print("# Both x & y are integers. No custom plot exists yet")
+              next
+            } else if(identical(typeof(df[[j]]), "double")) {
+              # print("# Plot x as factor boxplot with double y 3.")
+              custom_plot <- create_custom_geom_box_grouped_by_x_factor(
+                df = df, 
+                x = df[[i]], 
+                y = df[[j]], 
+                title = sprintf("%s vs. %s", current_x_axis_name, current_y_axis_name), 
+                x_title = current_x_axis_name, 
+                y_title = current_y_axis_name
+              )
+              # print("create_custom_geom_box_grouped_by_x_factor defined in 3")
+            } else {
+              # print("Error: X is an integer. Y is neither a double nor an integer. Unhandled.")
+            }
+          } else {
+            # print("X is neither integer nor double.")
+          }
+            print(custom_plot)
+        }
+    }
+    }
+}
+```
+
+
 ## Applied
 
 ### Question 6:
@@ -202,23 +365,104 @@ ggplot(Wage) +
 
 ```{r}
 # Remove Widowed
-wage_not_widowed <- Wage %>% filter(maritl != "Widowed")
-# wage_not_widowed
+wage_not_widowed <- Wage %>% filter(maritl != "3. Widowed") 
+```
+
+```{r}
+levels(wage_not_widowed$maritl)
 ```
 
 
-
 ```{r}
-gam.maritl <- gam(wage ~ maritl + jobclass + s(year, 5), data = Wage)
+gam.maritl <- gam(wage ~ maritl + jobclass + s(year, 5), data = wage_not_widowed)
 par(mfrow = c(1, 1))
 plot(gam.maritl, se = TRUE, col = "green")
 ```
 
 
 ```{r}
-f_print(sprintf("There is a strong relationship between marital status & Information job class with respect to wage. There is a positive trend with increasing years with respect to wage."))
+f_print(sprintf("There is a strong relationship between marital status & Information job class with respect to higher wages. Those that have never been married have the lowest wages whereas those that have been divorced or separated are associated with wages that are higher than those that have never been married but lower than those that have been married. There is a positive trend with increasing years with respect to wage."))
+```
+
+### Question 8:
+Fit the non-linear models investigated in this chapter to the
+Auto data set. Is there evidence for non-linear relationships in this
+data set? Create informative plots to justify your answer.
+
+```{r message=FALSE}
+auto <- na.omit(Auto)
+attach(Auto)
+```
+
+```{r}
+head(Auto)
+```
+
+```{r}
+auto_plot_formatted <- auto %>% select(everything(), -name)
 ```
 
 
+```{r}
+# auto
+attr(auto_plot_formatted, "plot_types_when_on_x_axis") <- c("point", "box", "point", "point", "point", "point", "box", "box")
+# attributes(auto_plot_formatted)
+```
 
+```{r warning=FALSE, message=FALSE}
+create_all_custom_box_scatter_plots(auto_plot_formatted, plot_types = TRUE)
+```
+
+
+```{r warning=FALSE, message=FALSE}
+lm.mpg_displacement_natural_spline.fit <- lm(mpg ~ ns(displacement, df = 6), data = auto)
+lm.mpg_displacement_natural_spline.pred <- predict(lm.mpg_displacement_natural_spline.fit, auto)
+
+lm.mpg_displacement_regression_spline.fit <- lm(mpg ~ bs(displacement, degree = 6), data = Wage)
+lm.mpg_displacement_regression_spline.pred <- predict(lm.mpg_displacement_regression_spline.fit, auto)
+
+ggplot() + 
+  geom_point(aes(mpg, displacement), color = custom_lightblue) +
+  geom_smooth(aes(lm.mpg_displacement_natural_spline.pred, displacement), color = custom_darkblue) +
+  geom_smooth(aes(lm.mpg_displacement_regression_spline.pred, displacement), color = custom_red) +
+  labs(title = "Splines of MPG vs. Displacement", x = "Miles Per Gallon", y = "Displacement", subtitle = "Natural Spline Prediction: Dark Blue\nRegression Spline Prediction: Red") +
+  theme_grey()
+```
+```{r warning=FALSE}
+lm.mpg_displacement_smooth_spline.fit <- smooth.spline(mpg, displacement, cv = TRUE)
+```
+
+
+```{r warning=FALSE}
+# xlim = range(displacement)
+plot(mpg, displacement, cex = .5, col = "darkgrey", main = "Smooth Spline of MPG vs. Displacement", xlab = "Miles Per Gallon", ylab = "Displacement")
+lines(lm.mpg_displacement_smooth_spline.fit, col = "blue")
+```
+
+```{r warning=FALSE}
+dof <- 3
+
+lm.mpg_acceleration_natural_spline.fit <- lm(mpg ~ ns(acceleration, dof), data = Wage)
+lm.mpg_acceleration_natural_spline.pred <- predict(lm.mpg_acceleration_natural_spline.fit, auto)
+
+lm.mpg_acceleration_regression_spline.fit <- lm(mpg ~ bs(acceleration, df = dof), data = Wage)
+lm.mpg_acceleration_regression_spline.pred <- predict(lm.mpg_acceleration_regression_spline.fit, auto)
+
+ggplot() + 
+  geom_point(aes(acceleration, mpg), color = custom_lightblue) +
+  geom_line(aes(acceleration, lm.mpg_acceleration_regression_spline.pred), color = custom_red) +
+  geom_line(aes(acceleration, lm.mpg_acceleration_natural_spline.pred), color = custom_darkblue) +
+  labs(title = "Splines of MPG vs. Displacement", x = "Acceleration", y = "Miles Per Gallon", subtitle = "Natural Spline Prediction: Dark Blue\nRegression Spline Prediction: Red\n") +
+  theme_grey()
+```
+
+```{r}
+acceleration_limits <- range(acceleration)
+acceleration.grid <- seq(acceleration_limits[1], acceleration_limits[2])
+
+lo.mpg_acceleration_local_regression_spline.fit <- loess(mpg ~ acceleration, span = 0.2, data = auto)
+
+plot(acceleration, mpg, xlim = acceleration_limits, cex = .05, col = "darkgrey", main = "Local Regression of Mpg vs. Acceleration", xlab = "Acceleration", ylab = "Miles Per Gallon")
+lines(acceleration.grid, predict(lo.mpg_acceleration_local_regression_spline.fit, data.frame(acceleration = acceleration.grid)), col = "blue")
+```
 
