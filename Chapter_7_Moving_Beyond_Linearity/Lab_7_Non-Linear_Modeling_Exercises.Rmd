@@ -556,7 +556,25 @@ lm.pred <- predict(lm.fit, boston)
 mse[i] <- mean((nox - lm.pred)[-train]^2)
 }
 ```
+
 ```{r}
   f_print(sprintf("A training and testing validation set was used to identify the optimal value of the highest degree of the polynomial used to pred nox regressed onto weighted mean distance to 5 boston employment centers. The optimal value of the degree of polynomial which creates the lowest mse is %0.0f with a test mse value of %0.3f. This is supported by the graph Polynomial of NOx Vs. Distance to Employment Centers where the highest degree of the polynomial is 2. It is observable in the remaining graphs that degrees above 2 have high variance and fit too closely to the data. And the resulting decrease in variance is not outweighed by the increase in bias gained from using the linear model of degree 1. ", which.min(mse), mse[which.min(mse)]))
+```
+* **Question 9-d**:Use the bs() function to fit a regression spline to predict nox
+using dis. Report the output for the fit using four degrees of
+freedom. How did you choose the knots? Plot the resulting fit
+  * **Answer**:
+```{r}
+lm.fit <- lm(nox ~ bs(dis, df = 4))
+lm.pred <- predict(lm.fit, boston)
+summary(lm.fit)
+f_print(sprintf("The output for the fit using four degrees of freedom is observable from the summary above. The knots where selected automatically using the selected 4 degrees of freedom."))
+```
+
+```{r message=FALSE}
+ggplot() + 
+  geom_point(aes(dis, nox), color = custom_darkblue) + 
+  geom_line(aes(dis, lm.pred), color = custom_lightblue, size = 1.5) +
+  labs(title = "Polynomial of NOx Vs. Distance to Employment Centers", x = "Weighted Mean of Distances to 5 Boston Employment Centers", y = "Nitrogen Oxides Concentration (Parts Per 10 Million)", subtitle = "Highest Degree of Polynomial: 4") 
 ```
 

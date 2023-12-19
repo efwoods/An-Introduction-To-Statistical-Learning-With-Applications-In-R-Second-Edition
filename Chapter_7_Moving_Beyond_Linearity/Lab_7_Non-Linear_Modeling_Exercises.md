@@ -173,3 +173,39 @@ predictor and nox as the response.
     the remaining graphs that degrees above 2 have high variance and fit too closely
     to the data. And the resulting decrease in variance is not outweighed by the
     increase in bias gained from using the linear model of degree 1.
+
+- **Question 9-d**:Use the bs() function to fit a regression spline to
+  predict nox using dis. Report the output for the fit using four
+  degrees of freedom. How did you choose the knots? Plot the resulting
+  fit
+  - **Answer**:
+
+<!-- -->
+
+
+    Call:
+    lm(formula = nox ~ bs(dis, df = 4))
+
+    Residuals:
+          Min        1Q    Median        3Q       Max 
+    -0.124622 -0.039259 -0.008514  0.020850  0.193891 
+
+    Coefficients:
+                     Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)       0.73447    0.01460  50.306  < 2e-16 ***
+    bs(dis, df = 4)1 -0.05810    0.02186  -2.658  0.00812 ** 
+    bs(dis, df = 4)2 -0.46356    0.02366 -19.596  < 2e-16 ***
+    bs(dis, df = 4)3 -0.19979    0.04311  -4.634 4.58e-06 ***
+    bs(dis, df = 4)4 -0.38881    0.04551  -8.544  < 2e-16 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 0.06195 on 501 degrees of freedom
+    Multiple R-squared:  0.7164,    Adjusted R-squared:  0.7142 
+    F-statistic: 316.5 on 4 and 501 DF,  p-value: < 2.2e-16
+
+    The output for the fit using four degrees of freedom is observable from the
+    summary above. The knots where selected automatically using the selected 4
+    degrees of freedom.
+
+<img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-39-1.png" width="70%" style="display: block; margin: auto;" />
