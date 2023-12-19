@@ -108,9 +108,9 @@ create_custom_geom_box_grouped_by_x_factor <- function(df, x, y, title, x_title,
 # Input: Dataframe, x, y, title of the plot, title of the x-axis, title of the y-axis, metric, rss
 # Note: Metric == "rss" will plot rss on the graph when rss is provided to the function.
 # Output: Scatterplot of x and y variables with correlation between the two on the grid & a smooth line of best fit to the data points. 
-create_custom_geom_point <- function(df, x, y, title, x_title, y_title, metric=NULL, rss = NULL, dof = NULL, pred = NULL){ #???
+create_custom_geom_point <- function(df, x, y, title, x_title, y_title, metric=NULL, rss = NULL, dof = NULL, pred = NULL){ 
     if(metric == "rss" & !is.null(rss) & !is.null(dof)) {
-      metric_label <- sprintf("rss: %0.3f\ndof: %0.0f", rss, dof) # rss
+      metric_label <- sprintf("RSS: %0.3f\nHighest Degree of Freedom: %0.0f", rss, dof) # rss
     } else {
       metric_label <- sprintf("r: %0.3f", cor(x,y)) # correlation
     }
@@ -118,8 +118,8 @@ create_custom_geom_point <- function(df, x, y, title, x_title, y_title, metric=N
     ggplot(df, aes(x, y)) +
       geom_point(color = custom_darkblue) + 
       theme_linedraw() +
-      geom_point(se = FALSE, color = custom_darkblue) + 
-      geom_line(aes(x, pred), color = custom_lightblue) + #????
+      geom_point(color = custom_darkblue) + 
+      geom_line(aes(x, pred), color = custom_lightblue, size = 1) + #????
       labs(title = title, x = x_title, y = y_title) + 
       geom_text(aes(label = label), data = label, vjust = "top", hjust = "right", color = "#a60808") 
 }
@@ -503,7 +503,7 @@ Plot the polynomial fits for a range of different polynomial
 degrees (say, from 1 to 10), and report the associated residual
 sum of squares.
   * **Answer**:
-```{r message=FALSE}
+```{r message=FALSE warning=FALSE}
 summary(lm.fit9a)
 lm_fits <- list(10)
 rss <- c(integer(10))
@@ -512,15 +512,9 @@ for(i in 1:10) {
   lm.pred <- predict(lm.fit, boston)
   
   rss[i] <- sum((nox - lm.pred)^2)
-  print(create_custom_geom_point(boston, dis, nox, "Polynomial Fit of NOx vs. Distance to Employment Centers", "Weighted Mean of Distance to 5 Boston Employment Centers", "NOx Concentration (Parts Per 10 Million)", metric = "rss", rss = rss[i], dof = i, pred = lm.pred)) #???
+  print(create_custom_geom_point(boston, dis, nox, "Polynomial Fit of NOx vs. Distance to Employment Centers", "Weighted Mean of Distance to 5 Boston Employment Centers", "NOx Concentration (Parts Per 10 Million)", metric = "rss", rss = rss[i], dof = i, pred = lm.pred))
 }
-# ???
-# create_custom_geom_point <- function(df, x, y, title, x_title, y_title, metric=NULL, rss = NULL){
-
-
 rss
-# ggplot() + 
-  # geom_point(aes(dis, lm.fit))
 ```
 
 
