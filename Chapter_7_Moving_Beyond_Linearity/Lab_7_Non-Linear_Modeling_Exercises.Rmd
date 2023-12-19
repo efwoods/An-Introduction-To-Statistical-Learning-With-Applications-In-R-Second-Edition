@@ -90,7 +90,6 @@ f_print <- function(string){
 }
 ```
 
-
 ```{r}
 # Input: Dataframe, x (a numerical that is converted to a factor), y (double), title, x-axis title, y-axis title
 # Output: Transparent violin plots overlayed onto colored yoxplots of y onto each x factor. Each boxplot is of a single x factor. 
@@ -105,26 +104,38 @@ create_custom_geom_box_grouped_by_x_factor <- function(df, x, y, title, x_title,
 
 
 ```{r}
-# Input: Dataframe, x, y, title of the plot, title of the x-axis, title of the y-axis, metric, rss
-# Note: Metric == "rss" will plot rss on the graph when rss is provided to the function.
+# Input: Dataframe, x, y, title of the plot, title of the x-axis, title of the y-axis
 # Output: Scatterplot of x and y variables with correlation between the two on the grid & a smooth line of best fit to the data points. 
-create_custom_geom_point <- function(df, x, y, title, x_title, y_title, metric=NULL, rss = NULL, dof = NULL, pred = NULL){ 
-    if(metric == "rss" & !is.null(rss) & !is.null(dof)) {
-      metric_label <- sprintf("RSS: %0.3f\nHighest Degree of Freedom: %0.0f", rss, dof) # rss
-    } else {
-      metric_label <- sprintf("r: %0.3f", cor(x,y)) # correlation
-    }
-    label <- df %>% summarise(x = max(x), y = max(y), label = metric_label)
+create_custom_geom_point <- function(df, x, y, title, x_title, y_title){
+    correlation <- sprintf("r: %0.3f", cor(x,y))
+    label <- df %>% summarise(x = max(x), y = max(y), label = correlation)
     ggplot(df, aes(x, y)) +
       geom_point(color = custom_darkblue) + 
       theme_linedraw() +
-      geom_point(color = custom_darkblue) + 
-      geom_line(aes(x, pred), color = custom_lightblue, size = 1) + #????
+      geom_smooth(se = FALSE, color = custom_lightblue) +
       labs(title = title, x = x_title, y = y_title) + 
       geom_text(aes(label = label), data = label, vjust = "top", hjust = "right", color = "#a60808") 
 }
 
 ```
+
+```{r}
+# ???
+# Input: Dataframe, x, y, title of the plot, title of the x-axis, title of the y-axis
+# Output: Scatterplot of x and y variables with correlation between the two on the grid & a smooth line of best fit to the data points. 
+create_custom_geom_point_rss <- function(df, x, y, title, x_title, y_title){
+    correlation <- sprintf("r: %0.3f", cor(x,y))
+    label <- df %>% summarise(x = max(x), y = max(y), label = correlation)
+    ggplot(df, aes(x, y)) +
+      geom_point(color = custom_darkblue) + 
+      theme_linedraw() +
+      geom_smooth(se = FALSE, color = custom_lightblue) +
+      labs(title = title, x = x_title, y = y_title) + 
+      geom_text(aes(label = label), data = label, vjust = "top", hjust = "right", color = "#a60808") 
+}
+
+```
+
 
 ```{r}
 # Input: 
@@ -272,8 +283,9 @@ attach(Wage)
 
 * **Question 6-a**: Perform polynomial regression to predict wage using age. Use cross-validation to select the optimal degree _d_ for the polynomial. What degree was chosen, and how does this compare to the results of hypothesis testing using ANOVA? Make a plot of the resulting polynomial fit to the data. 
   * **Answer**:
-```{r}
+```{r include=FALSE}
 set.seed(42)
+
 cv.error <- rep(0, 10)
 for (i in 1:10) {
   glm.fit <- glm(wage ~ poly(age, i), data = Wage)
@@ -485,43 +497,66 @@ attach(boston)
 ```
 
 
-* **Question 9-a**:
+* **Question 9-a**: Use the poly() function to fit a cubic polynomial regression to
+predict nox using dis. Report the regression output, and plot
+the resulting data and polynomial fits.
   * **Answer**:
 ```{r}
 lm.fit9a <- lm(nox ~ poly(dis, 4))
 summary(lm.fit9a)
 lm.fit9a.pred <- predict(lm.fit9a, boston)
-#??? 
+
 ggplot() + 
   geom_line(aes(dis, lm.fit9a.pred), color = custom_lightblue, size = 2) + 
   geom_point(aes(dis, nox), color = custom_darkblue) +
-  labs(title = "NOx Concentration vs. Mean Distance to Employment Centers", x = "Weighted Mean of Distance to 5 Boston Employment Centers.", y = "Nitrogen Oxides Concentration (Parts Per 10 Million)")
+  labs(title = "NOx Concentration vs. Mean Distance to Employment Centers", x = "Weighted Mean of Distances to 5 Boston Employment Centers", y = "Nitrogen Oxides Concentration (Parts Per 10 Million)")
 ```
 
-* **Question 9-b**: 
-Plot the polynomial fits for a range of different polynomial
+* **Question 9-b**: Plot the polynomial fits for a range of different polynomial
 degrees (say, from 1 to 10), and report the associated residual
 sum of squares.
   * **Answer**:
-```{r message=FALSE warning=FALSE}
-summary(lm.fit9a)
-lm_fits <- list(10)
-rss <- c(integer(10))
+```{r}
+# Input: Dataframe, x, y, title of the plot, title of the x-axis, title of the y-axis
+# Output: Scatterplot of x and y variables with correlation between the two on the grid & a smooth line of best fit to the data points. 
+create_custom_geom_point_rss <- function(df, x, y, title, x_title, y_title, pred){
+    RSS <- sprintf("RSS: %0.3f\nHighest Degree of Polynomial: %0.0f", sum((nox - pred)^2), i)
+    label <- df %>% summarise(x = max(x), y = max(y), label = RSS)
+    ggplot(df, aes(x, y)) +
+      geom_point(color = custom_darkblue) + 
+      theme_linedraw() +
+      geom_line(aes(dis, pred), color = custom_lightblue, size = 1.5) +
+      labs(title = title, x = x_title, y = y_title) + 
+      geom_text(aes(label = label), data = label, vjust = "top", hjust = "right", color = "#a60808") 
+}
+
+
+
+rss <- c(integer(0))
 for(i in 1:10) {
   lm.fit <- lm(nox ~ poly(dis, i))
   lm.pred <- predict(lm.fit, boston)
-  
   rss[i] <- sum((nox - lm.pred)^2)
-  print(create_custom_geom_point(boston, dis, nox, "Polynomial Fit of NOx vs. Distance to Employment Centers", "Weighted Mean of Distance to 5 Boston Employment Centers", "NOx Concentration (Parts Per 10 Million)", metric = "rss", rss = rss[i], dof = i, pred = lm.pred))
+  print(create_custom_geom_point_rss(boston, dis, nox, "Polynomial of NOx Vs. Distance to Employment Centers", "Weighted Mean of Distances to 5 Boston Employment Centers", "Nitrogen Oxides Concentration (Parts Per 10 Million)", lm.pred))
 }
-rss
 ```
-
 
 * **Question 9-c**: Perform cross-validation or another approach to select the opti-
 mal degree for the polynomial, and explain your results.
   * **Answer**:
-```{r}
 
+```{r}
+train <- sample(nrow(boston) * .8)
+
+mse <- c(integer(10))
+for (i in 1:10) {
+# i <- 1
+lm.fit <- lm(nox ~ poly(dis, i), data = boston, subset = train)
+lm.pred <- predict(lm.fit, boston)
+mse[i] <- mean((nox - lm.pred)[-train]^2)
+}
+```
+```{r}
+  f_print(sprintf("A training and testing validation set was used to identify the optimal value of the highest degree of the polynomial used to pred nox regressed onto weighted mean distance to 5 boston employment centers. The optimal value of the degree of polynomial which creates the lowest mse is %0.0f with a test mse value of %0.3f. This is supported by the graph Polynomial of NOx Vs. Distance to Employment Centers where the highest degree of the polynomial is 2. It is observable in the remaining graphs that degrees above 2 have high variance and fit too closely to the data. And the resulting decrease in variance is not outweighed by the increase in bias gained from using the linear model of degree 1. ", which.min(mse), mse[which.min(mse)]))
 ```
 
