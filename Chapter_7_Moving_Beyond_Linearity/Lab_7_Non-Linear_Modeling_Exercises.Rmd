@@ -516,6 +516,14 @@ ggplot() +
 degrees (say, from 1 to 10), and report the associated residual
 sum of squares.
   * **Answer**:
+  
+```{r}
+RSS <- sprintf("RSS:\nHighest Degree of Polynomial:")
+label <- boston %>% summarise(x = max(dis), y = max(nox), label = RSS)
+label
+```
+  
+  
 ```{r}
 # Input: Dataframe, x, y, title of the plot, title of the x-axis, title of the y-axis
 # Output: Scatterplot of x and y variables with correlation between the two on the grid & a smooth line of best fit to the data points. 
@@ -577,4 +585,133 @@ ggplot() +
   geom_line(aes(dis, lm.pred), color = custom_lightblue, size = 1.5) +
   labs(title = "Polynomial of NOx Vs. Distance to Employment Centers", x = "Weighted Mean of Distances to 5 Boston Employment Centers", y = "Nitrogen Oxides Concentration (Parts Per 10 Million)", subtitle = "Highest Degree of Polynomial: 4") 
 ```
+
+
+* **Question 9-e**: Now fit a regression spline for a range of degrees of freedom, and
+plot the resulting fits and report the resulting RSS. Describe the
+results obtained.
+  * **Answer**:
+```{r}
+max_dis <- max(dis)
+max_nox <- max(nox)
+
+for (i in 3:10) {
+  lm.fit <- lm(nox ~ bs(dis, df = i))
+  lm.pred <- predict(lm.fit, boston)
+  rss <- sum((boston$nox - lm.pred)^2)
+  poly_degree <- sprintf("RSS: %0.3f\nDegrees of Freedom: %0.0f", rss, i)
+  label <- boston %>% summarise(x = max_dis, y = max_nox, label = poly_degree)
+  regression_spline <- ggplot() + 
+    geom_point(aes(dis, nox), color = custom_darkblue) + 
+    geom_line(aes(dis, lm.pred), color = custom_lightblue, size = 1.5) +
+    labs(title = "Regression Spline of NOx Vs. Distance to Employment Centers", x = "Weighted Mean of Distances to 5 Boston Employment Centers", y = "Nitrogen Oxides Concentration (Parts Per 10 Million)", subtitle = "Varying Degrees of Freedom") +
+  geom_text(aes(max_dis, max_nox, label = label), data = label, vjust = "top", hjust = "right", color = "#a60808")
+  print(regression_spline)
+}
+```
+* **Question 9-f**: Perform cross-validation or another approach in order to select
+the best degrees of freedom for a regression spline on this data.
+Describe your results.
+  * **Answer**:
+```{r}
+train <- sample(nrow(boston)*.8)
+test <- (-train)
+mse <- integer(length = 7)
+for (i in 3:10) {
+  lm.fit <- lm(nox ~ bs(dis, i), data = boston, subset = train)
+  lm.pred <- predict(lm.fit, boston[test, ])
+  mse[i - 2] = mean((nox[test] - lm.pred)^2)
+}
+
+f_print(sprintf("The degree of freedom that promotes the minimum mean squared error for the created regression spline is: %0.0f degrees of freedom. The calculated test mse is: %0.7f.", which.min(mse) + 2,  mse[which.min(mse)]))
+```
+
+### Question 10:
+This question relates to the College data set. 
+
+* **Question 10-a**: Split the data into a training set and a test set. Using out-of-state
+tuition as the response and the other variables as the predictors,
+perform forward stepwise selection on the training set in order
+to identify a satisfactory model that uses just a subset of the
+predictors.
+  * **Answer**: 
+```{r}
+college <- na.omit(College)
+attach(college)
+train <- sample(nrow(college) * 0.8)
+test <- (!train)
+```
+
+
+```{r}
+college.fit <- regsubsets(Outstate ~ ., data = college, subset = train, method = "forward", nvmax = length(college)-1)
+summary(college.fit)
+
+```
+
+```{r}
+predict.regsubsets <- function(object, newdata, id, ...) {
+  form <- as.formula(object$call[[2]]) # Identify the formula of the fit of the model. 
+  mat <- model.matrix(form, newdata) # Create a matrix using the formula and the subset of the data
+  coefi <- coef(object, id = id) # select the coefficients of the model with i number of predictors
+  xvars <- names(coefi) # identify the predictors by name
+  mat[, xvars] %*% coefi # make a prediction by all the observations in the matrix of observations that is subset by the predictors included in each i model with the corresponding coefficients of that model.
+}
+```
+
+```{r}
+regfit.best <- regsubsets(Salary ~ ., data = Hitters, nvmax = 19)
+coef(regfit.best, 7)
+```
+
+K-Fold Cross-Validation Selection
+```{r}
+k <- 10
+n <- nrow(college)
+set.seed(1)
+folds <- sample(rep(1:k, length = n)) # grouping each observation into k groups
+cv.errors <- matrix(NA, k, 19, dimnames = list(NULL, paste(1:19)))
+```
+
+```{r include=FALSE}
+# nrow(Hitters)
+```
+
+```{r include=FALSE}
+# Hitters[folds, ]
+```
+
+```{r include=FALSE}
+# Explaination of the algorithm below & example:
+# folds is a list with a length that matches the number of observations of the Hitters dataframe. The values within folds range from 1 to 10. From the perspective of folds != j, for each selection of j,  folds not equal to the value of j will return TRUE. Folds equal to the value of j will return FALSE. This means that wherever there is a value of k that is equal to j in the algorithm below, then that value is excluded from the dataset because the value is FALSE, and the remaining indices are returned as a subset of the larger dataframe. This allows for the same number of observations to be excluded from the dataframe where each group of observations is identified by a value 1 to k. The folds select indices via their order in the folds matrix, and the value of a particular fold identifies which group the observation at that position belongs to. 
+folds != 1
+```
+
+```{r}
+# This performs training and testing 10 times. For each trained group of models this algorithm will make a prediction for each of the best models for i number of predictors. There are p models with 1 to n number of predictors used in each model where p is the number of predictors and n is the number of predictors used in the model.
+for (j in 1:k) {
+  best.fit <- regsubsets(Salary ~ .,
+                         data = Hitters[folds != j, ], nvmax = 19) # Training on all but k. Returns the best fit for 1 to 19 number of predictors. 
+  for (i in 1:19) {
+    pred <- predict(best.fit, Hitters[folds == j, ], id = i) # Predict using k as test. This will use the custom predict function above. Best i variable model. This is making predictions for all 19 models 10 times. 
+    cv.errors[j, i] <-
+      mean((Hitters$Salary[folds == j] - pred) ^2) # Mean Square Error of each predictor within a k fold.
+  }
+}
+```
+
+```{r include=FALSE}
+# Each column represents a model. Identify the average of the ten rows for each column
+mean(cv.errors[,1])
+```
+
+
+```{r}
+mean.cv.errors <- apply(cv.errors, 2, mean) # Identify the k which has the lowest mean test error. 2 selects the average of the rows using each column. 1 selects the average of the columns using each row.
+mean.cv.errors
+par(mfrow = c(1,1))
+plot(mean.cv.errors, type = "b")
+```
+```
+
 
