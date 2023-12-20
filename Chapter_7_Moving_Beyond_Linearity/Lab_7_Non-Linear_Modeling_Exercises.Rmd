@@ -520,7 +520,6 @@ sum of squares.
 ```{r}
 RSS <- sprintf("RSS:\nHighest Degree of Polynomial:")
 label <- boston %>% summarise(x = max(dis), y = max(nox), label = RSS)
-label
 ```
   
   
@@ -626,5 +625,147 @@ for (i in 3:10) {
 f_print(sprintf("The degree of freedom that promotes the minimum mean squared error for the created regression spline is: %0.0f degrees of freedom. The calculated test mse is: %0.7f.", which.min(mse) + 2,  mse[which.min(mse)]))
 ```
 
+### Question 10:
+This question relates to the College data set. 
+
+* **Question 10-a**: Split the data into a training set and a test set. Using out-of-state
+tuition as the response and the other variables as the predictors,
+perform forward stepwise selection on the training set in order
+to identify a satisfactory model that uses just a subset of the
+predictors.
+
+```{r message=FALSE}
+college <- na.omit(College)
+attach(college)
+train <- sample(nrow(college) * 0.8)
+test <- (!train)
+
+```
+
+
+```{r}
+predict.regsubsets <- function(object, newdata, id, ...) {
+  form <- as.formula(object$call[[2]]) # Identify the formula of the fit of the model. 
+  mat <- model.matrix(form, newdata) # Create a matrix using the formula and the subset of the data
+  coefi <- coef(object, id = id) # select the coefficients of the model with i number of predictors
+  xvars <- names(coefi) # identify the predictors by name
+  mat[, xvars] %*% coefi # make a prediction by all the observations in the matrix of observations that is subset by the predictors included in each i model with the corresponding coefficients of that model.
+}
+```
+
+
+```{r}
+k <- 10
+n <- nrow(college)
+set.seed(1)
+p <- length(college) - 1
+folds <- sample(rep(1:k, length = n)) # grouping each observation into k groups
+cv.errors <- matrix(NA, k, p, dimnames = list(NULL, paste(1:p)))
+```
+
+```{r}
+# This performs training and testing 10 times. For each trained group of models this algorithm will make a prediction for each of the best models for i number of predictors. There are p models with 1 to n number of predictors used in each model where p is the number of predictors and n is the number of predictors used in the model.
+for (j in 1:k) {
+  best.fit <- regsubsets(Outstate ~ .,
+                         data = college[folds != j, ], nvmax = p, method = "forward") # Training on all but k. Returns the best fit for 1 to 19 number of predictors. 
+  for (i in 1:p) {
+    pred <- predict(best.fit, college[folds == j, ], id = i) # Predict using k as test. This will use the custom predict function above. Best i variable model. This is making predictions for all 19 models 10 times. 
+    cv.errors[j, i] <-
+      mean((college$Outstate[folds == j] - pred) ^2) # Mean Square Error of each predictor within a k fold.
+  }
+}
+```
+
+```{r}
+mean.cv.errors <- apply(cv.errors, 2, mean) # Identify the k which has the lowest mean test error. 2 selects the average of the rows using each column. 1 selects the average of the columns using each row.
+par(mfrow = c(1,1))
+plot(mean.cv.errors, type = "b")
+points(which.min(mean.cv.errors), mean.cv.errors[which.min(mean.cv.errors)], col = "red", cex = 2, pch = 20)
+```
+
+```{r}
+college.fit <- regsubsets(Outstate ~ ., data = college, subset = train, method = "forward", nvmax = length(college)-1)
+summary(college.fit)
+```
+
+
+```{r echo=FALSE}
+f_print(sprintf("The model that implements forward stepping and minimizes the means squared error is model %0.0f. The test mean squared error of this model is: %0.3f. This model is comprised of the following predictors: Private, Apps, Accept, Enroll, Top10perc, F. Undergrad, P. Undergrad, Room.Board, Books, Personal, PhD Terminal, S.F. Ratio, perc.alumni, Expend, & Graduation Rate.", which.min(mean.cv.errors), mean.cv.errors[which.min(mean.cv.errors)]))
+```
+* **Question 10-b**: Fit a GAM on the training data, using out-of-state tuition as
+the response and the features selected in the previous step as
+the predictors. Plot the results, and explain your findings.
+  * **Answer**:
+
+```{r}
+names(college)
+```
+
+
+```{r}
+gam.fit <- gam(Outstate ~ Private + s(Apps, 5) + s(Accept, 5) + s(Enroll, 5) + s(Top10perc, 5) + s(F.Undergrad, 5) + s(P.Undergrad, 5) + s(Room.Board, 5) + s(Books, 5) + s(Personal, 5) + s(PhD, 5) + s(Terminal, 5) + s(S.F.Ratio, 5) + s(perc.alumni, 5) + s(Expend, 5) + s(Grad.Rate, 5), data = college, subset = train)
+gam.pred <- predict(gam.fit, college)
+
+plot(gam.fit, se = TRUE, col = "blue")
+# ggplot() + 
+#   geom_point(aes())
+```
+
+```{r}
+f_print(sprintf("Not only are private universities associated with higher out-of-state tuition, but there is also an increase in the number of applications accepted, the percent of students from the top 10%% of the high school graduating class, the cost of room and board, the percent of faculty with Ph.D.'s, the percent of faculty with terminal degrees, the percent of alumni who donate, the instructional expenditure per student, the student faculty ratio, and the graduation rate. However, increases in out-of-state tuition fees are also associated with a decrease in the number of applications, the number of new students enrolled, the number of fulltime undergraduates, the number of part time undergraduates, estimated book costs, and estimated personal spending."))
+```
+* **Question 10-c**: Evaluate the model obtained on the test set, and explain the
+results obtained.
+  * **Answer**:
+```{r}
+mse <- mean((Outstate - gam.pred)[-train]^2)
+f_print(sprintf("THe test mse is: %0.3f. This value is the sum of the squares of the residual test observations divided by the number of observation in the test set. The test error is higher on the test set than for the training set. This is expected as the training error tends to underestimate the test error. ", mean((Outstate - gam.pred)[-train]^2)))
+```
+
+* **Question 10-d**: For which variables, if any, is there evidence of a non-linear relationship with the response?
+  * **Answer**:
+  
+```{r}
+head(college)
+```
+  
+  
+```{r}
+
+ggplot() + 
+  geom_point(aes(Apps, Outstate)) 
+ ggplot() +  
+  geom_point(aes(Accept, Outstate)) 
+ ggplot() + 
+  geom_point(aes(Enroll, Outstate)) 
+ ggplot() + 
+  geom_point(aes(Top10perc, Outstate)) 
+ ggplot() + 
+  geom_point(aes(F.Undergrad, Outstate)) 
+ ggplot() + 
+  geom_point(aes(P.Undergrad, Outstate)) 
+ ggplot() + 
+  geom_point(aes(Room.Board, Outstate)) 
+ ggplot() + 
+  geom_point(aes(Books, Outstate)) 
+ ggplot() + 
+  geom_point(aes(Personal, Outstate)) 
+ ggplot() + 
+  geom_point(aes(PhD, Outstate)) 
+ ggplot() + 
+  geom_point(aes(Terminal, Outstate)) 
+ ggplot() + 
+  geom_point(aes(S.F.Ratio, Outstate)) 
+ ggplot() + 
+  geom_point(aes(perc.alumni, Outstate)) 
+ ggplot() + 
+  geom_point(aes(Expend, Outstate)) 
+ ggplot() + 
+  geom_point(aes(Grad.Rate, Outstate)) 
+```
+
+```{r}
+f_print(sprintf("It appears from the plots above that there is evidence of a non-linear relationship between Ph.D.'s, terminal degrees, and student faculty ratio with respect to out-of-state tuition."))
+```
 
 

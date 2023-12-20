@@ -1,7 +1,7 @@
 Lab 7 Non-Linear Modeling Exercises
 ================
 Evan Woods
-2023-12-18
+2023-12-20
 
 ## Applied
 
@@ -156,7 +156,14 @@ predictor and nox as the response.
   polynomial degrees (say, from 1 to 10), and report the associated
   residual sum of squares.
   - **Answer**:
-    <img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-35-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-35-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-35-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-35-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-35-5.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-35-6.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-35-7.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-35-8.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-35-9.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-35-10.png" width="70%" style="display: block; margin: auto;" />
+
+<!-- -->
+
+            x     y                               label
+    1 12.1265 0.871 RSS:\nHighest Degree of Polynomial:
+
+<img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-36-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-36-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-36-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-36-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-36-5.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-36-6.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-36-7.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-36-8.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-36-9.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-36-10.png" width="70%" style="display: block; margin: auto;" />
+
 - **Question 9-c**: Perform cross-validation or another approach to
   select the opti- mal degree for the polynomial, and explain your
   results.
@@ -208,4 +215,194 @@ predictor and nox as the response.
     summary above. The knots where selected automatically using the selected 4
     degrees of freedom.
 
-<img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-39-1.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-40-1.png" width="70%" style="display: block; margin: auto;" />
+
+- **Question 9-e**: Now fit a regression spline for a range of degrees
+  of freedom, and plot the resulting fits and report the resulting RSS.
+  Describe the results obtained.
+  - **Answer**:
+    <img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-5.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-6.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-7.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-8.png" width="70%" style="display: block; margin: auto;" />
+- **Question 9-f**: Perform cross-validation or another approach in
+  order to select the best degrees of freedom for a regression spline on
+  this data. Describe your results.
+  - **Answer**:
+
+<!-- -->
+
+    The degree of freedom that promotes the minimum mean squared error for the
+    created regression spline is: 3 degrees of freedom. The calculated test mse is:
+    0.0056794.
+
+### Question 10:
+
+This question relates to the College data set.
+
+- **Question 10-a**: Split the data into a training set and a test set.
+  Using out-of-state tuition as the response and the other variables as
+  the predictors, perform forward stepwise selection on the training set
+  in order to identify a satisfactory model that uses just a subset of
+  the predictors.
+
+<img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-47-1.png" width="70%" style="display: block; margin: auto;" />
+
+    Subset selection object
+    Call: regsubsets.formula(Outstate ~ ., data = college, subset = train, 
+        method = "forward", nvmax = length(college) - 1)
+    17 Variables  (and intercept)
+                Forced in Forced out
+    PrivateYes      FALSE      FALSE
+    Apps            FALSE      FALSE
+    Accept          FALSE      FALSE
+    Enroll          FALSE      FALSE
+    Top10perc       FALSE      FALSE
+    Top25perc       FALSE      FALSE
+    F.Undergrad     FALSE      FALSE
+    P.Undergrad     FALSE      FALSE
+    Room.Board      FALSE      FALSE
+    Books           FALSE      FALSE
+    Personal        FALSE      FALSE
+    PhD             FALSE      FALSE
+    Terminal        FALSE      FALSE
+    S.F.Ratio       FALSE      FALSE
+    perc.alumni     FALSE      FALSE
+    Expend          FALSE      FALSE
+    Grad.Rate       FALSE      FALSE
+    1 subsets of each size up to 17
+    Selection Algorithm: forward
+              PrivateYes Apps Accept Enroll Top10perc Top25perc F.Undergrad
+    1  ( 1 )  " "        " "  " "    " "    " "       " "       " "        
+    2  ( 1 )  "*"        " "  " "    " "    " "       " "       " "        
+    3  ( 1 )  "*"        " "  " "    " "    " "       " "       " "        
+    4  ( 1 )  "*"        " "  " "    " "    " "       " "       " "        
+    5  ( 1 )  "*"        " "  " "    " "    " "       " "       " "        
+    6  ( 1 )  "*"        " "  " "    " "    " "       " "       " "        
+    7  ( 1 )  "*"        " "  " "    " "    " "       " "       " "        
+    8  ( 1 )  "*"        " "  " "    " "    " "       " "       " "        
+    9  ( 1 )  "*"        " "  "*"    " "    " "       " "       " "        
+    10  ( 1 ) "*"        "*"  "*"    " "    " "       " "       " "        
+    11  ( 1 ) "*"        "*"  "*"    "*"    " "       " "       " "        
+    12  ( 1 ) "*"        "*"  "*"    "*"    "*"       " "       " "        
+    13  ( 1 ) "*"        "*"  "*"    "*"    "*"       " "       " "        
+    14  ( 1 ) "*"        "*"  "*"    "*"    "*"       " "       " "        
+    15  ( 1 ) "*"        "*"  "*"    "*"    "*"       " "       "*"        
+    16  ( 1 ) "*"        "*"  "*"    "*"    "*"       " "       "*"        
+    17  ( 1 ) "*"        "*"  "*"    "*"    "*"       "*"       "*"        
+              P.Undergrad Room.Board Books Personal PhD Terminal S.F.Ratio
+    1  ( 1 )  " "         " "        " "   " "      " " " "      " "      
+    2  ( 1 )  " "         " "        " "   " "      " " " "      " "      
+    3  ( 1 )  " "         "*"        " "   " "      " " " "      " "      
+    4  ( 1 )  " "         "*"        " "   " "      " " " "      " "      
+    5  ( 1 )  " "         "*"        " "   " "      "*" " "      " "      
+    6  ( 1 )  " "         "*"        " "   " "      "*" " "      " "      
+    7  ( 1 )  " "         "*"        " "   "*"      "*" " "      " "      
+    8  ( 1 )  " "         "*"        " "   "*"      "*" "*"      " "      
+    9  ( 1 )  " "         "*"        " "   "*"      "*" "*"      " "      
+    10  ( 1 ) " "         "*"        " "   "*"      "*" "*"      " "      
+    11  ( 1 ) " "         "*"        " "   "*"      "*" "*"      " "      
+    12  ( 1 ) " "         "*"        " "   "*"      "*" "*"      " "      
+    13  ( 1 ) " "         "*"        "*"   "*"      "*" "*"      " "      
+    14  ( 1 ) " "         "*"        "*"   "*"      "*" "*"      "*"      
+    15  ( 1 ) " "         "*"        "*"   "*"      "*" "*"      "*"      
+    16  ( 1 ) "*"         "*"        "*"   "*"      "*" "*"      "*"      
+    17  ( 1 ) "*"         "*"        "*"   "*"      "*" "*"      "*"      
+              perc.alumni Expend Grad.Rate
+    1  ( 1 )  " "         "*"    " "      
+    2  ( 1 )  " "         "*"    " "      
+    3  ( 1 )  " "         "*"    " "      
+    4  ( 1 )  "*"         "*"    " "      
+    5  ( 1 )  "*"         "*"    " "      
+    6  ( 1 )  "*"         "*"    "*"      
+    7  ( 1 )  "*"         "*"    "*"      
+    8  ( 1 )  "*"         "*"    "*"      
+    9  ( 1 )  "*"         "*"    "*"      
+    10  ( 1 ) "*"         "*"    "*"      
+    11  ( 1 ) "*"         "*"    "*"      
+    12  ( 1 ) "*"         "*"    "*"      
+    13  ( 1 ) "*"         "*"    "*"      
+    14  ( 1 ) "*"         "*"    "*"      
+    15  ( 1 ) "*"         "*"    "*"      
+    16  ( 1 ) "*"         "*"    "*"      
+    17  ( 1 ) "*"         "*"    "*"      
+
+    The model that implements forward stepping and minimizes the means squared
+    error is model 16. The test mean squared error of this model is: 4037736.564.
+    This model is comprised of the following predictors: Private, Apps, Accept,
+    Enroll, Top10perc, F. Undergrad, P. Undergrad, Room.Board, Books, Personal, PhD
+    Terminal, S.F. Ratio, perc.alumni, Expend, & Graduation Rate.
+
+- **Question 10-b**: Fit a GAM on the training data, using out-of-state
+  tuition as the response and the features selected in the previous step
+  as the predictors. Plot the results, and explain your findings.
+  - **Answer**:
+
+<!-- -->
+
+     [1] "Private"     "Apps"        "Accept"      "Enroll"      "Top10perc"  
+     [6] "Top25perc"   "F.Undergrad" "P.Undergrad" "Outstate"    "Room.Board" 
+    [11] "Books"       "Personal"    "PhD"         "Terminal"    "S.F.Ratio"  
+    [16] "perc.alumni" "Expend"      "Grad.Rate"  
+
+<img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-51-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-51-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-51-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-51-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-51-5.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-51-6.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-51-7.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-51-8.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-51-9.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-51-10.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-51-11.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-51-12.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-51-13.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-51-14.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-51-15.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-51-16.png" width="70%" style="display: block; margin: auto;" />
+
+    Not only are private universities associated with higher out-of-state tuition,
+    but there is also an increase in the number of applications accepted, the
+    percent of students from the top 10% of the high school graduating class,
+    the cost of room and board, the percent of faculty with Ph.D.'s, the percent
+    of faculty with terminal degrees, the percent of alumni who donate, the
+    instructional expenditure per student, the student faculty ratio, and the
+    graduation rate. However, increases in out-of-state tuition fees are also
+    associated with a decrease in the number of applications, the number of new
+    students enrolled, the number of fulltime undergraduates, the number of part
+    time undergraduates, estimated book costs, and estimated personal spending.
+
+- **Question 10-c**: Evaluate the model obtained on the test set, and
+  explain the results obtained.
+  - **Answer**:
+
+<!-- -->
+
+    THe test mse is: 3790761.501. This value is the sum of the squares of the
+    residual test observations divided by the number of observation in the test
+    set. The test error is higher on the test set than for the training set. This is
+    expected as the training error tends to underestimate the test error.
+
+- **Question 10-d**: For which variables, if any, is there evidence of a
+  non-linear relationship with the response?
+  - **Answer**:
+
+<!-- -->
+
+                                 Private Apps Accept Enroll Top10perc Top25perc
+    Abilene Christian University     Yes 1660   1232    721        23        52
+    Adelphi University               Yes 2186   1924    512        16        29
+    Adrian College                   Yes 1428   1097    336        22        50
+    Agnes Scott College              Yes  417    349    137        60        89
+    Alaska Pacific University        Yes  193    146     55        16        44
+    Albertson College                Yes  587    479    158        38        62
+                                 F.Undergrad P.Undergrad Outstate Room.Board Books
+    Abilene Christian University        2885         537     7440       3300   450
+    Adelphi University                  2683        1227    12280       6450   750
+    Adrian College                      1036          99    11250       3750   400
+    Agnes Scott College                  510          63    12960       5450   450
+    Alaska Pacific University            249         869     7560       4120   800
+    Albertson College                    678          41    13500       3335   500
+                                 Personal PhD Terminal S.F.Ratio perc.alumni Expend
+    Abilene Christian University     2200  70       78      18.1          12   7041
+    Adelphi University               1500  29       30      12.2          16  10527
+    Adrian College                   1165  53       66      12.9          30   8735
+    Agnes Scott College               875  92       97       7.7          37  19016
+    Alaska Pacific University        1500  76       72      11.9           2  10922
+    Albertson College                 675  67       73       9.4          11   9727
+                                 Grad.Rate
+    Abilene Christian University        60
+    Adelphi University                  56
+    Adrian College                      54
+    Agnes Scott College                 59
+    Alaska Pacific University           15
+    Albertson College                   55
+
+<img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-55-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-55-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-55-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-55-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-55-5.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-55-6.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-55-7.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-55-8.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-55-9.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-55-10.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-55-11.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-55-12.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-55-13.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-55-14.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-55-15.png" width="70%" style="display: block; margin: auto;" />
+
+    It appears from the plots above that there is evidence of a non-linear
+    relationship between Ph.D.'s, terminal degrees, and student faculty ratio with
+    respect to out-of-state tuition.
