@@ -731,7 +731,6 @@ head(college)
   
   
 ```{r}
-
 ggplot() + 
   geom_point(aes(Apps, Outstate)) 
  ggplot() +  
@@ -768,4 +767,265 @@ ggplot() +
 f_print(sprintf("It appears from the plots above that there is evidence of a non-linear relationship between Ph.D.'s, terminal degrees, and student faculty ratio with respect to out-of-state tuition."))
 ```
 
+### Question 11: In Section 7.7, it was mentioned that GAMs are generally fit using
+a backfitting approach. The idea behind backfitting is actually quite
+simple. We will now explore backfitting in the context of multiple
+linear regression.
+Suppose that we would like to perform multiple linear regression, but
+we do not have software to do so. Instead, we only have software
+to perform simple linear regression. Therefore, we take the following
+iterative approach: we repeatedly hold all but one coefficient esti-
+mate fixed at its current value, and update only that coefficient
+estimate using a simple linear regression. The process is continued un-
+til convergence—that is, until the coefficient estimates stop changing.
+View the following example:
+
+* **Question 11-a**: Generate a response Y and two predictors X~1~ and X~2~, with n = 100
+* **Question 11-b**: Initialize βˆ1 to take on a value of your choice. It does not matter
+what value you choose.
+* **Question 11-c**: Keeping ˆβ1 fixed, fit the model Y − ˆβ1X1 = β0 + β2X2 + ε.
+* **Question 11-d**: Keeping ˆβ2 fixed, fit the model Y − ˆβ2X2 = β0 + β1X1 + ε.
+* **Question 11-e**: Write a for loop to repeat (c) and (d) 1,000 times. Report the
+estimates of ˆβ0, ˆβ1, and ˆβ2 at each iteration of the for loop.
+Create a plot in which each of these values is displayed, with ˆβ0,
+ˆβ1, and ˆβ2 each shown in a different color.
+* **Question 11-f**: Compare your answer in (e) to the results of simply performing
+multiple linear regression to predict Y using X1 and X2. Use
+the abline() function to overlay those multiple linear regression
+coefficient estimates on the plot obtained in (e).
+* **Question 11-g**: On this data set, how many backfitting iterations were required
+in order to obtain a “good” approximation to the multiple re-
+gression coefficient estimates?
+
+```{r}
+set.seed(42)
+X1 <- rnorm(100)
+X2 <- rnorm(100)
+X3 <- rnorm(100)
+ε <- rnorm(100)
+β0 <- 1
+β1 <- 2
+β2 <- 3
+β3 <- 4
+Y <- β0 + β1*X1 + β2*X2 + β3*X3 + ε
+
+βˆ1<- 5
+
+df <- tibble(X1, X2, X3)
+
+βˆ0_c <- c(integer(1000))
+βˆ1_c <- c(integer(1000))
+βˆ2_c <- c(integer(1000))
+```
+
+
+```{r}
+a <- Y - βˆ1 * X1
+coefficient_list <- lm(a ~ ., data = df %>% select(everything(), -X1))$coeff
+coefficient_list
+```
+
+
+```{r}
+coefficient_list[2]
+```
+
+```{r}
+a <- Y - coefficient_list[2] * X2
+coefficient_list <- lm(a ~ X1 + X3)$coeff
+coefficient_list
+```
+
+```{r}
+coefficient_list[3]
+```
+
+```{r}
+a <- Y - coefficient_list[3] * X3
+coefficient_list <- lm(a ~ X1 + X2)$coeff
+coefficient_list
+```
+
+```{r}
+coefficient_list[2]
+```
+
+```{r}
+a <- Y - coefficient_list[2] * X1
+coefficient_list <- lm(a ~ X2 + X3)$coeff
+coefficient_list
+```
+
+
+```{r}
+for (i in 1:1000) { 
+    a <- Y - βˆ1 * X1
+    βˆ0<- lm(a ~ X2)$coef[1]
+    βˆ2 <- lm(a ~ X2)$coef[2]
+    βˆ0_c[i] <- βˆ0
+    βˆ2_c[i] <- βˆ2
+    
+    a <- Y - βˆ2 * X2
+    βˆ0<- lm(a ~ X1)$coef[1]
+    βˆ1 <- lm(a ~ X1)$coef[2]
+    βˆ0_c[i] <- βˆ0
+    βˆ1_c[i] <- βˆ1  
+
+    f_print(sprintf("Iteration %0.0f: \nβˆ0: %0.3f\nβˆ1: %0.3f\nβˆ2: %0.3f", i,  βˆ0, βˆ1, βˆ2))
+    cat("\n\n")  
+}
+```
+
+
+```{r}
+df <- tibble(Y, X1, X2)
+lm.fit <- lm(Y ~ X1 + X2, data = df)
+lm.pred <- predict(lm.fit, df)
+
+ggplot() + 
+  geom_point(aes(seq(1:1000), βˆ0_c), color = "#000000", size = .1) + 
+  geom_point(aes(seq(1:1000), βˆ1_c), color = custom_lightblue, size = .1) + 
+  geom_point(aes(seq(1:1000), βˆ2_c), color = custom_red, size = .1) + 
+  geom_hline(yintercept = lm.fit$coefficients[1], alpha = .7, color = "purple") +
+  geom_hline(yintercept = lm.fit$coefficients[2], alpha = .7, color = "purple") +
+  geom_hline(yintercept = lm.fit$coefficients[3], alpha = .7, color = "purple") +
+  labs(title = "Backfit Estimated Coefficients β0, β1, β2", x = "Backfitting Iteration", y = "Estimated Coefficients β0, β1, & β2", subtitle = "β2:Red\nβ1: Blue\nβ0: Black")
+
+
+f_print(sprintf("Coefficient Estimates β0, β1, & β2 fit to near the true value of the coefficients in the true value of ƒ in the first 2 iterations. This is observable from the value of the initial point displayed on the plot followed by the constant values of the estimated coefficients in the subsequent iterations. This is expected behavior of a model that is generated using the backfitting approach. The estimated coefficients generated from a mulitple linear regression are displayed with each backfit estimated coefficient as purple horizontal lines for reference."))
+```
+
+* **Question 12**: This problem is a continuation of the previous exercise. In an
+example with p = 100, show that one can approximate the multiple
+linear regression coefficient estimates by repeatedly performing simple
+linear regression in a backfitting procedure. How many backfitting
+iterations are required in order to obtain a “good” approximation to
+the multiple regression coefficient estimates? Create a plot to justify
+your answer.
+  * **Answer**:
+
+```{r}
+true_coefficients <- rnorm(100)
+```
+
+```{r}
+ε <- rnorm(100)
+```
+
+```{r}
+intercept <-rnorm(1)
+```
+
+
+```{r}
+set.seed(42)
+
+predictors <- matrix(data = NA, nrow = 100, ncol = 100)
+
+for (i in  seq(1:100)) {
+  for (j in seq(1:100)) {
+    predictors[i, j] <- rnorm(1)
+  }
+}
+```
+
+```{r}
+# predictors[,]
+# true_coefficients
+Y <- intercept + true_coefficients * predictors + ε
+```
+
+
+```{r}
+# βˆ1 <- 4
+# a <- Y - βˆ1 * predictors[,1]
+# βˆ2 <- lm(a ~ predictors[,-1])$coef[1]
+# 
+# 
+# for (i in seq(1, 100))
+# ###
+# 
+#     a <- Y - βˆ1 * X1
+#     βˆ0 <- lm(a ~ X2)$coef[1]
+#     βˆ2 <- lm(a ~ X2)$coef[2]
+#     βˆ0_c[i] <- βˆ0
+#     βˆ2_c[i] <- βˆ2
+#     
+#     a <- Y - βˆ2 * X2
+#     βˆ0<- lm(a ~ X1)$coef[1]
+#     βˆ1 <- lm(a ~ X1)$coef[2]
+#     βˆ0_c[i] <- βˆ0
+#     βˆ1_c[i] <- βˆ1  
+
+```
+
+```{r}
+collected_estimated_coefficients <- c(integer(100))
+```
+
+
+```{r}
+βˆ1 <- 1
+collected_intercept <- βˆ1
+# collected_estimted_coefficients[1] <- 
+a <- Y - βˆ1 * predictors[,1]
+estimated_coefficients <- lm(a ~ predictors[, -1])$coeff
+collected_estimated_coefficients[2] <- estimated_coefficients[2] # ???
+
+for(i in seq(2, 100)){
+  a <- Y - estimated_coefficients[i] * predictors[,i]
+  estimated_coefficients <- lm(a ~ predictors[, -i])$coeff
+  collected_intercept <- estimated_coefficients[1]
+  
+  if(i == 100) {
+    collected_estimated_coefficients[1] <- estimated_coefficients[2]
+  } else {
+    collected_estimated_coefficients[i+1] <- estimated_coefficients[i+1]
+  }
+} #???
+```
+
+
+```{r}
+near((true_coefficients - collected_estimated_coefficients), 0)
+near(intercept - collected_intercept, 0)
+mean((true_coefficients - collected_estimated_coefficients)^2)
+```
+```{r}
+length(collected_estimated_coefficients)
+```
+
+```{r}
+(true_coefficients - collected_estimated_coefficients)
+```
+
+
+
+```{r}
+for(i in seq(1, 100)){
+  a <- Y - estimated_coefficients[i] * predictors[,i]
+  estimated_coefficients <- lm(a ~ predictors[, -i])$coeff
+  collected_intercept <- estimated_coefficients[1]
+  
+  if(i == 100) {
+    collected_estimated_coefficients[1] <- estimated_coefficients[2]
+  } else {
+    collected_estimated_coefficients[i+1] <- estimated_coefficients[i+1]
+  }
+}
+```
+
+
+```{r}
+near((true_coefficients - collected_estimated_coefficients), 0)
+near(intercept - collected_intercept, 0)
+mean((true_coefficients - collected_estimated_coefficients)^2)
+```
+
+```{r}
+(true_coefficients - collected_estimated_coefficients)
+```
+```{r}
+intercept - collected_intercept
+```
 
