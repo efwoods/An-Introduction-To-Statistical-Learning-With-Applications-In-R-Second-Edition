@@ -305,7 +305,6 @@ anova(lm.fit1, lm.fit2, lm.fit3, lm.fit4, lm.fit5, lm.fit6, lm.fit7, lm.fit8, lm
 ```
 
 ```{r}
-
 f_print(sprintf("The model of degree %0.0f was chosen as the model with the lowest test error when tested using cross-validation.", which.min(cv.error)))
 cat("\n")
 f_print(sprintf("The model of degree 9 is a reasonable fit to the data when examined using the ANOVA test."))
@@ -574,7 +573,7 @@ summary(lm.fit)
 f_print(sprintf("The output for the fit using four degrees of freedom is observable from the summary above. The knots were selected automatically using the selected 4 degrees of freedom."))
 ```
 
-```{r message=FALSE}
+```{r}
 ggplot() + 
   geom_point(aes(dis, nox), color = custom_darkblue) + 
   geom_line(aes(dis, lm.pred), color = custom_lightblue, size = 1.5) +
@@ -586,6 +585,9 @@ ggplot() +
 plot the resulting fits and report the resulting RSS. Describe the
 results obtained.
   * **Answer**:
+  
+  
+  
 ```{r}
 max_dis <- max(dis)
 max_nox <- max(nox)
@@ -604,6 +606,7 @@ for (i in 3:10) {
   print(regression_spline)
 }
 ```
+
 * **Question 9-f**: Perform cross-validation or another approach in order to select
 the best degrees of freedom for a regression spline on this data.
 Describe your results.
@@ -937,7 +940,7 @@ cat(mean((true_coefficients[2] - βˆ2_c[i])^2))
 cat("\n\n")
 ```
 
-```{r}
+```{r echo=TRUE}
 ## Example Case of 3 variables
 set.seed(42)
 X1 <- rnorm(100)
@@ -993,7 +996,10 @@ for (i in seq(1:4)) {
   βˆ1_c[i] <- coefficient_list[2]
   βˆ2_c[i] <- coefficient_list[3]  
 }
+```
 
+
+```{r echo=FALSE}
 f_print(sprintf("After 4 iterations, it is observable that the estimated coefficients are unchanging for up to 7 significant digits."))
 cat("\n\n")
 
@@ -1034,7 +1040,7 @@ cat(mean((true_coefficients[2] - βˆ3_c[c(1:i)])^2))
 cat("\n\n")
 ```
 
-```{r}
+```{r echo=TRUE}
 # 100 Predictors: Initialization of the true function of ƒ
 set.seed(42)
 true_coefficients <- seq(1:100)

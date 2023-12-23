@@ -216,7 +216,9 @@ predictor and nox as the response.
   of freedom, and plot the resulting fits and report the resulting RSS.
   Describe the results obtained.
   - **Answer**:
-    <img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-5.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-6.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-7.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-8.png" width="70%" style="display: block; margin: auto;" />
+
+<img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-1.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-2.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-3.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-4.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-5.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-6.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-7.png" width="70%" style="display: block; margin: auto;" /><img src="Lab_7_Non-Linear_Modeling_Exercises_files/figure-gfm/unnamed-chunk-41-8.png" width="70%" style="display: block; margin: auto;" />
+
 - **Question 9-f**: Perform cross-validation or another approach in
   order to select the best degrees of freedom for a regression spline on
   this data. Describe your results.
@@ -520,6 +522,64 @@ for (i in 1:4) {
 
     0.007274926
 
+``` r
+## Example Case of 3 variables
+set.seed(42)
+X1 <- rnorm(100)
+X2 <- rnorm(100)
+X3 <- rnorm(100)
+ε <- rnorm(100)
+β0 <- 1
+β1 <- 2
+β2 <- 3
+β3 <- 4
+Y <- β0 + β1*X1 + β2*X2 + β3*X3 + ε
+
+βˆ1 <- 5
+
+predictors <- matrix(data = NA, nrow = 100, ncol = 3)
+true_coefficients <- c(integer(3))
+
+predictors[, 1] <- X1
+predictors[, 2] <- X2
+predictors[, 3] <- X3
+true_intercept <- β0
+true_coefficients[1] <- β1
+true_coefficients[2] <- β2
+true_coefficients[3] <- β3
+
+βˆ0_c <- c(integer(1000))
+βˆ1_c <- c(integer(1000))
+βˆ2_c <- c(integer(1000))
+βˆ3_c <- c(integer(1000))
+
+for (i in seq(1:4)) {
+  if (i == 1) {
+    a <- Y - βˆ1 * predictors[, 1]
+    coefficient_list <- lm(a ~ predictors[, -1])$coeff  
+  } else {
+    a <- Y - coefficient_list[2] * X1 
+    coefficient_list <- lm(a ~ predictors[, -1])$coeff
+  }
+  βˆ0_c[i] <-  coefficient_list[1]
+  βˆ2_c[i] <- coefficient_list[2]
+  βˆ3_c[i] <- coefficient_list[3]
+
+  a <- Y - coefficient_list[2] * X2
+  coefficient_list <- lm(a ~ predictors[, -2])$coeff
+  coefficient_list
+  βˆ0_c[i] <- coefficient_list[1]
+  βˆ1_c[i] <- coefficient_list[2]
+  βˆ3_c[i] <- coefficient_list[3]
+
+  a <- Y - coefficient_list[3] * X3
+  coefficient_list <- lm(a ~ predictors[, -3])$coeff
+  βˆ0_c[i] <- coefficient_list[1]
+  βˆ1_c[i] <- coefficient_list[2]
+  βˆ2_c[i] <- coefficient_list[3]  
+}
+```
+
     After 4 iterations, it is observable that the estimated coefficients are
     unchanging for up to 7 significant digits.
 
@@ -554,6 +614,89 @@ for (i in 1:4) {
     Third Coefficient MSE:
 
     0.942522
+
+``` r
+# 100 Predictors: Initialization of the true function of ƒ
+set.seed(42)
+true_coefficients <- seq(1:100)
+ε <- rnorm(100)
+intercept <-rnorm(1)
+
+predictors <- tibble(x1 = rnorm(100))
+for (i in seq(2,100)) {
+  predictors[i] <- rnorm(100)
+}
+
+for ( i in seq(1, 100)) {
+  if(i == 1) {
+    scaled_predictors <- tibble(true_coefficients[i] * predictors[i])
+  } else {
+    scaled_predictors[i] <- true_coefficients[i] * predictors[i]
+  }
+}
+
+sum_of_scaled_predictors <- predictors[1]
+for (i in seq(2,100)) {
+  sum_of_scaled_predictors <- sum_of_scaled_predictors + scaled_predictors[i]
+}
+
+Y <- intercept + sum_of_scaled_predictors + ε
+collected_estimated_coefficients <- c(integer(100))
+collected_intercept <- c(integer(1))
+Y <- Y %>% rename('a' = 'x1')
+
+βˆ1 <- 5
+
+# First Pass of Collecting Estimated Coefficients
+a <- Y - βˆ1 * predictors[1]
+df <- tibble(a, predictors[-1])
+estimated_coefficients <- lm(a ~ ., data = df)$coeff
+collected_estimated_coefficients[2] <- estimated_coefficients[2]
+collected_intercept <- estimated_coefficients[1]
+
+a <- Y - estimated_coefficients[i] * predictors[i]
+  df <- tibble(a, predictors[-i])
+  estimated_coefficients <- lm(a ~ ., data = df)$coeff
+  collected_intercept <- estimated_coefficients[1]
+  collected_estimated_coefficients[i+1] <- estimated_coefficients[i+1]
+
+for(i in seq(2, 100)){
+  a <- Y - estimated_coefficients[i] * predictors[i]
+  df <- tibble(a, predictors[-i])
+  estimated_coefficients <- lm(a ~ ., data = df)$coeff
+  collected_intercept <- estimated_coefficients[1]
+  if(i == 100) {
+    collected_estimated_coefficients[1] <- estimated_coefficients[2]
+  } else {
+    collected_estimated_coefficients[i+1] <- estimated_coefficients[i+1]
+  }
+} 
+
+first_pass_collected_estimated_coefficients <- collected_estimated_coefficients
+  
+# 10 Iterations of the backfitting procedure
+for (i in seq(1, 10)) {
+    for(i in seq(1, 100)){
+      if(i == 1) {
+        a <- Y - collected_estimated_coefficients[1] * predictors[i]
+        df <- tibble(a, predictors[-i])
+        estimated_coefficients <- lm(a ~ ., data = df)$coeff
+        collected_intercept <- estimated_coefficients[1]
+      } else {
+        a <- Y - estimated_coefficients[i] * predictors[i]
+        df <- tibble(a, predictors[-i])
+        estimated_coefficients <- lm(a ~ ., data = df)$coeff
+        collected_intercept <- estimated_coefficients[1]  
+      }
+    
+      if(i == 100) {
+        collected_estimated_coefficients[1] <- estimated_coefficients[2]
+      } else {
+        collected_estimated_coefficients[i+1] <- estimated_coefficients[i+1]
+      }
+    }
+}  
+```
 
     Intercept & Predictors 1 - 5 after a single pass of the backfitting procedure:
 
