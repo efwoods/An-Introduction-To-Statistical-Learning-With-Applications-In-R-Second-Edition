@@ -1,0 +1,122 @@
+---
+title: "Lab 8 Decision Trees Exercises"
+author: "Evan Woods"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(fig.width = 6)
+knitr::opts_chunk$set(fig.asp = 0.618)
+knitr::opts_chunk$set(out.width = "70%")
+knitr::opts_chunk$set(fig.align = "center")
+knitr::opts_chunk$set(
+  comment = ""
+)
+```
+
+```{r message=FALSE, include=FALSE}
+if(!require("MASS")) install.packages("MASS")
+if(!require("ISLR2")) install.packages("ISLR2")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("HH")) install.packages("HH") # VIF
+if(!require("e1071")) install.packages("e1071") # naiveBayes
+if(!require("class")) install.packages("class") # knn
+if(!require("formulaic")) install.packages("formulaic")
+if(!require("caTools")) install.packages("caTools")
+if(!require("caret")) install.packages("caret")
+if(!require("boot")) install.packages("boot")
+if(!require("leaps")) install.packages("leaps") # regsubsets
+if(!require("glmnet")) install.packages("glmnet") # Ridge and Lasso Regression
+if(!require("pls")) install.packages("pls") # Partial Least Squares & Principal Component Regression
+if(!require("splines")) install.packages("splines")
+if(!require("gam")) install.packages("gam")
+if(!require("akima")) install.packages("akima")
+if(!require("tree")) install.packages("tree") # Classification and Regression Trees
+if(!require("randomForest")) install.packages("randomForest")
+if(!require("gbm")) install.packages("gbm") # Boosted Trees
+if(!require("BART")) install.packages("BART")
+
+library(BART)
+library(gbm)
+library(randomForest)
+library(tree)
+library(akima)
+library(gam)
+library(splines)
+library(glmnet)
+library(pls)
+library(leaps)
+library(formulaic)
+library(class)
+library(e1071)
+library(HH)
+library(MASS)
+library(ISLR2)
+library(tidyverse)
+library(caTools)
+library(caret)
+library(boot)
+```
+
+```{r include=FALSE}
+custom_darkblue = "#1A0875"
+custom_lightblue = "#34ABEB"
+custom_red = "#a60808"
+```
+
+```{r include=FALSE}
+f_print <- function(string){
+  cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
+}
+```
+
+```{r message=FALSE}
+attach(Boston)
+set.seed(1)
+train <- sample(1:nrow(Boston), nrow(Boston)/2)
+```
+
+## Applied
+
+### Question 7: 
+In the lab, we applied random forests to the Boston data using mtry =
+6 and using ntree = 25 and ntree = 500. Create a plot displaying the
+test error resulting from random forests on this data set for a more
+comprehensive range of values for mtry and ntree. You can model
+your plot after Figure 8.10. Describe the results obtained.
+
+```{r}
+boston.test <- Boston[-train, "medv"]
+
+df <- tibble(rf_half_mse = double(500), rf_sqrt_mse = double(500), bag_mse = double(500))
+
+for (i in seq(1,500)) {
+  bag.boston <- randomForest(medv ~ ., data = Boston, subset = train, mtry = 12, ntree = i)
+  yhat.bag <- predict(bag.boston, newdata = Boston[-train, ])
+  df[i, 'bag_mse'] <- mse.bag <- mean((yhat.bag - boston.test)^2)
+  
+  rf.boston_half <- randomForest(medv ~ ., data = Boston, subset = train, mtry = 6, ntree = i)
+  yhat.rf_half <- predict(rf.boston_half, newdata = Boston[-train, ])
+  df[i, 'rf_half_mse'] <- mse.rf_half <- mean((yhat.rf_half - boston.test)^2)
+  
+  rf.boston_sqrt <- randomForest(medv ~ ., data = Boston, subset = train, mtry = 3, ntree = i)
+  yhat.rf_sqrt <- predict(rf.boston_sqrt, newdata = Boston[-train, ])
+  df[i, 'rf_sqrt_mse'] <- mse.rf_sqrt <- mean((yhat.rf_sqrt - boston.test)^2)
+}
+```
+
+
+```{r}
+ggplot(df) + 
+  geom_line(aes(seq(1, 500), rf_half_mse, color = "m = p/2")) + 
+  geom_line(aes(seq(1, 500), rf_sqrt_mse, color = "m = √p")) + 
+  geom_line(aes(seq(1, 500), bag_mse, color = "m = p")) + 
+  theme_linedraw() + 
+  labs(title = "Test MSE of Median Value of Homes", 
+       subtitle = "Modeling Methods: Random Forest & Bagging",
+       x = "Number of Trees", 
+       y = "Test Mean Squared Error", colour = "# of Predictors")
+f_print(sprintf("Of the three modeling methods, the bagged model had the highest mean squared error whereas the random forest model with the number of predictors equal to the square root of the total number of predictors had the lowest test mean squared error. This is owing to the fact that choosing a lower number of predictors per split of each internal node allows for a greater variety between trees. This leads to a decorrelation of the predictions between trees which reduces model variance and lowers the test mean squared error."))
+```

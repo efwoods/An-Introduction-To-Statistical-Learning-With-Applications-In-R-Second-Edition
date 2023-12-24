@@ -1,0 +1,281 @@
+---
+title: "Lab 8 Decision Trees"
+author: "Evan Woods"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(fig.width = 6)
+knitr::opts_chunk$set(fig.asp = 0.618)
+knitr::opts_chunk$set(out.width = "70%")
+knitr::opts_chunk$set(fig.align = "center")
+knitr::opts_chunk$set(
+  comment = ""
+)
+```
+
+```{r message=FALSE, include=FALSE}
+if(!require("MASS")) install.packages("MASS")
+if(!require("ISLR2")) install.packages("ISLR2")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("HH")) install.packages("HH") # VIF
+if(!require("e1071")) install.packages("e1071") # naiveBayes
+if(!require("class")) install.packages("class") # knn
+if(!require("formulaic")) install.packages("formulaic")
+if(!require("caTools")) install.packages("caTools")
+if(!require("caret")) install.packages("caret")
+if(!require("boot")) install.packages("boot")
+if(!require("leaps")) install.packages("leaps") # regsubsets
+if(!require("glmnet")) install.packages("glmnet") # Ridge and Lasso Regression
+if(!require("pls")) install.packages("pls") # Partial Least Squares & Principal Component Regression
+if(!require("splines")) install.packages("splines")
+if(!require("gam")) install.packages("gam")
+if(!require("akima")) install.packages("akima")
+if(!require("tree")) install.packages("tree") # Classification and Regression Trees
+if(!require("randomForest")) install.packages("randomForest")
+if(!require("gbm")) install.packages("gbm") # Boosted Trees
+if(!require("BART")) install.packages("BART")
+
+library(BART)
+library(gbm)
+library(randomForest)
+library(tree)
+library(akima)
+library(gam)
+library(splines)
+library(glmnet)
+library(pls)
+library(leaps)
+library(formulaic)
+library(class)
+library(e1071)
+library(HH)
+library(MASS)
+library(ISLR2)
+library(tidyverse)
+library(caTools)
+library(caret)
+library(boot)
+```
+
+```{r include=FALSE}
+LoadLibraries <- function() {
+if(!require("MASS")) install.packages("MASS")
+if(!require("ISLR2")) install.packages("ISLR2")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("HH")) install.packages("HH") # VIF
+if(!require("e1071")) install.packages("e1071") # naiveBayes
+if(!require("class")) install.packages("class") # knn
+if(!require("formulaic")) install.packages("formulaic")
+if(!require("caTools")) install.packages("caTools")
+if(!require("caret")) install.packages("caret")
+
+library(caret)
+library(formulaic)
+library(class)
+library(e1071)
+library(HH)
+library(MASS)
+library(ISLR2)
+library(tidyverse)
+library(caTools)
+  print("Libraries have been loaded!")
+}
+```
+
+```{r include=FALSE}
+custom_darkblue = "#1A0875"
+custom_lightblue = "#34ABEB"
+custom_red = "#a60808"
+```
+
+```{r include=FALSE}
+f_print <- function(string){
+  cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
+}
+```
+
+## Fitting Classification Trees
+```{r message=FALSE}
+attach(Carseats)
+High <- factor(ifelse(Sales <= 8, "No", "Yes"))
+Carseats <- data.frame(Carseats, High)
+```
+
+```{r}
+tree.carseats <- tree(High ~ . -Sales, data = Carseats)
+summary(tree.carseats)
+```
+```{r}
+plot(tree.carseats)
+text(tree.carseats, pretty = 0)
+```
+
+```{r}
+set.seed(7)
+train <- sample(nrow(Carseats), 200)
+Carseats.test <- Carseats[-train, ]
+High.test <- High[-train]
+tree.carseats <- tree(High ~ . -Sales, data = Carseats, subset = train)
+tree.pred <- predict(tree.carseats, Carseats.test, type = "class")
+table(tree.pred, High.test)
+
+f_print(sprintf("The test accuracy of predicted carseats sales greater than 8 using the fitted classification tree is: %0.3f%%.", ((79 + 62) / 200) * 100))
+```
+
+```{r}
+set.seed(7)
+cv.carseats <- cv.tree(tree.carseats, FUN = prune.misclass)
+names(cv.carseats)
+cv.carseats
+```
+
+```{r}
+par(mfrow = c(1,2))
+plot(cv.carseats$size, cv.carseats$dev, type = "b")
+plot(cv.carseats$k, cv.carseats$dev, type = "b")
+```
+
+
+```{r}
+prune.carseats <- prune.misclass(tree.carseats, best = 9)
+plot(prune.carseats)
+text(prune.carseats, pretty = 0)
+```
+
+```{r}
+set.seed(7)
+tree.pred <- predict(prune.carseats, Carseats.test, type = "class")
+table(tree.pred, High.test)
+f_print(sprintf("Accuracy of the best 9 terminal node tree: %0.3f%%.", ((86 + 57) / 200) * 100))
+```
+
+```{r}
+# Increasing the value of best: Larger pruned tree with lower classification accuracy
+set.seed(7)
+prune.carseats <- prune.misclass(tree.carseats, best = 14)
+plot(prune.carseats)
+text(prune.carseats, pretty = 0)
+tree.pred <- predict(prune.carseats, Carseats.test, type = "class")
+table(tree.pred, High.test)
+f_print(sprintf("Accuracy of the best 14 terminal node tree: %0.3f%%", ((77 + 62) / 200) * 100))
+```
+
+## Fitting Regression Trees
+```{r}
+set.seed(1)
+train <- sample(1:nrow(Boston), nrow(Boston)/2)
+tree.boston <- tree(medv ~ ., Boston, subset = train)
+summary(tree.boston)
+```
+```{r}
+plot(tree.boston)
+text(tree.boston, pretty = 0)
+```
+```{r}
+cv.boston <- cv.tree(tree.boston)
+plot(cv.boston$size, cv.boston$dev, type = "b")
+points(which.min(cv.boston$size), cv.boston$dev[(length(cv.boston$dev) - which.min(cv.boston$size) + 1)], col = "red", cex = 2, pch = 20)
+```
+
+```{r}
+prune.boston <- prune.tree(tree.boston, best = 5)
+plot(prune.boston)
+text(prune.boston)
+```
+
+```{r}
+yhat <- predict(tree.boston, newdata = Boston[-train, ])
+boston.test <- Boston[-train, "medv"]
+plot(yhat, boston.test)
+abline(0,1)
+f_print(sprintf("Test MSE: %0.3f.", mean((yhat - boston.test) ^2)))
+```
+
+## Bagging and Random Forest
+```{r}
+set.seed(1)
+bag.boston <- randomForest(medv ~ ., data = Boston, subset = train, mtry = 12, importance = TRUE) # mtry indicates that all 12 predictors should be considered for each split of the tree. This enables bagging.
+```
+
+```{r}
+yhat.bag <- predict(bag.boston, newdata = Boston[-train, ])
+plot(yhat.bag, boston.test)
+abline(0, 1)
+f_print(sprintf("The test MSE of the bagging model is: %0.3f.", mean((yhat.bag - boston.test) ^2)))
+```
+
+```{r}
+bag.boston <- randomForest(medv ~ ., data = Boston, subset = train, mtry = 12, ntree = 25)
+yhat.bag <- predict(bag.boston, newdata = Boston[-train, ])
+f_print(sprintf("The test MSE of the bagged model is %0.3f.", mean((yhat.bag - boston.test) ^2)))
+```
+
+```{r}
+set.seed(1)
+rf.boston <- randomForest(medv ~ ., data = Boston, subset = train, mtry = 6, importance = TRUE)
+yhat.rf <- predict(rf.boston, newdata = Boston[-train, ])
+f_print(sprintf("The test MSE of the random forest is: %0.3f.",mean((yhat.rf - boston.test)^2)))
+```
+
+
+```{r}
+importance(rf.boston) # View the importance of each variable
+```
+
+```{r}
+varImpPlot(rf.boston)
+```
+
+
+## Boosting
+```{r}
+set.seed(1)
+boost.boston <- gbm(medv ~ ., data = Boston[train, ], distribution  = "gaussian", n.trees = 5000, interaction.depth = 4) # Gaussian distribution is used for regression; Bernoulli distribution is used for classification.
+summary(boost.boston)
+```
+```{r}
+plot(boost.boston, i = "rm")
+plot(boost.boston, i = "lstat")
+```
+
+```{r}
+yhat.boost <- predict(boost.boston, newdata = Boston[-train, ], n.trees = 5000)
+f_print(sprintf("The test MSE of the boosted regression tree is: %0.3f.", mean((yhat.boost - boston.test)^2)))
+```
+
+```{r}
+# Boosting with a different value of the shrinkage parameter.
+boost.boston <- gbm(medv ~ ., data = Boston[train, ], distribution = "gaussian", n.trees = 5000, interaction.depth = 4,  shrinkage = 0.2, verbose = F)
+yhat.boost <- predict(boost.boston, newdata = Boston[-train, ], n.trees = 5000)
+f_print(sprintf("The test MSE of the boosted tree where the increased value of λ = 0.2 is: %0.3f.", mean((yhat.boost - boston.test)^2)))
+```
+
+## Bayesian Additive Regression Trees
+```{r}
+x <- Boston[, 1:12]
+y <- Boston[, "medv"]
+xtrain <- x[train, ]
+ytrain <- y[train]
+```
+
+```{r}
+xtest <- x[-train, ]
+ytest <- y[-train]
+set.seed(1)
+bartfit <- gbart(xtrain, ytrain, x.test = xtest)
+yhat.bart <- bartfit$yhat.test.mean
+f_print(sprintf("The test MSE of the BART model is: %0.3f.",mean((ytest - yhat.bart)^2)))
+```
+
+```{r}
+# How many times did each variable appear in the collection of trees?
+ord <- order(bartfit$varcount.mean, decreasing = T)
+bartfit$varcount.mean[ord]
+```
+
+
+
+

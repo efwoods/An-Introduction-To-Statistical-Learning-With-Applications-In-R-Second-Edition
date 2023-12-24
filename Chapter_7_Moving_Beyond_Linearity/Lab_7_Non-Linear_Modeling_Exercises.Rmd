@@ -267,7 +267,6 @@ create_all_custom_box_scatter_plots <- function(df, plot_types=NULL) {
 }
 ```
 
-
 ## Applied
 
 ### Question 6:

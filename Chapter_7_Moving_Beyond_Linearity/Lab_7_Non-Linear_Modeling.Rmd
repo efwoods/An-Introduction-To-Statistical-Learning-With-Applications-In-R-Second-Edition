@@ -99,6 +99,7 @@ attach(wage_df)
 fit <- lm(wage ~ poly(age, 4), data = Wage)
 coef(summary(fit))
 ```
+
 ```{r}
 fit2 <- lm(wage ~ poly(age, 4, raw = TRUE), data = Wage)
 coef(summary(fit2))
@@ -201,8 +202,6 @@ pred2 <- predict(fit2, newdata = list(age = age.grid), se = T)
 lines(age.grid, pred2$fit, col = "red", lwd = 2)
 ```
 
-
-
 ```{r}
 dim(bs(age, knots = c(25, 40, 60)))
 dim(bs(age, df = 6))
@@ -219,8 +218,6 @@ lines(fit, col = "red", lwd = 2)
 lines(fit2, col = "blue", lwd = 2)
 legend("topright", legend = c("16 DF", "6.8 DF"), col = c("red", "blue"), lty = 1, lwd = 2, cex = .8)
 ```
-
-
 
 ```{r}
 plot(age, wage, xlim = agelims, cex = .5, col = "darkgrey")
