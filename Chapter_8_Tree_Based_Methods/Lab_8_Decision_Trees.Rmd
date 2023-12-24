@@ -164,6 +164,7 @@ f_print(sprintf("Accuracy of the best 14 terminal node tree: %0.3f%%", ((77 + 62
 ```
 
 ## Fitting Regression Trees
+
 ```{r}
 set.seed(1)
 train <- sample(1:nrow(Boston), nrow(Boston)/2)
@@ -183,7 +184,7 @@ points(which.min(cv.boston$size), cv.boston$dev[(length(cv.boston$dev) - which.m
 ```{r}
 prune.boston <- prune.tree(tree.boston, best = 5)
 plot(prune.boston)
-text(prune.boston)
+text(prune.boston, pretty = 0)
 ```
 
 ```{r}
