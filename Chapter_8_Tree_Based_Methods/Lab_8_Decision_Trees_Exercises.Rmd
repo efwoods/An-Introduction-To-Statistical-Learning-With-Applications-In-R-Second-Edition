@@ -7,6 +7,8 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
 knitr::opts_chunk$set(fig.width = 6)
 knitr::opts_chunk$set(fig.asp = 0.618)
 knitr::opts_chunk$set(out.width = "70%")
@@ -96,11 +98,11 @@ for (i in seq(1,500)) {
   bag.boston <- randomForest(medv ~ ., data = Boston, subset = train, mtry = 12, ntree = i)
   yhat.bag <- predict(bag.boston, newdata = Boston[-train, ])
   df[i, 'bag_mse'] <- mse.bag <- mean((yhat.bag - boston.test)^2)
-  
+
   rf.boston_half <- randomForest(medv ~ ., data = Boston, subset = train, mtry = 6, ntree = i)
   yhat.rf_half <- predict(rf.boston_half, newdata = Boston[-train, ])
   df[i, 'rf_half_mse'] <- mse.rf_half <- mean((yhat.rf_half - boston.test)^2)
-  
+
   rf.boston_sqrt <- randomForest(medv ~ ., data = Boston, subset = train, mtry = 3, ntree = i)
   yhat.rf_sqrt <- predict(rf.boston_sqrt, newdata = Boston[-train, ])
   df[i, 'rf_sqrt_mse'] <- mse.rf_sqrt <- mean((yhat.rf_sqrt - boston.test)^2)
@@ -108,14 +110,14 @@ for (i in seq(1,500)) {
 ```
 
 ```{r}
-ggplot(df) + 
-  geom_line(aes(seq(1, 500), rf_half_mse, color = "m = p/2")) + 
-  geom_line(aes(seq(1, 500), rf_sqrt_mse, color = "m = √p")) + 
-  geom_line(aes(seq(1, 500), bag_mse, color = "m = p")) + 
-  theme_linedraw() + 
-  labs(title = "Test MSE of Median Value of Homes", 
+ggplot(df) +
+  geom_line(aes(seq(1, 500), rf_half_mse, color = "m = p/2")) +
+  geom_line(aes(seq(1, 500), rf_sqrt_mse, color = "m = √p")) +
+  geom_line(aes(seq(1, 500), bag_mse, color = "m = p")) +
+  theme_linedraw() +
+  labs(title = "Test MSE of Median Value of Homes",
        subtitle = "Modeling Methods: Random Forest & Bagging",
-       x = "Number of Trees", 
+       x = "Number of Trees",
        y = "Test Mean Squared Error", colour = "# of Predictors")
 f_print(sprintf("Of the three modeling methods, the bagged model had the highest mean squared error whereas the random forest model with the number of predictors equal to the square root of the total number of predictors had the lowest test mean squared error. This is owing to the fact that choosing a lower number of predictors per split of each internal node allows for a greater variety between trees. This leads to a decorrelation of the predictions between trees which reduces model variance and lowers the test mean squared error."))
 ```
@@ -164,7 +166,7 @@ f_print(sprintf("Pruning the tree does not reduce the test mean squared error be
 
 * **Question 8-d**: Use the bagging approach in order to analyze this data. What test MSE do you obtain? Use the importance() function to determine which variables are most important.
   * **Answer**: 
-```{r}
+```{r warning=FALSE}
 bag.carseats <- randomForest(Sales ~ ., data = Carseats, subset = train, mtry = 11, importance = TRUE)
 bag.pred <- predict(bag.carseats, newdata = Carseats[-train, ])
 f_print(sprintf("The test MSE of the bagged model of carseat sales is: %0.3f.", mean((bag.pred - Carseats[-train, "Sales"])^2)))
@@ -246,12 +248,12 @@ table(tree.pred, tree.truth)
 cat("\n")
 f_print(sprintf("The test MSE is %0.9f.",mean((as.integer(tree.pred) - as.integer(tree.truth))^2)))
 ```
-* **Question 9-f**:
+* **Question 9-f**: Apply the cv.tree() function to the traiing set in order to determine the optimal tree size.
   * **Answer**:
 ```{r}
 set.seed(42)
 tree.cv_fit <- cv.tree(tree.fit, FUN = prune.tree)
-f_print(sprintf("The optimal tree size is: %0.0f.", which.min(tree.cv_fit$size)))
+f_print(sprintf("The optimal tree size is: %0.0f.", tree.cv_fit$size[which.min(tree.cv_fit$dev)]))
 ```
 
 * **Question 9-g**: Produce a plot with tree size on the x-axis and cross-validated classification error rate on the y-axis.
@@ -263,13 +265,13 @@ plot(tree.cv_fit, type = "b")
 * **Question 9-h**: Which tree size corresponds to the lowest cross-validated classification error rate?
   * **Answer**:
 ```{r}
-f_print(sprintf("The lowest cross-validated classification error rate is of tree size: %0.0f.", which.min(tree.cv_fit$size)))
+f_print(sprintf("The lowest cross-validated classification error rate is of tree size: %0.0f.", tree.cv_fit$size[which.min(tree.cv_fit$dev)]))
 ```
 
 * **Question 9-i**: Produce a pruned tree corresponding to the optimal tree size obtained using cross-validation. If cross-validation does not lead to selection of a pruned tree, then create a pruned tree with five terminal nodes. 
   * **Answer**:
 ```{r}
-pruned.tree <- prune.tree(tree.fit, best = 5)
+pruned.tree <- prune.tree(tree.fit, best = tree.cv_fit$size[which.min(tree.cv_fit$dev)])
 ```
 
 * **Question 9-j**: Compare the training error rates between the pruned and unpruned trees. Which is higher?
@@ -280,11 +282,11 @@ tree.truth <- OJ[train, "Purchase"]
 
 
 pruned.pred <- predict(pruned.tree, newdata = OJ[train, ], type = "class")
-f_print(sprintf("The train MSE of the pruned & unpruned trees are identical. The best 5 terminal nodes was chosen for the pruned tree, where the unpruned tree optimally contains 7 terminal nodes."))
+f_print(sprintf("The train MSE of the pruned & unpruned trees are identical. The best %0.0f terminal nodes was chosen for the pruned tree.",tree.cv_fit$size[which.min(tree.cv_fit$dev)]))
 cat("\n")
-f_print(sprintf("The train MSE of the pruned tree is: %0.9f.", mean((as.integer(pruned.pred) - as.integer(tree.truth))^2)))
+f_print(sprintf("The train MSE of the pruned tree is: %0.9f.", mean((na.omit(as.integer(pruned.pred) - as.integer(tree.truth))^2))))
 cat("\n")
-f_print(sprintf("The train MSE of the unpruned tree is: %0.9f.",mean((as.integer(tree.pred) - as.integer(tree.truth))^2)))
+f_print(sprintf("The train MSE of the unpruned tree is: %0.9f.", mean(na.omit((as.integer(tree.pred) - as.integer(tree.truth)) ^2))))
 ```
 * **Question 9-k**: Compare the test error rate between the pruned and unpruned trees. Which is higher?
   * **Answer**:
@@ -406,4 +408,99 @@ bag.fit <- randomForest(Salary ~., data = hitters_transformed, subset = train, m
 bag.pred <- predict(bag.fit, hitters_transformed[-train, ])
 bag.mse <- mean((bag.pred - hitters_transformed[-train, "Salary"])^2)
 f_print(sprintf("The test MSE for the bagged approach is: %0.3f. This is the lowest testing error between the 4 approaches: bagging, linear model, ridge regression, & boosting.", bag.mse))
+```
+
+### Question 11:
+This question uses the Caravan dataset.
+
+* **Question 11-a**: Create a training set consisting of the first 1000 observations, and a test set of the remaining observations.
+  * **Answer**:
+
+```{r}
+set.seed(42)
+train <- sample(nrow(Caravan), 1000)
+test <- Caravan[-train, ]
+```
+* **Question 11-b**: Fit a boosting model to the training set with Purchase as the response and the other variables as predictors. Use 1000 trees, and a shrinkage value of 0.01. Which predictors appear to be the most important?
+  * **Answer**:
+
+```{r}
+# Refactoring purchase as an integer.
+caravan_formatted <- Caravan %>% mutate("Purchase_int" = as.integer(Purchase))
+caravan_formatted$Purchase_int[caravan_formatted$Purchase_int == 1] <- 0
+caravan_formatted$Purchase_int[caravan_formatted$Purchase_int == 2] <- 1
+caravan_formatted <- caravan_formatted %>% select(everything(), -Purchase)
+```
+
+```{r}
+# A binary classification problem. The distribution is "bernoulli".
+set.seed(42)
+boost.model <- gbm(Purchase_int ~ ., data = caravan_formatted[train, ], distribution = "bernoulli", n.trees = 1000, shrinkage = 0.01)
+summary(boost.model)
+f_print(sprintf("MSKC & ALEVEN appear to be the most important predictors."))
+```
+* **Question 11-c**: Use the boosting model to predict the response on the test data. Predict that a person will make a purchase if the estimated probability of purchase is greater than 20%. 
+  * **Answer**:
+```{r message=FALSE}
+set.seed(42)
+boost.pred <- predict(boost.model, newdata = caravan_formatted[-train, ], type = "response")
+boost.prob <- rep(0, length(boost.pred))
+boost.prob[boost.pred > 0.2] <- 1
+
+# It is significant to note that there are 5822 observations of purchases. The instructions indicate to train the model using 1000 of those observations and use the remaining observations as test. This indicates that the majority of observations will be test observations resulting in poor model performance.
+f_print(sprintf("Caravan Purchase Truth"))
+table(boost.prob, caravan_formatted[-train, "Purchase_int"])
+accuracy.boost <- ((54 + 4322) / (4322 + 54 + 224 + 222)) * 100
+purchase_percent.boost <- ((54) / (4322 + 54 + 224 + 222)) * 100
+mse.boost <- mean((boost.pred - as.integer(Caravan[-train, "Purchase"]))^2)
+```
+```{r warning=FALSE}
+# Note: The training set is approximately four times smaller than the test set. This leads to inaccurate models. 
+set.seed(42)
+glm.fit <- glm(Purchase ~ ., data = Caravan, subset = train, family = "binomial")
+glm.pred <- predict(glm.fit, data = Caravan[-train, ], type = "response")
+glm.prob <- rep(0, length(Caravan[-train, "Purchase"]))
+glm.prob[glm.pred > 0.2] <- 1
+f_print(sprintf("Caravan Purchase Truth"))
+table(glm.prob, Caravan[-train, "Purchase"])
+accuracy.glm <- ((28+4085) / (28+4085+248+461)) * 100
+purchase_percent.glm <- ((28) / (28+4085+248+461)) * 100
+mse.glm <- mean((glm.pred - as.integer(Caravan[-train, "Purchase"]))^2)
+```
+
+```{r message=FALSE}
+attach(Caravan)
+
+train.X <- cbind(MOSTYPE, MAANTHUI,MGEMOMV, MGEMLEEF,MOSHOOFD,MGODRK, MGODPR, MGODOV, MGODGE, MRELGE, MRELSA, MRELOV, MFALLEEN, MFGEKIND, MFWEKIND, MOPLHOOG, MOPLMIDD, MOPLLAAG, MBERHOOG, MBERZELF, MBERBOER, MBERMIDD, MBERARBG, MBERARBO, MSKA, MSKB1, MSKB2,
+MSKC, MSKD, MHHUUR, MHKOOP, MAUT1, MAUT2, MAUT0, MZFONDS, MZPART, MINKM30, MINK3045, MINK4575, MINK7512, MINK123M, MINKGEM, MKOOPKLA, PWAPART, PWABEDR, PWALAND, PPERSAUT, PBESAUT, PMOTSCO, PVRAAUT, PAANHANG, PTRACTOR, PWERKT, PBROM,
+PLEVEN, PPERSONG,PGEZONG, PWAOREG, PBRAND, PZEILPL, PPLEZIER, PFIETS, PINBOED, PBYSTAND, AWAPART, AWABEDR, AWALAND, APERSAUT, ABESAUT, AMOTSCO, AVRAAUT, AAANHANG, ATRACTOR, AWERKT, ABROM, ALEVEN, APERSONG, AGEZONG, AWAOREG, ABRAND, AZEILPL,
+APLEZIER, AFIETS, AINBOED, ABYSTAND)[train, ]
+
+test.X <- cbind(MOSTYPE, MAANTHUI,MGEMOMV, MGEMLEEF,MOSHOOFD,MGODRK, MGODPR, MGODOV, MGODGE, MRELGE, MRELSA, MRELOV, MFALLEEN, MFGEKIND, MFWEKIND, MOPLHOOG, MOPLMIDD, MOPLLAAG, MBERHOOG, MBERZELF, MBERBOER, MBERMIDD, MBERARBG, MBERARBO, MSKA, MSKB1, MSKB2,
+MSKC, MSKD, MHHUUR, MHKOOP, MAUT1, MAUT2, MAUT0, MZFONDS, MZPART, MINKM30, MINK3045, MINK4575, MINK7512, MINK123M, MINKGEM, MKOOPKLA, PWAPART, PWABEDR, PWALAND, PPERSAUT, PBESAUT, PMOTSCO, PVRAAUT, PAANHANG, PTRACTOR, PWERKT, PBROM,
+PLEVEN, PPERSONG,PGEZONG, PWAOREG, PBRAND, PZEILPL, PPLEZIER, PFIETS, PINBOED, PBYSTAND, AWAPART, AWABEDR, AWALAND, APERSAUT, ABESAUT, AMOTSCO, AVRAAUT, AAANHANG, ATRACTOR, AWERKT, ABROM, ALEVEN, APERSONG, AGEZONG, AWAOREG, ABRAND, AZEILPL,
+APLEZIER, AFIETS, AINBOED, ABYSTAND)[-train, ]
+
+train.Purchase <- Caravan$Purchase[train] # Labels for the training observations.
+
+set.seed(42)
+knn.pred <- knn(train.X, test.X, train.Purchase, k = 1)
+f_print(sprintf("Caravan Purchase Truth"))
+table(knn.pred, caravan_formatted$Purchase_int[-train])
+accuracy.knn <- (35 + 4145) / (35+4145+241+401) * 100
+purchase_percent.knn <- (35) / (35+4145+241+401) * 100
+```
+
+
+```{r}
+f_print(sprintf("Using the boosted model, 28 (%0.3f%%) people predicted to make a purchase actually make one.", purchase_percent.boost))
+cat("\n\n")
+f_print(sprintf("Using the logistic regression, 28 (%0.3f%%) people predicted to make a purchase actually make one.", purchase_percent.glm))
+cat("\n\n")
+f_print(sprintf("Using the knn method, 28 (%0.3f%%) people predicted to make a purchase actually make one.", purchase_percent.knn))
+cat("\n\n")
+
+f_print(sprintf("The accuracies of the boosted model, the logistic regression, and the knn method are as follows: %0.3f%%, %0.3f%%, & %0.3f%%.", accuracy.boost, accuracy.glm, accuracy.knn))
+cat("\n\n")
+f_print(sprintf("The boosted model maintains the highest accuracy of the three procedures."))
 ```

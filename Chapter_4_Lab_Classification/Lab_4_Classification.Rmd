@@ -132,6 +132,14 @@ mean(glm.pred == Direction)
 
 ```{r}
 train <- (Year < 2005) # The training set; used to train the model
+```
+
+```{r}
+Smarket[!train, ]
+```
+
+
+```{r}
 Smarket.2005 <- Smarket[!train, ] # The test set; used to create test predictions
 dim(Smarket)
 Direction.2005 <- Direction[!train] # The true values of the test set's response; Used to compare against the test set's predictions. 
@@ -167,7 +175,6 @@ table(glm.pred, Direction.2005)
 ```
 
 ```{r}
-
 mean(glm.pred == Direction.2005)
 ```
 
@@ -269,8 +276,12 @@ mean(nb.class == Direction.2005)
 nb.preds <- predict(nb.fit, Smarket.2005, type = "raw")
 nb.preds[1:5,]
 ```
-
 ## K-Nearest Neighbors
+
+```{r}
+train <- Smarket[Smarket$Year < 2005, ]
+```
+
 ```{r}
 train.X <- cbind(Lag1, Lag2)[train, ]
 test.X <- cbind(Lag1, Lag2)[!train, ]
@@ -278,21 +289,22 @@ train.Direction <- Direction[train] # labels for the training observations
 ```
 
 ```{r}
+train.X
+```
+
+
+```{r}
 length(train.X)
 typeof(train.X)
 dim(train.X)
 nrow(train.X)
-
 length(train.Direction)
-
 ```
 
 ```{r}
 attributes(train.X)
 attributes(train.Direction)
 ```
-
-
 
 ```{r}
 set.seed(1)
@@ -330,8 +342,6 @@ summary(Purchase)
 ```{r}
 length(Purchase)
 ```
-
-
 
 ```{r}
 # Give variables a mean of zero and a standard deviation of one: scale()

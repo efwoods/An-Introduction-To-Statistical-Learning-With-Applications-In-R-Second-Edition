@@ -66,9 +66,6 @@ treating the response as a quantitative variable.
 
 <!-- -->
 
-    Warning in randomForest.default(m, y, ...): invalid mtry: reset to within valid
-    range
-
     The test MSE of the bagged model of carseat sales is: 2.507.
 
                   %IncMSE IncNodePurity
@@ -173,7 +170,7 @@ treating the response as a quantitative variable.
     done 800 (out of 1100)
     done 900 (out of 1100)
     done 1000 (out of 1100)
-    time: 2s
+    time: 3s
     trcnt,tecnt: 1000,1000
 
     The test MSE of the BART model is: 1.415.
@@ -263,12 +260,13 @@ treating the response as a quantitative variable.
 
     The test MSE is 0.247663551.
 
-- **Question 9-f**:
+- **Question 9-f**: Apply the cv.tree() function to the traiing set in
+  order to determine the optimal tree size.
   - **Answer**:
 
 <!-- -->
 
-    The optimal tree size is: 7.
+    The optimal tree size is: 6.
 
 - **Question 9-g**: Produce a plot with tree size on the x-axis and
   cross-validated classification error rate on the y-axis.
@@ -280,7 +278,7 @@ treating the response as a quantitative variable.
 
 <!-- -->
 
-    The lowest cross-validated classification error rate is of tree size: 7.
+    The lowest cross-validated classification error rate is of tree size: 6.
 
 - **Question 9-i**: Produce a pruned tree corresponding to the optimal
   tree size obtained using cross-validation. If cross-validation does
@@ -293,9 +291,8 @@ treating the response as a quantitative variable.
 
 <!-- -->
 
-    The train MSE of the pruned & unpruned trees are identical. The best 5 terminal
-    nodes was chosen for the pruned tree, where the unpruned tree optimally contains
-    7 terminal nodes.
+    The train MSE of the pruned & unpruned trees are identical. The best 6 terminal
+    nodes was chosen for the pruned tree.
 
     The train MSE of the pruned tree is: 0.161214953.
 
@@ -394,3 +391,149 @@ We now use boosting to predict Salary in the Hitters dataset.
 
     The test MSE for the bagged approach is: 0.260. This is the lowest testing error
     between the 4 approaches: bagging, linear model, ridge regression, & boosting.
+
+### Question 11:
+
+This question uses the Caravan dataset.
+
+- **Question 11-a**: Create a training set consisting of the first 1000
+  observations, and a test set of the remaining observations.
+  - **Answer**:
+- **Question 11-b**: Fit a boosting model to the training set with
+  Purchase as the response and the other variables as predictors. Use
+  1000 trees, and a shrinkage value of 0.01. Which predictors appear to
+  be the most important?
+  - **Answer**:
+
+<img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-38-1.png" width="70%" style="display: block; margin: auto;" />
+
+                  var     rel.inf
+    PPERSAUT PPERSAUT 13.08470526
+    PBRAND     PBRAND  8.14673040
+    MSKC         MSKC  7.85810138
+    APERSAUT APERSAUT  5.69114919
+    MINKM30   MINKM30  5.18318326
+    MOSTYPE   MOSTYPE  4.82746577
+    MOPLHOOG MOPLHOOG  4.27735449
+    MBERMIDD MBERMIDD  4.03603960
+    MKOOPKLA MKOOPKLA  3.82383613
+    MINK3045 MINK3045  3.19052127
+    MOPLMIDD MOPLMIDD  2.93701592
+    MAUT1       MAUT1  2.71665259
+    MGODOV     MGODOV  2.48931921
+    MGODPR     MGODPR  2.25624556
+    MINK7512 MINK7512  2.07916002
+    MOPLLAAG MOPLLAAG  1.83563889
+    MFWEKIND MFWEKIND  1.71025337
+    MBERARBG MBERARBG  1.69584594
+    MSKA         MSKA  1.53785189
+    MBERHOOG MBERHOOG  1.41222656
+    MSKB2       MSKB2  1.39837269
+    MHHUUR     MHHUUR  1.36852292
+    MINK4575 MINK4575  1.15114453
+    MGODGE     MGODGE  1.11875636
+    MAUT0       MAUT0  1.08447694
+    MGEMOMV   MGEMOMV  0.95446214
+    MSKD         MSKD  0.95236911
+    MFGEKIND MFGEKIND  0.92615253
+    MRELGE     MRELGE  0.86752019
+    MOSHOOFD MOSHOOFD  0.86538425
+    PLEVEN     PLEVEN  0.86536832
+    MHKOOP     MHKOOP  0.84942179
+    MBERZELF MBERZELF  0.83723139
+    MFALLEEN MFALLEEN  0.70661223
+    MRELSA     MRELSA  0.60643974
+    MBERARBO MBERARBO  0.56463797
+    MZPART     MZPART  0.55939361
+    MAUT2       MAUT2  0.45718889
+    ALEVEN     ALEVEN  0.45650093
+    MRELOV     MRELOV  0.39525959
+    MZFONDS   MZFONDS  0.39458538
+    MINKGEM   MINKGEM  0.35362128
+    MBERBOER MBERBOER  0.33792055
+    PWAPART   PWAPART  0.28075713
+    MSKB1       MSKB1  0.26718089
+    MGEMLEEF MGEMLEEF  0.21842591
+    MGODRK     MGODRK  0.16825054
+    MAANTHUI MAANTHUI  0.10664103
+    MINK123M MINK123M  0.09810449
+    PWABEDR   PWABEDR  0.00000000
+    PWALAND   PWALAND  0.00000000
+    PBESAUT   PBESAUT  0.00000000
+    PMOTSCO   PMOTSCO  0.00000000
+    PVRAAUT   PVRAAUT  0.00000000
+    PAANHANG PAANHANG  0.00000000
+    PTRACTOR PTRACTOR  0.00000000
+    PWERKT     PWERKT  0.00000000
+    PBROM       PBROM  0.00000000
+    PPERSONG PPERSONG  0.00000000
+    PGEZONG   PGEZONG  0.00000000
+    PWAOREG   PWAOREG  0.00000000
+    PZEILPL   PZEILPL  0.00000000
+    PPLEZIER PPLEZIER  0.00000000
+    PFIETS     PFIETS  0.00000000
+    PINBOED   PINBOED  0.00000000
+    PBYSTAND PBYSTAND  0.00000000
+    AWAPART   AWAPART  0.00000000
+    AWABEDR   AWABEDR  0.00000000
+    AWALAND   AWALAND  0.00000000
+    ABESAUT   ABESAUT  0.00000000
+    AMOTSCO   AMOTSCO  0.00000000
+    AVRAAUT   AVRAAUT  0.00000000
+    AAANHANG AAANHANG  0.00000000
+    ATRACTOR ATRACTOR  0.00000000
+    AWERKT     AWERKT  0.00000000
+    ABROM       ABROM  0.00000000
+    APERSONG APERSONG  0.00000000
+    AGEZONG   AGEZONG  0.00000000
+    AWAOREG   AWAOREG  0.00000000
+    ABRAND     ABRAND  0.00000000
+    AZEILPL   AZEILPL  0.00000000
+    APLEZIER APLEZIER  0.00000000
+    AFIETS     AFIETS  0.00000000
+    AINBOED   AINBOED  0.00000000
+    ABYSTAND ABYSTAND  0.00000000
+
+    MSKC & ALEVEN appear to be the most important predictors.
+
+- **Question 11-c**: Use the boosting model to predict the response on
+  the test data. Predict that a person will make a purchase if the
+  estimated probability of purchase is greater than 20%.
+  - **Answer**:
+
+<!-- -->
+
+    Caravan Purchase Truth
+
+              
+    boost.prob    0    1
+             0 4322  222
+             1  224   54
+
+    Caravan Purchase Truth
+
+            
+    glm.prob   No  Yes
+           0 4085  248
+           1  461   28
+
+    Caravan Purchase Truth
+
+            
+    knn.pred    0    1
+         No  4145  241
+         Yes  401   35
+
+    Using the boosted model, 28 (1.120%) people predicted to make a purchase
+    actually make one.
+
+    Using the logistic regression, 28 (0.581%) people predicted to make a purchase
+    actually make one.
+
+    Using the knn method, 28 (0.726%) people predicted to make a purchase actually
+    make one.
+
+    The accuracies of the boosted model, the logistic regression, and the knn method
+    are as follows: 90.751%, 85.297%, & 86.686%.
+
+    The boosted model maintains the highest accuracy of the three procedures.
