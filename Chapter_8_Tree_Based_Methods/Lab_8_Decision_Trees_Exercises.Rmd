@@ -157,7 +157,7 @@ tree.pred <- predict(tree.fit, Carseats[-train, ])
 f_print(sprintf("The test MSE of the full tree is: %0.3f.", mean((tree.pred - Carseats[-train, "Sales"])^2)))
 cat("\n\n")
 prune.carseats_5 <- prune.tree(tree.fit, best = 5)
-prune.carseats_5_pred <- predict(cv.carseats_prune_5, newdata = Carseats[-train, ])
+prune.carseats_5_pred <- predict(prune.carseats_5, newdata = Carseats[-train, ])
 f_print(sprintf("The test MSE of the pruned tree is: %0.3f.", mean((prune.carseats_5_pred - Carseats[-train, "Sales"])^2)))
 f_print(sprintf("Pruning the tree does not reduce the test mean squared error because the optimal level of complexity of the tree is greater than the pruned tree complexity. "))
 ```
@@ -227,6 +227,183 @@ f_print(sprintf("The residual mean deviance is 0.7183. This indicates a poor fit
 ```{r}
 tree.fit
 cat("\n\n")
-f_print(sprintf("The terminal node 9 is LoyalCH < 0.035047. The mean probability of that a purchase of orange juice is of customer brand loyalty is less than 0.035047 is 0.17857, whereas the mean probability that the value is greater than 0.035047 is 0.82143."))
+f_print(sprintf("Terminal node 9 represents purchases orange juice where Citris Hill Orange juice was on special and the loyalty of the customer to Citris Hill orange juice is between 0.276142 and 0.035047. There are 112 observations at this node. The deviance is 105.10. The dominant prediction is Minute Maid Orange Juice. The mean probability that an observed purchase at this node is a purchase of Minute Maid orange juice is 0.82143. Conversely, the mean probability that an observed purchase was a purchase of Citris Hill orange juice given that Citris Hill orange juice was on special and the customer loyalty to Citris Hill orange juice is between 0.276142 and 0.035047 was 0.17857."))
+```
+* **Question 9-d**:
+  * **Answer**:
+```{r}
+plot(tree.fit)
+text(tree.fit, pretty = 0)
+f_print(sprintf("The plot shows purchases of orange juice given various levels of customer loyalty to Citris Hill and price differences between Citris Hill and Minute Maid orange juice."))
 ```
 
+* **Question 9-e**: Predict the response on the test data, and produce a confusion matrix comparing the test labels to the predicted test labels. What is the test error rate?
+  * **Answer**:
+```{r}
+tree.pred <- predict(tree.fit, newdata = OJ[-train, ], type = "class")
+tree.truth <- OJ[-train, "Purchase"]
+table(tree.pred, tree.truth)
+cat("\n")
+f_print(sprintf("The test MSE is %0.9f.",mean((as.integer(tree.pred) - as.integer(tree.truth))^2)))
+```
+* **Question 9-f**:
+  * **Answer**:
+```{r}
+set.seed(42)
+tree.cv_fit <- cv.tree(tree.fit, FUN = prune.tree)
+f_print(sprintf("The optimal tree size is: %0.0f.", which.min(tree.cv_fit$size)))
+```
+
+* **Question 9-g**: Produce a plot with tree size on the x-axis and cross-validated classification error rate on the y-axis.
+  * **Answer**:
+```{r}
+plot(tree.cv_fit, type = "b")
+```
+
+* **Question 9-h**: Which tree size corresponds to the lowest cross-validated classification error rate?
+  * **Answer**:
+```{r}
+f_print(sprintf("The lowest cross-validated classification error rate is of tree size: %0.0f.", which.min(tree.cv_fit$size)))
+```
+
+* **Question 9-i**: Produce a pruned tree corresponding to the optimal tree size obtained using cross-validation. If cross-validation does not lead to selection of a pruned tree, then create a pruned tree with five terminal nodes. 
+  * **Answer**:
+```{r}
+pruned.tree <- prune.tree(tree.fit, best = 5)
+```
+
+* **Question 9-j**: Compare the training error rates between the pruned and unpruned trees. Which is higher?
+  * **Answer**:
+```{r}
+tree.pred <- predict(tree.fit, newdata = OJ[train, ], type = "class")
+tree.truth <- OJ[train, "Purchase"]
+
+
+pruned.pred <- predict(pruned.tree, newdata = OJ[train, ], type = "class")
+f_print(sprintf("The train MSE of the pruned & unpruned trees are identical. The best 5 terminal nodes was chosen for the pruned tree, where the unpruned tree optimally contains 7 terminal nodes."))
+cat("\n")
+f_print(sprintf("The train MSE of the pruned tree is: %0.9f.", mean((as.integer(pruned.pred) - as.integer(tree.truth))^2)))
+cat("\n")
+f_print(sprintf("The train MSE of the unpruned tree is: %0.9f.",mean((as.integer(tree.pred) - as.integer(tree.truth))^2)))
+```
+* **Question 9-k**: Compare the test error rate between the pruned and unpruned trees. Which is higher?
+  * **Answer**:
+```{r}
+tree.pred <- predict(tree.fit, newdata = OJ[-train, ], type = "class")
+tree.truth <- OJ[train, "Purchase"]
+
+
+pruned.pred <- predict(pruned.tree, newdata = OJ[-train, ], type = "class")
+f_print(sprintf("The test MSE of the pruned & unpruned trees are identical. The best 5 terminal nodes was chosen for the pruned tree, where the unpruned tree optimally contains 7 terminal nodes."))
+cat("\n")
+f_print(sprintf("The test MSE of the pruned tree is: %0.9f.", mean((as.integer(pruned.pred) - as.integer(tree.truth))^2)))
+cat("\n")
+f_print(sprintf("The test MSE of the unpruned tree is: %0.9f.",mean((as.integer(tree.pred) - as.integer(tree.truth))^2)))
+```
+
+### Question 10: 
+We now use boosting to predict Salary in the Hitters dataset.
+
+* **Question 10-a**: Remove the observations for whom the salary information is unknown, and then log-transform the salaries.
+  * **Answer**:
+```{r message=FALSE}
+hitters <- na.omit(Hitters)
+hitters_transformed <- hitters %>% select(Salary, everything()) %>% mutate(Salary = log(Salary))
+attach(hitters_transformed)
+```
+
+* **Question 10-b**: Create a training set consisting of 200 observations, and a test set consisting of the remaining observations.
+  * **Answer**:
+```{r}
+train <- sample(nrow(hitters_transformed), 200)
+hitters_transformed.test <- hitters_transformed[-train, ]
+```
+
+* **Question 10-c**: Perform boosting on the training set with 1000 trees for a range of values of the shrinkage parameter λ. Produce a plot with different shrinkage values on the x-axis and the corresponding training set MSE on the y-axis.
+  * **Answer**:
+```{r message=FALSE}
+set.seed(42)
+λ_val <- seq(.001, .1, by = 0.001)
+index <- 1
+train_mse <- c(integer(100))
+for (λ in seq(.001, .1, by = .001)){
+  index <- index + 1
+  boost.model <- gbm(Salary ~ ., data = hitters_transformed[train, ], distribution = "gaussian", n.trees = 1000, interaction.depth = 4, shrinkage = λ)
+  boost.pred <- predict(boost.model, hitters_transformed[train, ])
+  boost.truth <- hitters_transformed[train, "Salary"]
+  train_mse[index] <- mean((boost.pred - boost.truth)^2)
+}
+```
+
+```{r}
+ggplot() + 
+  geom_point(aes(λ_val, train_mse[1:100])) + 
+  labs(title = "Train MSE of Prediction of the Log of Salary for Various Values of λ", x = "Value of λ", y = "Training MSE")
+```
+
+
+* **Question 10-d**: Produce a plot with different shrinkage values on the x-axis and the corresponding test MSE on the y-axis.
+  * **Answer**:
+
+```{r message=FALSE}
+set.seed(42)
+λ_val <- seq(.001, .1, by = 0.001)
+index <- 1
+test_mse <- c(integer(100))
+for (λ in seq(.001, .1, by = .001)){
+  index <- index + 1
+  boost.model <- gbm(Salary ~ ., data = hitters_transformed[train, ], distribution = "gaussian", n.trees = 1000, interaction.depth = 4, shrinkage = λ)
+  boost.pred <- predict(boost.model, hitters_transformed[-train, ])
+  boost.truth <- hitters_transformed[-train, "Salary"]
+  test_mse[index] <- mean((boost.pred - boost.truth)^2)
+}
+```
+
+```{r}
+ggplot() + 
+  geom_point(aes(λ_val, test_mse[1:100])) + 
+  labs(title = "Test MSE of Prediction of the Log of Salary for Various Values of λ", x = "Value of λ", y = "Test MSE")
+```
+
+* **Question 10-e**: Compare the test MSE of boosting to the test MSE that results from applying two of the regression approaches seen in Chapters 3 and 6.
+  * **Answer**:
+```{r}
+# gbm(Salary ~ ., data = hitters_transformed[train, ], distribution = "gaussian", n.trees = 1000, interaction.depth = 4, shrinkage = λ)
+lm.fit <- lm(Salary ~., data = hitters_transformed, subset = train)
+lm.pred <- predict(lm.fit, hitters_transformed[-train, ])
+lm.mse <- mean((lm.pred - hitters_transformed[-train, "Salary"])^2)
+```
+
+```{r}
+grid <- 10^seq(10, -2, length = 100)
+x <- model.matrix(Salary ~ ., hitters_transformed)[, -1]
+y <- hitters_transformed$Salary
+ridge.mod <- glmnet(x[train, ], y[train], alpha = 0, lambda = grid, thresh = 1e-12)
+ridge.pred <- predict(ridge.mod, s = 4, newx = x[-train, ])
+ridge.mse <- mean((ridge.pred - hitters_transformed[-train, "Salary"])^2)
+```
+  
+```{r}
+f_print(sprintf("The mean test MSE of the boosted tree is: %0.3f", mean(test_mse)))
+cat("\n\n")
+f_print(sprintf("The test MSE of the linear model is: %0.3f", lm.mse))
+cat("\n\n")
+f_print(sprintf("The test MSE of the ridge regression is: %0.3f", ridge.mse))
+cat("\n\n")
+f_print(sprintf("The test MSE of the boosted model is the lowest between the three models. The ridge regression obtained the largest test MSE whereas the linear model's test MSE was middling."))
+```
+* **Question 10-f**: Which variables appear to be the most important predictors in
+the boosted model?
+  * **Answer**:
+```{r}
+summary(boost.model)
+f_print(sprintf("The most important predictors in the boosted model are: CRBI, RBI, & Division."))
+```
+* **Question 10-g**: Now apply bagging to the training set. What is the test set MSE for this approach?
+  * **Answer**:
+```{r}
+bag.fit <- randomForest(Salary ~., data = hitters_transformed, subset = train, mtry = 19, n.tree = 500)
+bag.pred <- predict(bag.fit, hitters_transformed[-train, ])
+bag.mse <- mean((bag.pred - hitters_transformed[-train, "Salary"])^2)
+f_print(sprintf("The test MSE for the bagged approach is: %0.3f. This is the lowest testing error between the 4 approaches: bagging, linear model, ridge regression, & boosting.", bag.mse))
+```

@@ -230,7 +230,6 @@ importance(rf.boston) # View the importance of each variable
 varImpPlot(rf.boston)
 ```
 
-
 ## Boosting
 ```{r}
 set.seed(1)

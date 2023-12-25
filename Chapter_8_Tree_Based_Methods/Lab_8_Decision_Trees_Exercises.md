@@ -1,7 +1,7 @@
 Lab 8 Decision Trees Exercises
 ================
 Evan Woods
-2023-12-23
+2023-12-25
 
 ## Applied
 
@@ -22,3 +22,375 @@ plot after Figure 8.10. Describe the results obtained.
     split of each internal node allows for a greater variety between trees. This
     leads to a decorrelation of the predictions between trees which reduces model
     variance and lowers the test mean squared error.
+
+### Question 8:
+
+In the lab, a classification tree was applied to the Carseats data set
+after converting Sales into a qualitative response variable. Now we will
+seek to predict Sales using regression trees and related approaches,
+treating the response as a quantitative variable.
+
+- **Question 8-a**: Split the data into a training set and test set.
+  - **Answer**:
+- **Question 8-b**: Fit a regression tree to the training set. Plot the
+  tree, and interpret the results. What test MSE do you obtain?
+  - **Answer**:
+
+<!-- -->
+
+    The test MSE of the regression tree to predict carseat sales is: 5.664.
+
+<img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-8-1.png" width="70%" style="display: block; margin: auto;" />
+
+- **Question 8-c**: Use cross-validation in order to determine the
+  optimal level of tree complexity. Does pruning the tree improve the
+  test MSE?
+  - **Answer**:
+    <img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-9-1.png" width="70%" style="display: block; margin: auto;" />
+
+<!-- -->
+
+    The optimal level of tree complexity is: 15 with a deviation of 1552.473.
+
+    The test MSE of the full tree is: 5.664.
+
+    The test MSE of the pruned tree is: 4.842.
+
+    Pruning the tree does not reduce the test mean squared error because the optimal
+    level of complexity of the tree is greater than the pruned tree complexity.
+
+- **Question 8-d**: Use the bagging approach in order to analyze this
+  data. What test MSE do you obtain? Use the importance() function to
+  determine which variables are most important.
+  - **Answer**:
+
+<!-- -->
+
+    Warning in randomForest.default(m, y, ...): invalid mtry: reset to within valid
+    range
+
+    The test MSE of the bagged model of carseat sales is: 2.507.
+
+                  %IncMSE IncNodePurity
+    CompPrice   32.827670    273.259246
+    Income      14.120456    162.686618
+    Advertising 28.682849    200.035791
+    Population   1.303597     90.116933
+    Price       73.829441    714.126467
+    ShelveLoc   77.853383    750.311364
+    Age         21.098569    221.309924
+    Education    1.737959     63.207341
+    Urban       -2.679030     13.104488
+    US           3.189269      8.486129
+
+- **Question 8-e**: Use random forests to analyze this data. What test
+  MSE do you obtain? Use the importance() function to determine which
+  variables are most important. Describe the effect of *m*, the number
+  of variables considered at each split, on the error rate obtained.
+  - **Answer**:
+
+<!-- -->
+
+    The test MSE of the bagged model of carseat sales is: 2.455.
+
+                      %IncMSE IncNodePurity
+    CompPrice   23.6589824403     248.44416
+    Income       8.0550200926     169.59277
+    Advertising 22.5745527767     216.64321
+    Population  -0.0001122698     123.79587
+    Price       61.8208910867     669.90896
+    ShelveLoc   63.7369025051     687.41070
+    Age         17.1172136783     250.50909
+    Education   -0.4477895537      79.45842
+    Urban       -0.9847140417      16.17411
+    US           2.4371096560      18.43772
+
+    Reducing the number of of variables considered at each split by half increased
+    the test MSE by 0.03.
+
+- **Question 8-f**: Now analyze the data using BART, and report your
+  results.
+  - **Answer**:
+
+<!-- -->
+
+    *****Calling gbart: type=1
+    *****Data:
+    data:n,p,np: 320, 14, 80
+    y1,yn: 3.344281, 5.234281
+    x1,x[n*p]: 111.000000, 1.000000
+    xp1,xp[np*p]: 136.000000, 1.000000
+    *****Number of Trees: 200
+    *****Number of Cut Points: 70 ... 1
+    *****burn,nd,thin: 100,1000,1
+    *****Prior:beta,alpha,tau,nu,lambda,offset: 2,0.95,0.276302,3,0.189278,7.42572
+    *****sigma: 0.985746
+    *****w (weights): 1.000000 ... 1.000000
+    *****Dirichlet:sparse,theta,omega,a,b,rho,augment: 0,0,1,0.5,1,14,0
+    *****printevery: 100
+
+    MCMC
+    done 0 (out of 1100)
+    done 100 (out of 1100)
+    done 200 (out of 1100)
+    done 300 (out of 1100)
+    done 400 (out of 1100)
+    done 500 (out of 1100)
+    done 600 (out of 1100)
+    done 700 (out of 1100)
+    done 800 (out of 1100)
+    done 900 (out of 1100)
+    done 1000 (out of 1100)
+    time: 3s
+    trcnt,tecnt: 1000,1000
+
+    The test MSE of the BART model is: -0.010.
+
+    *****Calling gbart: type=1
+    *****Data:
+    data:n,p,np: 320, 14, 80
+    y1,yn: 3.344281, 5.234281
+    x1,x[n*p]: 111.000000, 1.000000
+    xp1,xp[np*p]: 136.000000, 1.000000
+    *****Number of Trees: 200
+    *****Number of Cut Points: 70 ... 1
+    *****burn,nd,thin: 100,1000,1
+    *****Prior:beta,alpha,tau,nu,lambda,offset: 2,0.95,0.276302,3,0.189278,7.42572
+    *****sigma: 0.985746
+    *****w (weights): 1.000000 ... 1.000000
+    *****Dirichlet:sparse,theta,omega,a,b,rho,augment: 0,0,1,0.5,1,14,0
+    *****printevery: 100
+
+    MCMC
+    done 0 (out of 1100)
+    done 100 (out of 1100)
+    done 200 (out of 1100)
+    done 300 (out of 1100)
+    done 400 (out of 1100)
+    done 500 (out of 1100)
+    done 600 (out of 1100)
+    done 700 (out of 1100)
+    done 800 (out of 1100)
+    done 900 (out of 1100)
+    done 1000 (out of 1100)
+    time: 2s
+    trcnt,tecnt: 1000,1000
+
+    The test MSE of the BART model is: 1.415.
+
+### Question 9: This problem involves the OJ data set which is part of the ISLR2 package.
+
+- **Question 9-a**: Create a training set containing a random sample of
+  800 observations, and a test set containing the remaining
+  observations.
+  - **Answer**:
+- **Question 9-b**: Fit a tree to the training data, with Purchase as
+  the response and the other variables as predictors. Use the summary()
+  function to produce summary statistics about the tree, and describe
+  the results obtained. What is the training error rate. How many
+  terminal nodes does the tree have?
+  - **Answer**:
+
+<!-- -->
+
+
+    Classification tree:
+    tree(formula = Purchase ~ ., data = OJ, subset = train)
+    Variables actually used in tree construction:
+    [1] "LoyalCH"   "PriceDiff"
+    Number of terminal nodes:  7 
+    Residual mean deviance:  0.7183 = 609.8 / 849 
+    Misclassification error rate: 0.1612 = 138 / 856 
+
+    The residual mean deviance is 0.7183. This indicates a poor fit to the training
+    data of the resulting tree. The tree has 7 terminal nodes.
+
+- **Question 9-c**: Type in the name of the tree object in order to get
+  a detailed text output. Pick one of the terminal nodes, and interpret
+  the information displayed.
+  - **Answer**:
+
+<!-- -->
+
+    node), split, n, deviance, yval, (yprob)
+          * denotes terminal node
+
+     1) root 856 1131.00 CH ( 0.62734 0.37266 )  
+       2) LoyalCH < 0.5036 369  438.90 MM ( 0.28184 0.71816 )  
+         4) LoyalCH < 0.276142 174  124.10 MM ( 0.11494 0.88506 )  
+           8) LoyalCH < 0.035047 62    0.00 MM ( 0.00000 1.00000 ) *
+           9) LoyalCH > 0.035047 112  105.10 MM ( 0.17857 0.82143 ) *
+         5) LoyalCH > 0.276142 195  266.60 MM ( 0.43077 0.56923 )  
+          10) PriceDiff < 0.05 79   79.61 MM ( 0.20253 0.79747 ) *
+          11) PriceDiff > 0.05 116  157.30 CH ( 0.58621 0.41379 ) *
+       3) LoyalCH > 0.5036 487  339.30 CH ( 0.88912 0.11088 )  
+         6) LoyalCH < 0.753545 178  194.50 CH ( 0.76404 0.23596 )  
+          12) PriceDiff < 0.145 69   94.94 CH ( 0.55072 0.44928 ) *
+          13) PriceDiff > 0.145 109   71.31 CH ( 0.89908 0.10092 ) *
+         7) LoyalCH > 0.753545 309  101.50 CH ( 0.96117 0.03883 ) *
+
+    Terminal node 9 represents purchases orange juice where Citris Hill Orange juice
+    was on special and the loyalty of the customer to Citris Hill orange juice is
+    between 0.276142 and 0.035047. There are 112 observations at this node. The
+    deviance is 105.10. The dominant prediction is Minute Maid Orange Juice. The
+    mean probability that an observed purchase at this node is a purchase of Minute
+    Maid orange juice is 0.82143. Conversely, the mean probability that an observed
+    purchase was a purchase of Citris Hill orange juice given that Citris Hill
+    orange juice was on special and the customer loyalty to Citris Hill orange juice
+    is between 0.276142 and 0.035047 was 0.17857.
+
+- **Question 9-d**:
+  - **Answer**:
+    <img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-17-1.png" width="70%" style="display: block; margin: auto;" />
+
+<!-- -->
+
+    The plot shows purchases of orange juice given various levels of customer
+    loyalty to Citris Hill and price differences between Citris Hill and Minute Maid
+    orange juice.
+
+- **Question 9-e**: Predict the response on the test data, and produce a
+  confusion matrix comparing the test labels to the predicted test
+  labels. What is the test error rate?
+  - **Answer**:
+
+<!-- -->
+
+             tree.truth
+    tree.pred  CH  MM
+           CH 103  40
+           MM  13  58
+
+    The test MSE is 0.247663551.
+
+- **Question 9-f**:
+  - **Answer**:
+
+<!-- -->
+
+    The optimal tree size is: 7.
+
+- **Question 9-g**: Produce a plot with tree size on the x-axis and
+  cross-validated classification error rate on the y-axis.
+  - **Answer**:
+    <img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-20-1.png" width="70%" style="display: block; margin: auto;" />
+- **Question 9-h**: Which tree size corresponds to the lowest
+  cross-validated classification error rate?
+  - **Answer**:
+
+<!-- -->
+
+    The lowest cross-validated classification error rate is of tree size: 7.
+
+- **Question 9-i**: Produce a pruned tree corresponding to the optimal
+  tree size obtained using cross-validation. If cross-validation does
+  not lead to selection of a pruned tree, then create a pruned tree with
+  five terminal nodes.
+  - **Answer**:
+- **Question 9-j**: Compare the training error rates between the pruned
+  and unpruned trees. Which is higher?
+  - **Answer**:
+
+<!-- -->
+
+    The train MSE of the pruned & unpruned trees are identical. The best 5 terminal
+    nodes was chosen for the pruned tree, where the unpruned tree optimally contains
+    7 terminal nodes.
+
+    The train MSE of the pruned tree is: 0.161214953.
+
+    The train MSE of the unpruned tree is: 0.161214953.
+
+- **Question 9-k**: Compare the test error rate between the pruned and
+  unpruned trees. Which is higher?
+  - **Answer**:
+
+<!-- -->
+
+    The test MSE of the pruned & unpruned trees are identical. The best 5 terminal
+    nodes was chosen for the pruned tree, where the unpruned tree optimally contains
+    7 terminal nodes.
+
+    The test MSE of the pruned tree is: 0.428738318.
+
+    The test MSE of the unpruned tree is: 0.428738318.
+
+### Question 10:
+
+We now use boosting to predict Salary in the Hitters dataset.
+
+- **Question 10-a**: Remove the observations for whom the salary
+  information is unknown, and then log-transform the salaries.
+  - **Answer**:
+- **Question 10-b**: Create a training set consisting of 200
+  observations, and a test set consisting of the remaining observations.
+  - **Answer**:
+- **Question 10-c**: Perform boosting on the training set with 1000
+  trees for a range of values of the shrinkage parameter λ. Produce a
+  plot with different shrinkage values on the x-axis and the
+  corresponding training set MSE on the y-axis.
+  - **Answer**:
+
+<img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-28-1.png" width="70%" style="display: block; margin: auto;" />
+
+- **Question 10-d**: Produce a plot with different shrinkage values on
+  the x-axis and the corresponding test MSE on the y-axis.
+  - **Answer**:
+
+<img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-30-1.png" width="70%" style="display: block; margin: auto;" />
+
+- **Question 10-e**: Compare the test MSE of boosting to the test MSE
+  that results from applying two of the regression approaches seen in
+  Chapters 3 and 6.
+  - **Answer**:
+
+<!-- -->
+
+    The mean test MSE of the boosted tree is: 0.281
+
+    The test MSE of the linear model is: 0.543
+
+    The test MSE of the ridge regression is: 0.504
+
+    The test MSE of the boosted model is the lowest between the three models. The
+    ridge regression obtained the largest test MSE whereas the linear model's test
+    MSE was middling.
+
+- **Question 10-f**: Which variables appear to be the most important
+  predictors in the boosted model?
+  - **Answer**:
+    <img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-34-1.png" width="70%" style="display: block; margin: auto;" />
+
+<!-- -->
+
+                    var    rel.inf
+    CRuns         CRuns 17.4537395
+    CHits         CHits 17.1318948
+    PutOuts     PutOuts  6.8477748
+    CWalks       CWalks  6.8431774
+    CAtBat       CAtBat  6.7140100
+    AtBat         AtBat  5.3932646
+    Walks         Walks  4.6831472
+    RBI             RBI  4.5577225
+    CRBI           CRBI  4.5070752
+    Years         Years  3.9355414
+    Hits           Hits  3.7648397
+    HmRun         HmRun  3.7207882
+    Runs           Runs  3.5159656
+    Assists     Assists  3.4221641
+    Errors       Errors  3.1238003
+    CHmRun       CHmRun  2.9861846
+    NewLeague NewLeague  0.7229865
+    League       League  0.5016458
+    Division   Division  0.1742780
+
+    The most important predictors in the boosted model are: CRBI, RBI, & Division.
+
+- **Question 10-g**: Now apply bagging to the training set. What is the
+  test set MSE for this approach?
+  - **Answer**:
+
+<!-- -->
+
+    The test MSE for the bagged approach is: 0.260. This is the lowest testing error
+    between the 4 approaches: bagging, linear model, ridge regression, & boosting.
