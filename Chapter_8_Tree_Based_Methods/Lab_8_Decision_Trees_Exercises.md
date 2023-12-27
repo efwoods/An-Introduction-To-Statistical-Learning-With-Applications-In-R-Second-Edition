@@ -1,7 +1,7 @@
 Lab 8 Decision Trees Exercises
 ================
 Evan Woods
-2023-12-25
+2023-12-26
 
 ## Applied
 
@@ -13,7 +13,7 @@ error resulting from random forests on this data set for a more
 comprehensive range of values for mtry and ntree. You can model your
 plot after Figure 8.10. Describe the results obtained.
 
-<img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-6-1.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-8-1.png" width="70%" style="display: block; margin: auto;" />
 
     Of the three modeling methods, the bagged model had the highest mean squared
     error whereas the random forest model with the number of predictors equal to the
@@ -40,13 +40,13 @@ treating the response as a quantitative variable.
 
     The test MSE of the regression tree to predict carseat sales is: 5.664.
 
-<img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-8-1.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-10-1.png" width="70%" style="display: block; margin: auto;" />
 
 - **Question 8-c**: Use cross-validation in order to determine the
   optimal level of tree complexity. Does pruning the tree improve the
   test MSE?
   - **Answer**:
-    <img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-9-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-11-1.png" width="70%" style="display: block; margin: auto;" />
 
 <!-- -->
 
@@ -138,39 +138,7 @@ treating the response as a quantitative variable.
     done 800 (out of 1100)
     done 900 (out of 1100)
     done 1000 (out of 1100)
-    time: 3s
-    trcnt,tecnt: 1000,1000
-
-    The test MSE of the BART model is: -0.010.
-
-    *****Calling gbart: type=1
-    *****Data:
-    data:n,p,np: 320, 14, 80
-    y1,yn: 3.344281, 5.234281
-    x1,x[n*p]: 111.000000, 1.000000
-    xp1,xp[np*p]: 136.000000, 1.000000
-    *****Number of Trees: 200
-    *****Number of Cut Points: 70 ... 1
-    *****burn,nd,thin: 100,1000,1
-    *****Prior:beta,alpha,tau,nu,lambda,offset: 2,0.95,0.276302,3,0.189278,7.42572
-    *****sigma: 0.985746
-    *****w (weights): 1.000000 ... 1.000000
-    *****Dirichlet:sparse,theta,omega,a,b,rho,augment: 0,0,1,0.5,1,14,0
-    *****printevery: 100
-
-    MCMC
-    done 0 (out of 1100)
-    done 100 (out of 1100)
-    done 200 (out of 1100)
-    done 300 (out of 1100)
-    done 400 (out of 1100)
-    done 500 (out of 1100)
-    done 600 (out of 1100)
-    done 700 (out of 1100)
-    done 800 (out of 1100)
-    done 900 (out of 1100)
-    done 1000 (out of 1100)
-    time: 3s
+    time: 2s
     trcnt,tecnt: 1000,1000
 
     The test MSE of the BART model is: 1.415.
@@ -238,7 +206,7 @@ treating the response as a quantitative variable.
 
 - **Question 9-d**:
   - **Answer**:
-    <img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-17-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-18-1.png" width="70%" style="display: block; margin: auto;" />
 
 <!-- -->
 
@@ -260,7 +228,7 @@ treating the response as a quantitative variable.
 
     The test MSE is 0.247663551.
 
-- **Question 9-f**: Apply the cv.tree() function to the traiing set in
+- **Question 9-f**: Apply the cv.tree() function to the training set in
   order to determine the optimal tree size.
   - **Answer**:
 
@@ -271,7 +239,7 @@ treating the response as a quantitative variable.
 - **Question 9-g**: Produce a plot with tree size on the x-axis and
   cross-validated classification error rate on the y-axis.
   - **Answer**:
-    <img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-20-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-21-1.png" width="70%" style="display: block; margin: auto;" />
 - **Question 9-h**: Which tree size corresponds to the lowest
   cross-validated classification error rate?
   - **Answer**:
@@ -328,13 +296,13 @@ We now use boosting to predict Salary in the Hitters dataset.
   corresponding training set MSE on the y-axis.
   - **Answer**:
 
-<img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-28-1.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-29-1.png" width="70%" style="display: block; margin: auto;" />
 
 - **Question 10-d**: Produce a plot with different shrinkage values on
   the x-axis and the corresponding test MSE on the y-axis.
   - **Answer**:
 
-<img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-30-1.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-31-1.png" width="70%" style="display: block; margin: auto;" />
 
 - **Question 10-e**: Compare the test MSE of boosting to the test MSE
   that results from applying two of the regression approaches seen in
@@ -356,7 +324,7 @@ We now use boosting to predict Salary in the Hitters dataset.
 - **Question 10-f**: Which variables appear to be the most important
   predictors in the boosted model?
   - **Answer**:
-    <img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-34-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-35-1.png" width="70%" style="display: block; margin: auto;" />
 
 <!-- -->
 
@@ -405,7 +373,7 @@ This question uses the Caravan dataset.
   be the most important?
   - **Answer**:
 
-<img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-38-1.png" width="70%" style="display: block; margin: auto;" />
+<img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-39-1.png" width="70%" style="display: block; margin: auto;" />
 
                   var     rel.inf
     PPERSAUT PPERSAUT 13.08470526
@@ -537,3 +505,356 @@ This question uses the Caravan dataset.
     are as follows: 90.751%, 85.297%, & 86.686%.
 
     The boosted model maintains the highest accuracy of the three procedures.
+
+### Question 12:
+
+Apply boosting, bagging, random forests, and BART to a data set of your
+choice. Be sure to fit the models on a training set and to evaluate
+their performance on a test set. How accurate are the results compared
+to simple methods like linear or logistic regression? Which of these
+approaches yields the best performance?
+
+    Using default location ~/mne_data for PHYSIONET_SLEEP...
+
+    Extracting EDF parameters from /Users/evanwoods/mne_data/physionet-sleep-data/SC4001E0-PSG.edf...
+    EDF file detected
+    Channel 'EEG Fpz-Cz' recognized as type EEG (renamed to 'Fpz-Cz').
+    Channel 'EEG Pz-Oz' recognized as type EEG (renamed to 'Pz-Oz').
+    Channel 'EOG horizontal' recognized as type EOG (renamed to 'horizontal').
+    Channel 'Resp oro-nasal' recognized as type RESP (renamed to 'oro-nasal').
+    Channel 'EMG submental' recognized as type EMG (renamed to 'submental').
+    Channel 'Temp rectal' recognized as type TEMP (renamed to 'rectal').
+    Setting channel info structure...
+    Creating raw.info structure...
+    Reading 0 ... 7949999  =      0.000 ... 79499.990 secs...
+
+<details open>
+    <summary><strong>General</strong></summary>
+    <table class="table table-hover table-striped table-sm table-responsive small">
+        <tr>
+            <th>Measurement date</th>
+            &#10;            <td>April 24, 1989  16:13:00 GMT</td>
+            &#10;        </tr>
+        <tr>
+            <th>Experimenter</th>
+            &#10;            <td>Unknown</td>
+            &#10;        </tr>
+        <tr>
+            <th>Participant</th>
+            &#10;            
+            <td>X</td>
+            &#10;            
+        </tr>
+    </table>
+    </details>
+    <details open>
+        <summary><strong>Channels</strong></summary>
+        <table class="table table-hover table-striped table-sm table-responsive small">
+            <tr>
+                <th>Digitized points</th>
+                &#10;                <td>Not available</td>
+                &#10;            </tr>
+            <tr>
+                <th>Good channels</th>
+                <td>2 EEG, 1 EOG, 1 RESP, 1 EMG, 1 Temperature, 1 Stimulus</td>
+            </tr>
+            <tr>
+                <th>Bad channels</th>
+                <td>None</td>
+            </tr>
+            <tr>
+                <th>EOG channels</th>
+                <td>horizontal</td>
+            </tr>
+            <tr>
+                <th>ECG channels</th>
+                <td>Not available</td>
+            </tr>
+        </table>
+        </details>
+        <details open>
+            <summary><strong>Data</strong></summary>
+            <table class="table table-hover table-striped table-sm table-responsive small">
+                &#10;                <tr>
+                    <th>Sampling frequency</th>
+                    <td>100.00 Hz</td>
+                </tr>
+                &#10;                
+                <tr>
+                    <th>Highpass</th>
+                    <td>0.50 Hz</td>
+                </tr>
+                &#10;                
+                <tr>
+                    <th>Lowpass</th>
+                    <td>100.00 Hz</td>
+                </tr>
+                &#10;                
+                &#10;                <tr>
+                    <th>Filenames</th>
+                    <td>SC4001E0-PSG.edf</td>
+                </tr>
+                &#10;                
+                <tr>
+                    <th>Duration</th>
+                    <td>22:04:60 (HH:MM:SS)</td>
+                </tr>
+                &#10;            </table>
+            </details>
+
+    <Annotations | 153 segments: Sleep stage 1 (24), Sleep stage 2 (40), Sleep ...>
+
+<details open>
+    <summary><strong>General</strong></summary>
+    <table class="table table-hover table-striped table-sm table-responsive small">
+        <tr>
+            <th>Measurement date</th>
+            &#10;            <td>April 24, 1989  16:13:00 GMT</td>
+            &#10;        </tr>
+        <tr>
+            <th>Experimenter</th>
+            &#10;            <td>Unknown</td>
+            &#10;        </tr>
+        <tr>
+            <th>Participant</th>
+            &#10;            
+            <td>X</td>
+            &#10;            
+        </tr>
+    </table>
+    </details>
+    <details open>
+        <summary><strong>Channels</strong></summary>
+        <table class="table table-hover table-striped table-sm table-responsive small">
+            <tr>
+                <th>Digitized points</th>
+                &#10;                <td>Not available</td>
+                &#10;            </tr>
+            <tr>
+                <th>Good channels</th>
+                <td>2 EEG, 1 EOG, 1 RESP, 1 EMG, 1 Temperature, 1 Stimulus</td>
+            </tr>
+            <tr>
+                <th>Bad channels</th>
+                <td>None</td>
+            </tr>
+            <tr>
+                <th>EOG channels</th>
+                <td>horizontal</td>
+            </tr>
+            <tr>
+                <th>ECG channels</th>
+                <td>Not available</td>
+            </tr>
+        </table>
+        </details>
+        <details open>
+            <summary><strong>Data</strong></summary>
+            <table class="table table-hover table-striped table-sm table-responsive small">
+                &#10;                <tr>
+                    <th>Sampling frequency</th>
+                    <td>100.00 Hz</td>
+                </tr>
+                &#10;                
+                <tr>
+                    <th>Highpass</th>
+                    <td>0.50 Hz</td>
+                </tr>
+                &#10;                
+                <tr>
+                    <th>Lowpass</th>
+                    <td>100.00 Hz</td>
+                </tr>
+                &#10;                
+                &#10;                <tr>
+                    <th>Filenames</th>
+                    <td>SC4001E0-PSG.edf</td>
+                </tr>
+                &#10;                
+                <tr>
+                    <th>Duration</th>
+                    <td>22:04:60 (HH:MM:SS)</td>
+                </tr>
+                &#10;            </table>
+            </details>
+
+    Used Annotations descriptions: ['Sleep stage 1', 'Sleep stage 2', 'Sleep stage 3', 'Sleep stage 4', 'Sleep stage R', 'Sleep stage W']
+
+<img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-46-1.png" width="70%" style="display: block; margin: auto;" />
+
+    Not setting metadata
+    841 matching events found
+    No baseline correction applied
+    0 projection items activated
+
+    <Epochs |  841 events (good & bad), 0 – 29.99 s, baseline off, ~11 kB, data not loaded,
+     'Sleep stage W': 188
+     'Sleep stage 1': 58
+     'Sleep stage 2': 250
+     'Sleep stage 3/4': 220
+     'Sleep stage R': 125>
+
+    Extracting EDF parameters from /Users/evanwoods/mne_data/physionet-sleep-data/SC4011E0-PSG.edf...
+    EDF file detected
+    Channel 'EEG Fpz-Cz' recognized as type EEG (renamed to 'Fpz-Cz').
+    Channel 'EEG Pz-Oz' recognized as type EEG (renamed to 'Pz-Oz').
+    Channel 'EOG horizontal' recognized as type EOG (renamed to 'horizontal').
+    Channel 'Resp oro-nasal' recognized as type RESP (renamed to 'oro-nasal').
+    Channel 'EMG submental' recognized as type EMG (renamed to 'submental').
+    Channel 'Temp rectal' recognized as type TEMP (renamed to 'rectal').
+    Setting channel info structure...
+    Creating raw.info structure...
+    Reading 0 ... 8405999  =      0.000 ... 84059.990 secs...
+
+    <Annotations | 125 segments: Sleep stage 1 (33), Sleep stage 2 (40), Sleep ...>
+
+    <RawEDF | SC4011E0-PSG.edf, 7 x 8406000 (84060.0 s), ~448.9 MB, data loaded>
+
+    Used Annotations descriptions: ['Sleep stage 1', 'Sleep stage 2', 'Sleep stage 3', 'Sleep stage 4', 'Sleep stage R', 'Sleep stage W']
+
+    Not setting metadata
+    1103 matching events found
+    No baseline correction applied
+    0 projection items activated
+
+    <Epochs |  1103 events (good & bad), 0 – 29.99 s, baseline off, ~11 kB, data not loaded,
+     'Sleep stage W': 157
+     'Sleep stage 1': 109
+     'Sleep stage 2': 562
+     'Sleep stage 3/4': 105
+     'Sleep stage R': 170>
+
+    Using data from preloaded Raw for 58 events and 3000 original time points ...
+    0 bad epochs dropped
+        Using multitaper spectrum estimation with 7 DPSS windows
+    Averaging across epochs...
+    <Figure size 1200x740 with 2 Axes>
+    Using data from preloaded Raw for 250 events and 3000 original time points ...
+    0 bad epochs dropped
+        Using multitaper spectrum estimation with 7 DPSS windows
+    Averaging across epochs...
+    <Figure size 1200x740 with 2 Axes>
+    Using data from preloaded Raw for 220 events and 3000 original time points ...
+    0 bad epochs dropped
+        Using multitaper spectrum estimation with 7 DPSS windows
+    Averaging across epochs...
+    <Figure size 1200x740 with 2 Axes>
+    Using data from preloaded Raw for 125 events and 3000 original time points ...
+    0 bad epochs dropped
+        Using multitaper spectrum estimation with 7 DPSS windows
+    Averaging across epochs...
+    <Figure size 1200x740 with 2 Axes>
+    Using data from preloaded Raw for 188 events and 3000 original time points ...
+    0 bad epochs dropped
+        Using multitaper spectrum estimation with 7 DPSS windows
+    Averaging across epochs...
+    <Figure size 1200x740 with 2 Axes>
+    [Text(0.5, 1.0, 'Alice'), Text(0.5, 0, 'Frequency (Hz)')]
+    Using data from preloaded Raw for 109 events and 3000 original time points ...
+    0 bad epochs dropped
+        Using multitaper spectrum estimation with 7 DPSS windows
+    Averaging across epochs...
+    <Figure size 1200x740 with 2 Axes>
+    Using data from preloaded Raw for 562 events and 3000 original time points ...
+    0 bad epochs dropped
+        Using multitaper spectrum estimation with 7 DPSS windows
+    Averaging across epochs...
+    <Figure size 1200x740 with 2 Axes>
+    Using data from preloaded Raw for 105 events and 3000 original time points ...
+    0 bad epochs dropped
+        Using multitaper spectrum estimation with 7 DPSS windows
+    Averaging across epochs...
+    <Figure size 1200x740 with 2 Axes>
+    Using data from preloaded Raw for 170 events and 3000 original time points ...
+    0 bad epochs dropped
+        Using multitaper spectrum estimation with 7 DPSS windows
+    Averaging across epochs...
+    <Figure size 1200x740 with 2 Axes>
+    Using data from preloaded Raw for 157 events and 3000 original time points ...
+    0 bad epochs dropped
+        Using multitaper spectrum estimation with 7 DPSS windows
+    Averaging across epochs...
+    <Figure size 1200x740 with 2 Axes>
+    [Text(0.5, 1.0, 'Bob'), Text(0.5, 0, 'Frequency (Hz)')]
+
+    [Text(0, 0.5, 'µV²/Hz (dB)')]
+
+    <matplotlib.legend.Legend object at 0x2aef7b490>
+
+<img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-49-3.png" width="70%" style="display: block; margin: auto;" />
+
+    Using data from preloaded Raw for 841 events and 3000 original time points ...
+    0 bad epochs dropped
+        Using multitaper spectrum estimation with 7 DPSS windows
+    Pipeline(steps=[('functiontransformer',
+                     FunctionTransformer(func=<function eeg_power_band at 0x2aef8dd00>)),
+                    ('randomforestclassifier',
+                     RandomForestClassifier(random_state=42))])
+
+    Using data from preloaded Raw for 1103 events and 3000 original time points ...
+    0 bad epochs dropped
+        Using multitaper spectrum estimation with 7 DPSS windows
+
+    Accuracy score: 0.6844968268359021
+
+    [[155   1   0   1   0]
+     [ 71  26   7   1   4]
+     [ 48  34 435  25  20]
+     [  0   0   4 101   0]
+     [ 51  63  18   0  38]]
+
+                     precision    recall  f1-score   support
+
+      Sleep stage W       0.48      0.99      0.64       157
+      Sleep stage 1       0.21      0.24      0.22       109
+      Sleep stage 2       0.94      0.77      0.85       562
+    Sleep stage 3/4       0.79      0.96      0.87       105
+      Sleep stage R       0.61      0.22      0.33       170
+
+           accuracy                           0.68      1103
+          macro avg       0.61      0.64      0.58      1103
+       weighted avg       0.74      0.68      0.68      1103
+
+    Using data from preloaded Raw for 841 events and 3000 original time points ...
+        Using multitaper spectrum estimation with 7 DPSS windows
+
+    Using data from preloaded Raw for 1103 events and 3000 original time points ...
+        Using multitaper spectrum estimation with 7 DPSS windows
+
+
+    Call:
+    lm(formula = sleep_stage ~ ., data = train)
+
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -3.0877 -0.5699 -0.0926  0.3537  3.2902 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)    -9672       2084  -4.642 4.01e-06 ***
+    delta1       1258939     240998   5.224 2.22e-07 ***
+    delta2        -97799      77418  -1.263    0.207    
+    theta1       1259234     240982   5.225 2.20e-07 ***
+    theta2        -97861      77415  -1.264    0.207    
+    alpha1        943513     180728   5.221 2.26e-07 ***
+    alpha2        -73769      58055  -1.271    0.204    
+    sigma1       1259940     240943   5.229 2.16e-07 ***
+    sigma2       -101270      77342  -1.309    0.191    
+    beta1        4569486     875215   5.221 2.25e-07 ***
+    beta2        -356090     281456  -1.265    0.206    
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 1.049 on 830 degrees of freedom
+    Multiple R-squared:  0.4025,    Adjusted R-squared:  0.3953 
+    F-statistic: 55.91 on 10 and 830 DF,  p-value: < 2.2e-16
+
+    The mse of the randomforest with 500 trees is: 2.335.
+
+    The mse of the boosted model is: 2.547.
+
+    The mse of the bagged model is: 2.424.
+
+    The mse of the linear model is: 2.634.
+
+    The mse of the random forest created from 100 estimators is: 1.739.
