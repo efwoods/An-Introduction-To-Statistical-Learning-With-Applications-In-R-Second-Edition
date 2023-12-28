@@ -745,7 +745,6 @@ acc = accuracy_score(y_test, y_pred)
 
 print("Accuracy score: {}".format(acc))
 ```
-
 ```{python}
 print(confusion_matrix(y_test, y_pred))
 ```
@@ -806,7 +805,6 @@ bag.mse <- mean((bag.pred - test$sleep_stage)^2)
 # f_print(sprintf("The test MSE for the bagged approach is: %0.3f.", bag.mse))
 ```
 
-
 ```{r}
 set.seed(42)
 rf.fit <- randomForest(sleep_stage ~., data = train, mtry = 5, n.tree = 500)
@@ -824,17 +822,34 @@ mse.boost <- mean((boost.pred - train$sleep_stage)^2)
 ```
 
 ```{r}
-f_print(sprintf("The mse of the randomforest with 500 trees is: %0.3f.", rf.mse))
-cat("\n\n")
-f_print(sprintf("The mse of the boosted model is: %0.3f.", mse.boost))
-cat("\n\n")
-f_print(sprintf("The mse of the bagged model is: %0.3f.", bag.mse))
-cat("\n\n")
-f_print(sprintf("The mse of the linear model is: %0.3f.", lm.mse))
-cat("\n\n")
-f_print(sprintf("The mse of the random forest created from 100 estimators is: %0.3f.", rf_pipeline.mse))
+train <- create_tibble_from_eeg_power_band(py$y_train, py$x_train)
+test <- create_tibble_from_eeg_power_band(py$y_test, py$x_test)
 ```
 
+```{r}
+set.seed(42)
 
+typeof(train[,2:length(train)])
+xtrain_sleep <- train %>% select(everything(), -sleep_stage)
 
+ytrain_sleep <- train %>% select(sleep_stage)
 
+xtest_sleep <- test %>% select(everything(), -sleep_stage)
+ytest_sleep <- test %>% select(sleep_stage)
+bart.fit <- gbart(x.train = data.matrix(xtrain_sleep), y.train = data.matrix(ytrain_sleep), x.test = data.matrix(xtest_sleep))
+f_print(sprintf("The test MSE of the BART model is: %0.3f.", mean((ytest - bart.fit$yhat.test.mean)^2)))
+```
+
+```{r}
+f_print(sprintf("The test MSE of the randomforest with 500 trees is: %0.3f.", rf.mse))
+cat("\n\n")
+f_print(sprintf("The test MSE of the boosted model is: %0.3f.", mse.boost))
+cat("\n\n")
+f_print(sprintf("The test MSE of the bagged model is: %0.3f.", bag.mse))
+cat("\n\n")
+f_print(sprintf("The test MSE of the linear model is: %0.3f.", lm.mse))
+cat("\n\n")
+f_print(sprintf("The test MSE of the random forest created from 100 estimators is: %0.3f.", rf_pipeline.mse))
+cat("\n\n")
+f_print(sprintf("The test MSE of the BART model is: %0.3f.", mean((ytest - bart.fit$yhat.test.mean)^2)))
+```

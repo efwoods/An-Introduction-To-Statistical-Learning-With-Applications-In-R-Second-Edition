@@ -1,7 +1,7 @@
 Lab 8 Decision Trees Exercises
 ================
 Evan Woods
-2023-12-26
+2023-12-27
 
 ## Applied
 
@@ -138,7 +138,7 @@ treating the response as a quantitative variable.
     done 800 (out of 1100)
     done 900 (out of 1100)
     done 1000 (out of 1100)
-    time: 2s
+    time: 3s
     trcnt,tecnt: 1000,1000
 
     The test MSE of the BART model is: 1.415.
@@ -779,7 +779,7 @@ approaches yields the best performance?
 
     [Text(0, 0.5, 'µV²/Hz (dB)')]
 
-    <matplotlib.legend.Legend object at 0x2aef7b490>
+    <matplotlib.legend.Legend object at 0x2bad5e550>
 
 <img src="Lab_8_Decision_Trees_Exercises_files/figure-gfm/unnamed-chunk-49-3.png" width="70%" style="display: block; margin: auto;" />
 
@@ -787,7 +787,7 @@ approaches yields the best performance?
     0 bad epochs dropped
         Using multitaper spectrum estimation with 7 DPSS windows
     Pipeline(steps=[('functiontransformer',
-                     FunctionTransformer(func=<function eeg_power_band at 0x2aef8dd00>)),
+                     FunctionTransformer(func=<function eeg_power_band at 0x2cefc5d00>)),
                     ('randomforestclassifier',
                      RandomForestClassifier(random_state=42))])
 
@@ -849,12 +849,48 @@ approaches yields the best performance?
     Multiple R-squared:  0.4025,    Adjusted R-squared:  0.3953 
     F-statistic: 55.91 on 10 and 830 DF,  p-value: < 2.2e-16
 
-    The mse of the randomforest with 500 trees is: 2.335.
+    [1] "list"
 
-    The mse of the boosted model is: 2.547.
+    *****Calling gbart: type=1
+    *****Data:
+    data:n,p,np: 841, 10, 841
+    y1,yn: -2.042806, -2.042806
+    x1,x[n*p]: 0.007524, 0.000685
+    xp1,xp[np*p]: 0.007866, 0.000072
+    *****Number of Trees: 200
+    *****Number of Cut Points: 100 ... 100
+    *****burn,nd,thin: 100,1000,1
+    *****Prior:beta,alpha,tau,nu,lambda,offset: 2,0.95,0.0707107,3,4.96619e-31,3.04281
+    *****sigma: 0.000000
+    *****w (weights): 1.000000 ... 1.000000
+    *****Dirichlet:sparse,theta,omega,a,b,rho,augment: 0,0,1,0.5,1,10,0
+    *****printevery: 100
 
-    The mse of the bagged model is: 2.424.
+    MCMC
+    done 0 (out of 1100)
+    done 100 (out of 1100)
+    done 200 (out of 1100)
+    done 300 (out of 1100)
+    done 400 (out of 1100)
+    done 500 (out of 1100)
+    done 600 (out of 1100)
+    done 700 (out of 1100)
+    done 800 (out of 1100)
+    done 900 (out of 1100)
+    done 1000 (out of 1100)
+    time: 4s
+    trcnt,tecnt: 1000,1000
 
-    The mse of the linear model is: 2.634.
+    The test MSE of the BART model is: 37.062.
 
-    The mse of the random forest created from 100 estimators is: 1.739.
+    The test MSE of the randomforest with 500 trees is: 2.335.
+
+    The test MSE of the boosted model is: 2.547.
+
+    The test MSE of the bagged model is: 2.424.
+
+    The test MSE of the linear model is: 2.634.
+
+    The test MSE of the random forest created from 100 estimators is: 1.739.
+
+    The test MSE of the BART model is: 37.062.
