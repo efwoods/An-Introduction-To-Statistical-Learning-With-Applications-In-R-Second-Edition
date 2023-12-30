@@ -8,3 +8,4 @@ My Work on "An Introduction to Statistical Learning with Applications in R Secon
 - [Lab 6: Linear Models and Regularization Methods](./Chapter_6_Lab_Linear_Models_and_Regularization_Methods/Lab_6_Linear_Models_and_Regularization_Methods_Exercises.md)
 - [Lab 7: Moving Beyond Linearity](Chapter_7_Moving_Beyond_Linearity/Lab_7_Non-Linear_Modeling_Exercises.md)
 - [Lab 8: Tree-Based Methods](Chapter_8_Tree_Based_Methods/Lab_8_Decision_Trees_Exercises.md)
+- [Lab 9: Support Vector Machines](Chapter_9_Support_Vector_Machines/Lab_9_Support_Vector_Machines_Exercises.md)
