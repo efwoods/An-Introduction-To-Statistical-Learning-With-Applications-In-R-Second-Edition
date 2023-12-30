@@ -1,0 +1,828 @@
+---
+title: "Lab 9 Support Vector Machines Exercises"
+author: "Evan Woods"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(fig.width = 6)
+knitr::opts_chunk$set(fig.asp = 0.618)
+knitr::opts_chunk$set(out.width = "70%")
+knitr::opts_chunk$set(fig.align = "center")
+knitr::opts_chunk$set(
+  comment = ""
+)
+```
+
+```{r message=FALSE, include=FALSE}
+if(!require("MASS")) install.packages("MASS")
+if(!require("ISLR2")) install.packages("ISLR2")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("HH")) install.packages("HH") # VIF
+if(!require("e1071")) install.packages("e1071") # naiveBayes
+if(!require("class")) install.packages("class") # knn
+if(!require("formulaic")) install.packages("formulaic")
+if(!require("caTools")) install.packages("caTools")
+if(!require("caret")) install.packages("caret")
+if(!require("boot")) install.packages("boot")
+if(!require("leaps")) install.packages("leaps") # regsubsets
+if(!require("glmnet")) install.packages("glmnet") # Ridge and Lasso Regression
+if(!require("pls")) install.packages("pls") # Partial Least Squares & Principal Component Regression
+if(!require("splines")) install.packages("splines")
+if(!require("gam")) install.packages("gam")
+if(!require("akima")) install.packages("akima")
+if(!require("tree")) install.packages("tree") # Classification and Regression Trees
+if(!require("randomForest")) install.packages("randomForest")
+if(!require("gbm")) install.packages("gbm") # Boosted Trees
+if(!require("BART")) install.packages("BART")
+if(!require("reticulate")) install.packages("reticulate") # Use python objects in R
+if(!require("ROCR")) install.packages("ROCR")
+
+library(ROCR)
+library(reticulate)
+library(BART)
+library(gbm)
+library(randomForest)
+library(tree)
+library(akima)
+library(gam)
+library(splines)
+library(glmnet)
+library(pls)
+library(leaps)
+library(formulaic)
+library(class)
+library(e1071)
+library(HH)
+library(MASS)
+library(ISLR2)
+library(tidyverse)
+library(caTools)
+library(caret)
+library(boot)
+```
+
+```{r include=FALSE}
+custom_darkblue = "#1A0875"
+custom_lightblue = "#34ABEB"
+custom_red = "#a60808"
+```
+
+```{r include=FALSE}
+f_print <- function(string){
+  cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
+}
+```
+
+```{r include=FALSE}
+# ROC Curves
+rocplot <- function(pred, truth, ...) {
+  predob <- prediction(pred, truth)
+  perf <- performance(predob, "tpr", "fpr")
+  plot(perf, ...)
+}
+```
+
+
+## Applied
+### Question 4
+Generate a simulated two-class data set with 100 observations and two features in which there is a visible but non-linear separation between the two classes. Show that in this setting, a support vector machine with a polynomial kernel (with degree greater than 1) or a radial kernel will outperform a support vector classifier on the training data. Which technique performs best on the test data? Make plots and report training and test error rates in order to back up your assertions.
+
+```{r}
+set.seed(42)
+
+# Training Data
+train <- sample(100, 50)
+x <- matrix(rnorm(100 * 2), ncol = 2)
+x[1:50, ] <- x[1:50] + 5
+x[51:75, ] <- x[51:75, ] - 5
+y <- c(rep(1,75), rep(2,25))
+dat <- data.frame(x = x, y = as.factor(y))
+plot(x, col = (3-y))
+```
+
+```{r}
+# Test Data
+set.seed(42)
+xtest <- matrix(rnorm(100 * 2), ncol = 2)
+xtest[1:50, ] <- xtest[1:50] + 5
+xtest[51:75, ] <- xtest[51:75, ] - 5
+ytest <- sample(c(1,2), 100, rep = TRUE)
+testdat <- data.frame(x = xtest, y = as.factor(ytest))
+```
+
+```{r}
+set.seed(1)
+# Support vector classifier
+svm.fit <- svm(y ~ ., data = dat, kernel = "linear", cost = 1, scale = FALSE, decision.values = T)
+
+# Support vector machine (polynomial fit)
+svm.fit_poly <- svm(y ~ ., data = dat, kernel = "polynomial", cost = 1, degree = 2, decision.values = T)
+
+# Support vector machine (radial fit)
+svm.fit_radial <- svm(y ~ ., data = dat, kernel = "radial", cost = 1, gamma = .5, decision.values = T)
+
+plot(svm.fit, dat)
+
+plot(svm.fit_poly, dat)
+
+plot(svm.fit_radial, dat)
+
+svm_fit.pred <- predict(svm.fit, testdat)
+svm_fit.table <- table(predict = svm_fit.pred, truth = testdat$y)
+svm_fit.table
+svm_fit.acc <- ((svm_fit.table[1] + svm_fit.table[4]) / sum(svm_fit.table)) * 100
+f_print(sprintf("The accuracy of the support vector classifier fit on the data with a non-linear boundary is %0.0f%%.", svm_fit.acc))
+cat("\n\n")
+
+svm_fit_poly.pred <- predict(svm.fit_poly, testdat)
+svm_fit_poly.table <- table(predict = svm_fit_poly.pred, truth = testdat$y)
+svm_fit_poly.table
+svm_fit_poly.acc <- ((svm_fit_poly.table[1] + svm_fit_poly.table[4]) / sum(svm_fit_poly.table)) * 100
+f_print(sprintf("The accuracy of the support vector machine implementing a polynomial kernel on the test data with a non-linear boundary is %0.0f%%.", svm_fit_poly.acc))
+cat("\n\n")
+
+svm_fit_radial.pred <- predict(svm.fit_radial, testdat)
+svm_fit_radial.table <- table(predict = svm_fit_radial.pred, truth = testdat$y)
+svm_fit_radial.table
+svm_fit_radial.acc <- ((svm_fit_radial.table[1] + svm_fit_radial.table[4]) / sum(svm_fit_radial.table)) * 100
+f_print(sprintf("The accuracy of the support vector machine with a radial kernel fit on test data with a non-linear boundary is %0.0f%%.", svm_fit_radial.acc))
+cat("\n\n")
+
+```
+
+
+```{r}
+# Performing cross-validation using tune() to select the best choice of γ and cost for an SVM with a radial kernel
+set.seed(42)
+tune.out <- tune(
+  svm, y ~ ., 
+  data = dat, 
+  kernel = "radial", 
+  ranges = list(
+    cost = c(0.1, 1, 10 , 100, 1000),
+    gamma = c(0.5, 1, 2, 3, 4)
+  )
+)
+summary(tune.out)
+```
+
+
+```{r}
+# Training
+fitted <- attributes(
+  predict(svm.fit_radial, dat, decision.values = TRUE)
+  )$decision.values
+
+par(mfrow = c(1, 2))
+rocplot(-fitted, dat$y, main = "Training Data")
+
+fitted <- attributes(
+  predict(svm.fit, dat, decision.values = T)
+  )$decision.values
+
+rocplot(-fitted, dat$y, add = T, col = "red")
+
+# Test:
+fitted <- attributes(
+predict(svm.fit_radial , testdat, decision.values = T)
+)$decision.values
+
+rocplot(-fitted , testdat$y, main = "Test Data")
+
+fitted <- attributes(
+predict(svm.fit , testdat, decision.values = T)
+)$decision.values
+
+rocplot(-fitted , testdat$y, add = T, col = "red")
+
+f_print(sprintf("The support vector machine is shown in black and the support vector classifier is show in red above. The support vector machine fits perfectly to the training data whereas the support vector classifier is a poor fit to the training data. This is intuitive as the data is non-linear where no hyperplane will evenly segregate both classes of data. After tuning the support vector machine, there is a modest improvement shown in the ROC curve with respect to the support vector classifier. The support vector classifier's accuracy is not much better than a random classifier."))
+```
+
+### Question 5:
+We have seen that we can fit an SVM with a non-linear kernel in order to perform classification using a non-linear decision boundary. We will now see that we can also obtain a non-linear decision boundary by performing logistic regression using non-linear transformations of the features. 
+
+* **Question 5-a**: Generate a data set with n = 500 and p = 2, such that the observations belong to two classes with quadratic decision boundary between them. 
+  * **Answer**:
+```{r}
+x1 <- runif(500) - 0.5
+x2 <- runif(500) - 0.5
+y <- 1 * (x1^2 - x2^2 > 0)
+```
+
+* **Question 5-b**: Plot the observations, colored according to their class labels. Your plot should display X~1~ on the x-axis and X~2~ on the y-axis.
+  * **Answer**:
+```{r}
+dat = tibble(x1, x2, y)
+```
+
+```{r}
+plot(dat$x1, dat$x2, col = 3 - dat$y, xlab = expression(X[1]), ylab = expression(X[2]), main = "Figure 1: \nPlot of 500 Points with a Quadratic Decision Boundary")
+```
+
+* **Question 5-c**: Fit a logistic regression model to the data, using X~1~ and X~2~ as predictors.
+  * **Answer**: 
+```{r}
+five.fit <- glm(y ~ ., data = dat, family = "binomial")
+```
+
+* **Question 5-d**: Apply this model to the _training_ _data_ in order to obtain a predicted class label for each training observation. Plot the observations, colored according to the _predicted_ class labels. The decision boundary should be linear. 
+  * **Answer**:
+```{r}
+set.seed(42)
+train <- sample(nrow(dat), nrow(dat)*.8)
+five.pred_train <- predict(five.fit, dat[train, ], type = "response")
+five.prob <- rep(0, nrow(dat[train, ]))
+five.prob[five.pred_train > .5] <- 1
+
+plot(dat$x1[train], dat$x2[train], col = 3 - five.prob, xlab = expression(X[1]), ylab = expression(X[2]), main = "Figure 2: Logistic Regression Training Predictions\nPredicted Class 1: Red\n Predicted Class 0: Green",)
+```
+
+* **Question 5-e**: Now fit a logistic regression model to the data using non-linear functions X~1~ and X~2~ as predictors.
+  * **Answer**:
+```{r}
+five.fit_e <- glm(y ~ I(x1^2) + I(x2^2), data = dat, family = "binomial")
+```
+
+* **Question 5-f**: Apply this model to the _training_ _data_ in order to obtain a predicted class label for each training observation. Plot the observations, colored according to the _predicted_ class labels. The decision boundary should be obviously non-linear. If it is not then repeat (a) - (e) until you come up with an example in which the predicted class labels are obviously non-linear
+  * **Answer**:
+
+```{r}
+five.pred_e <- predict(five.fit_e, dat[train, ], type = "response")
+five.prob_e <- rep(0, nrow(dat[train, ]))
+five.prob_e[five.pred_e > 0.5] <- 1
+
+plot(dat$x1[train], dat$x2[train], col = 3 - five.prob_e, xlab = expression(X[1]), ylab = expression(X[2]), main = "Figure 3: Logistic Regression Training Predictions\nPredicted Class 1: Red\nPredicted Class 0: Green")
+```
+
+* **Question 5-g**: Fit a support vector classifier to the data with X~1~ and X~2~ as predictors. Obtain a class prediction for each training observation. Plot the observations, colored according to the _predicted_ _class_ _labels_.
+  * **Answer**:
+```{r}
+dat_factor <- tibble(x1 = dat$x1, x2 = dat$x2, y = as.factor(dat$y))
+five.svm_linear_fit <- svm(y ~ ., data = dat_factor, cost = 10, kernel = "linear", scale = FALSE)
+five.svm_linear_pred <- predict(five.svm_linear_fit, dat[train, ], decision.values = TRUE)
+```
+
+```{r}
+plot(dat$x1[train], dat$x2[train], col = (4 - (as.integer(five.svm_linear_pred))), xlab = expression(X[1]), ylab = expression(X[2]), main = "Figure 4: Support Vector Classifier Training Predictions\nPredicted Class 1: Red\n Predicted Class 0: Green")
+```
+
+* **Question 5-h**: Fit a SVM using a non-linear kernel to the data. Obtain a class prediction for each training observation. Plot the observations, colored according to the _predicted_ _class_ _labels_
+  * **Answer**:
+```{r}
+five.svm_non_linear_fit <- svm(y ~ ., data = dat_factor, degree = 2, kernel = "polynomial", scale = FALSE)
+five.svm_non_linear_pred <- predict(five.svm_non_linear_fit, dat_factor[train, ])
+plot(dat_factor$x1[train], dat_factor$x2[train], col = 4 - as.integer(five.svm_non_linear_pred), xlab = expression(X[1]), ylab = expression(X[2]), main = "Figure 5: Support Vector Machine Predictions\nPredicted Class 1: Red\n Predicted Class 0: Green")
+```
+
+* **Question 5-i**: Comment on your results
+  * **Answer**:
+```{r}
+f_print(sprintf("The cant of the class predictions made by the logistic regression fit to the training data shown in Figure 2 is more angled than the cant of the class predictions made by the support vector classifier shown in Figure 4. In Figure 3, the class predictions made by the logistic regression fit to training data that has been transformed by the squares of predictors X1 and X2 are very similar to the true class predicitons observable in Figure 1. This is due to the fact that the true function of y is a function of the sum of the squares of predictors X1 and X2. The support vector machine shown in Figure 5 implements a polynomial kernel with degree equal to 2 and creates predictions similar to those shown in Figure 3 albeit a wider middle band of predictions for class 1."))
+```
+
+### Question 6:
+At the end of Seciton 9.6.1, it is claimed that in the case of data that is just barely linearly separable, a support vector classifier with a small value of cost that misclassifies a couple of training observations may perform better on test data than one with a huge value of cost that does not misclassify any training observations. You will now investigate this claim. 
+
+* **Question 6-a**: Generate two-class data with p = 2 in such a way that the classes are just barely linearly separable.
+  * **Answer**:
+  
+
+
+  
+```{r}
+set.seed(1)
+train <- sample(200, (0.8*200))
+x <- matrix(rnorm(200 * 2), ncol = 2)
+y <- c(rep(-1, 100), rep(1, 100))
+x[y == 1,] <- x[y == 1,] + 3.43
+# x[y == 1,] <- x[y == 1,] + 3
+six.dat <- data.frame(x, y)
+six.dat_factor <- data.frame(X1 = six.dat$X1, X2 = six.dat$X2, y = as.factor(six.dat$y))
+plot(x, col = 3 - y)
+```
+
+* **Question 6-b**: Compute the cross-validation error rates for support vector classifiers with a range of cost values. How many training observations are misclassified for each value of cost considered, and how does this relate to the cross-validation errors obtained?
+  * **Answer**:
+```{r}
+set.seed(42)
+six.svm_tune <- tune(svm, y ~ ., data = six.dat, kernel = "linear", ranges = list(cost = c(0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 5, 10, 100)))
+summary(six.svm_tune)
+summary(six.svm_tune$best.model)
+```
+
+```{r}
+set.seed(42) 
+
+# Cost .00001
+six.svm_hundred_thousandth_fit <- svm(y ~ ., data = six.dat_factor, kernel = "linear", cost = 0.00001, scale = FALSE)
+six.svm_hundred_thousandth_pred <- predict(six.svm_hundred_thousandth_fit, six.dat_factor)
+six.svm_hundred_thousandth_table <- table(prediction =  six.svm_hundred_thousandth_pred, truth = six.dat_factor$y)
+six.svm_hundred_thousandth_misclassified <- six.svm_hundred_thousandth_table[2] + six.svm_hundred_thousandth_table[3]
+cat("SVM Cost = 0.00001\n")
+six.svm_hundred_thousandth_table
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_hundred_thousandth_misclassified))
+cat("\n\n")
+
+# Cost .0001
+six.svm_ten_thousandth_fit <- svm(y ~ ., data = six.dat_factor, kernel = "linear", cost = 0.001, scale = FALSE)
+six.svm_ten_thousandth_pred <- predict(six.svm_ten_thousandth_fit, six.dat_factor)
+six.svm_ten_thousandth_table <- table(prediction =  six.svm_ten_thousandth_pred, truth = six.dat_factor$y)
+six.svm_ten_thousandth_misclassified <- six.svm_ten_thousandth_table[2] + six.svm_ten_thousandth_table[3]
+cat("SVM Cost = 0.0001\n")
+six.svm_ten_thousandth_table
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_ten_thousandth_misclassified))
+cat("\n\n")
+
+# Cost .001
+six.svm_thousandth_fit <- svm(y ~ ., data = six.dat_factor, kernel = "linear", cost = 0.01, scale = FALSE)
+six.svm_thousandth_pred <- predict(six.svm_thousandth_fit, six.dat_factor)
+six.svm_thousandth_table <- table(prediction =  six.svm_thousandth_pred, truth = six.dat_factor$y)
+six.svm_thousandth_misclassified <- six.svm_thousandth_table[2] + six.svm_thousandth_table[3]
+cat("SVM Cost = 0.001\n")
+six.svm_thousandth_table
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_thousandth_misclassified))
+cat("\n\n")
+
+# Cost .01
+six.svm_hundreth_fit <- svm(y ~ ., data = six.dat_factor, kernel = "linear", cost = 0.01, scale = FALSE)
+six.svm_hundreth_pred <- predict(six.svm_hundreth_fit, six.dat_factor)
+six.svm_hundreth_table <- table(prediction =  six.svm_hundreth_pred, truth = six.dat_factor$y)
+six.svm_hundreth_misclassified <- six.svm_hundreth_table[2] + six.svm_hundreth_table[3]
+cat("SVM Cost = 0.01\n")
+six.svm_hundreth_table
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_hundreth_misclassified))
+cat("\n\n")
+
+# Cost .1
+six.svm_tenth_fit <- svm(y ~ ., data = six.dat_factor, kernel = "linear", cost = 0.1, scale = FALSE)
+six.svm_tenth_pred <- predict(six.svm_tenth_fit, six.dat_factor)
+six.svm_tenth_table <- table(prediction =  six.svm_tenth_pred, truth = six.dat_factor$y)
+six.svm_tenth_misclassified <- six.svm_tenth_table[2] + six.svm_tenth_table[3]
+cat("SVM Cost = 0.1\n")
+six.svm_tenth_table
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_tenth_misclassified))
+cat("\n\n")
+
+# Cost 1
+six.svm_1_fit <- svm(y ~ ., data = six.dat_factor, kernel = "linear", cost = 1, scale = FALSE)
+six.svm_1_pred <- predict(six.svm_1_fit, six.dat_factor)
+six.svm_1_table <- table(prediction =  six.svm_1_pred, truth = six.dat_factor$y)
+six.svm_1_misclassified <- six.svm_1_table[2] + six.svm_1_table[3]
+cat("SVM Cost = 1\n")
+six.svm_1_table
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_1_misclassified))
+cat("\n\n")
+
+# Cost 5
+six.svm_5_fit <- svm(y ~ ., data = six.dat_factor, kernel = "linear", cost = 5, scale = FALSE)
+six.svm_5_pred <- predict(six.svm_5_fit, six.dat_factor)
+six.svm_5_table <- table(prediction =  six.svm_5_pred, truth = six.dat_factor$y)
+six.svm_5_misclassified <- six.svm_5_table[2] + six.svm_5_table[3]
+cat("SVM Cost = 5\n")
+six.svm_5_table
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_5_misclassified))
+cat("\n\n")
+
+# Cost 10
+six.svm_10_fit <- svm(y ~ ., data = six.dat_factor, kernel = "linear", cost = 10, scale = FALSE)
+six.svm_10_pred <- predict(six.svm_10_fit, six.dat_factor)
+six.svm_10_table <- table(prediction =  six.svm_10_pred, truth = six.dat_factor$y)
+six.svm_10_misclassified <- six.svm_10_table[2] + six.svm_10_table[3]
+cat("SVM Cost = 10\n")
+six.svm_10_table
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_10_misclassified))
+cat("\n\n")
+
+# Cost 100
+six.svm_100_fit <- svm(y ~ ., data = six.dat_factor, kernel = "linear", cost = 100, scale = FALSE)
+six.svm_100_pred <- predict(six.svm_100_fit, six.dat_factor)
+six.svm_100_table <- table(prediction =  six.svm_100_pred, truth = six.dat_factor$y)
+six.svm_100_misclassified <- six.svm_100_table[2] + six.svm_100_table[3]
+cat("SVM Cost = 100\n")
+six.svm_100_table
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_100_misclassified))
+cat("\n\n")
+
+```
+
+```{r}
+f_print(sprintf("There is a trending proportional relationship between the number of misclassified training observations and the cross-validated error where a larger cost results in a smaller error."))
+```
+
+* **Question 6-c**: Generate an appropriate test data set, and compute the test errors corresponding to each of the values of cost considered. Which value of cost leads to the fewest test errors, and how does this compare to the values of cost that yield the fewest training errors and the fewest cross-validation errors?
+  * **Answer**:
+
+```{r}
+set.seed(42)
+xtest <- matrix(rnorm(200 * 2), ncol = 2)
+ytest <- sample(c(-1,1), 200, rep = TRUE)
+xtest[y == 1,] <- xtest[y == 1,] + 3.5
+six.testdat <- data.frame(xtest, ytest)
+six.testdat_factor <- data.frame(X1 = six.testdat$X1, X2 = six.testdat$X2, y = as.factor(six.testdat$y))
+```
+
+```{r}
+set.seed(42) 
+
+# Cost .000001
+six.svm_millionth_fit <- svm(y ~ ., data = six.dat_factor, kernel = "linear", cost = .000001, scale = FALSE)
+six.svm_millionth_pred_test <- predict(six.svm_millionth_fit, six.testdat_factor)
+six.svm_millionth_mse_test <- mean((as.integer(six.dat_factor$y) - as.integer(six.svm_millionth_pred_test))^2)
+
+six.svm_millionth_table_test <- table(prediction =  six.svm_millionth_pred_test, truth = six.dat_factor$y)
+six.svm_millionth_misclassified_test <- six.svm_millionth_table_test[2] + six.svm_millionth_table_test[3]
+cat("SVM Cost = .000001\n")
+six.svm_millionth_table_test
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_millionth_misclassified_test))
+
+cat("\n\n")
+
+# Cost .00001
+six.svm_hundred_thousandth_pred_test <- predict(six.svm_hundred_thousandth_fit, six.testdat_factor)
+six.svm_hundred_thousandth_mse_test <- mean((as.integer(six.dat_factor$y) - as.integer(six.svm_hundred_thousandth_pred_test))^2)
+
+six.svm_hundred_thousandth_table_test <- table(prediction =  six.svm_hundred_thousandth_pred_test, truth = six.dat_factor$y)
+six.svm_hundred_thousandth_misclassified_test <- six.svm_hundred_thousandth_table_test[2] + six.svm_hundred_thousandth_table_test[3]
+cat("SVM Cost = .00001\n")
+six.svm_hundred_thousandth_table_test
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_hundred_thousandth_misclassified_test))
+
+cat("\n\n")
+
+# Cost .0001
+six.svm_ten_thousandth_pred_test <- predict(six.svm_ten_thousandth_fit, six.testdat_factor)
+six.svm_ten_thousandth_mse_test <- mean((as.integer(six.dat_factor$y) - as.integer(six.svm_ten_thousandth_pred_test))^2)
+
+six.svm_ten_thousandth_table_test <- table(prediction =  six.svm_ten_thousandth_pred_test, truth = six.dat_factor$y)
+six.svm_ten_thousandth_misclassified_test <- six.svm_ten_thousandth_table_test[2] + six.svm_ten_thousandth_table_test[3]
+cat("SVM Cost = .0001\n")
+six.svm_ten_thousandth_table_test
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_ten_thousandth_misclassified_test))
+
+cat("\n\n")
+
+# Cost .001
+six.svm_thousandth_pred_test <- predict(six.svm_thousandth_fit, six.testdat_factor)
+six.svm_thousandth_mse_test <- mean((as.integer(six.dat_factor$y) - as.integer(six.svm_thousandth_pred_test))^2)
+
+six.svm_thousandth_table_test <- table(prediction =  six.svm_thousandth_pred_test, truth = six.dat_factor$y)
+six.svm_thousandth_misclassified_test <- six.svm_thousandth_table_test[2] + six.svm_thousandth_table_test[3]
+cat("SVM Cost = .001\n")
+six.svm_thousandth_table_test
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_thousandth_misclassified_test))
+
+cat("\n\n")
+
+# Cost .01
+six.svm_hundreth_pred_test <- predict(six.svm_hundreth_fit, six.testdat_factor)
+six.svm_hundreth_mse_test <- mean((as.integer(six.dat_factor$y) - as.integer(six.svm_hundreth_pred_test))^2)
+
+six.svm_hundreth_table_test <- table(prediction =  six.svm_hundreth_pred_test, truth = six.dat_factor$y)
+six.svm_hundreth_misclassified_test <- six.svm_hundreth_table_test[2] + six.svm_hundreth_table_test[3]
+cat("SVM Cost = .01\n")
+six.svm_hundreth_table_test
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_hundreth_misclassified_test))
+
+cat("\n\n")
+
+# Cost .1
+six.svm_tenth_pred_test <- predict(six.svm_tenth_fit, six.testdat_factor)
+six.svm_tenth_mse_test <- mean((as.integer(six.dat_factor$y) - as.integer(six.svm_tenth_pred_test))^2)
+
+six.svm_tenth_table_test <- table(prediction =  six.svm_tenth_pred_test, truth = six.dat_factor$y)
+six.svm_tenth_misclassified_test <- six.svm_tenth_table_test[2] + six.svm_tenth_table_test[3]
+cat("SVM Cost = .1\n")
+six.svm_tenth_table_test
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_tenth_misclassified_test))
+
+cat("\n\n")
+
+# Cost 1
+six.svm_1_pred_test <- predict(six.svm_1_fit, six.testdat_factor)
+six.svm_1_mse_test <- mean((as.integer(six.dat_factor$y) - as.integer(six.svm_1_pred_test))^2)
+
+six.svm_1_table_test <- table(prediction =  six.svm_1_pred_test, truth = six.dat_factor$y)
+six.svm_1_misclassified_test <- six.svm_1_table_test[2] + six.svm_1_table_test[3]
+cat("SVM Cost = 1\n")
+six.svm_1_table_test
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_1_misclassified_test))
+
+cat("\n\n")
+
+# Cost 5
+six.svm_5_pred_test <- predict(six.svm_5_fit, six.testdat_factor)
+six.svm_5_mse_test <- mean((as.integer(six.dat_factor$y) - as.integer(six.svm_5_pred_test))^2)
+
+six.svm_5_table_test <- table(prediction =  six.svm_5_pred_test, truth = six.dat_factor$y)
+six.svm_5_misclassified_test <- six.svm_5_table_test[2] + six.svm_5_table_test[3]
+cat("SVM Cost = 5\n")
+six.svm_5_table_test
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_5_misclassified_test))
+
+cat("\n\n")
+
+# Cost 10
+six.svm_10_pred_test <- predict(six.svm_10_fit, six.testdat_factor)
+six.svm_10_mse_test <- mean((as.integer(six.dat_factor$y) - as.integer(six.svm_10_pred_test))^2)
+
+six.svm_10_table_test <- table(prediction =  six.svm_10_pred_test, truth = six.dat_factor$y)
+six.svm_10_misclassified_test <- six.svm_10_table_test[2] + six.svm_10_table_test[3]
+cat("SVM Cost = 10\n")
+six.svm_10_table_test
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_10_misclassified_test))
+
+cat("\n\n")
+
+# Cost 100
+six.svm_100_pred_test <- predict(six.svm_100_fit, six.testdat_factor)
+six.svm_100_mse_test <- mean((as.integer(six.dat_factor$y) - as.integer(six.svm_100_pred_test))^2)
+
+six.svm_100_table_test <- table(prediction =  six.svm_100_pred_test, truth = six.dat_factor$y)
+six.svm_100_misclassified_test <- six.svm_100_table_test[2] + six.svm_100_table_test[3]
+cat("SVM Cost = 100\n")
+six.svm_100_table_test
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_100_misclassified_test))
+
+cat("\n\n")
+
+
+# Cost 1000
+six.svm_1000_fit <- svm(y ~ ., data = six.dat_factor, kernel = "linear", cost = 1000, scale = FALSE)
+six.svm_1000_pred_test <- predict(six.svm_1000_fit, six.testdat_factor)
+six.svm_1000_mse_test <- mean((as.integer(six.dat_factor$y) - as.integer(six.svm_1000_pred_test))^2)
+
+six.svm_1000_table_test <- table(prediction =  six.svm_1000_pred_test, truth = six.dat_factor$y)
+six.svm_1000_misclassified_test <- six.svm_1000_table_test[2] + six.svm_1000_table_test[3]
+cat("SVM Cost = 1000\n")
+six.svm_1000_table_test
+f_print(sprintf("There are %0.0f misclassified training observations.", six.svm_1000_misclassified_test))
+
+cat("\n\n")
+
+six.mse_df <- data.frame(
+    six.svm_millionth_mse_test,
+    six.svm_hundred_thousandth_mse_test,
+    six.svm_ten_thousandth_mse_test,
+    six.svm_thousandth_mse_test,
+    six.svm_hundreth_mse_test,
+    six.svm_tenth_mse_test,
+    six.svm_1_mse_test,
+    six.svm_5_mse_test,
+    six.svm_10_mse_test,
+    six.svm_100_mse_test,
+    six.svm_1000_mse_test
+)
+```
+
+
+```{r}
+six.mse_df[which.min(six.mse_df)]
+six.mse_df
+```
+
+```{r}
+f_print(sprintf(
+                "The cost that yields the lowest value of test MSE, according to the which.min function, is associated with the value of cost of 0.00001. The lowest value of test MSE is tied with associated costs of 0.000001 and 0.00001. The smallest test errors are associated with the ultimate and penultimate smallest costs. These costs are as follows: .000001 & .00001. The test mse of 1000 and one-millionth were tested to examine if the trend of smallest test mse continues toward the limits of the values of cost. The cost that yielded the fewest training errors were the following costs: 0.0001, 0.001, 0.01, 0.1, 5, 10, & 100. These costs had no training errors. The largest number of misclassified training observations is associated with the smallest cost of 0.00001. The associated cost of the smallest cross-validated error was also associated with the largest cost of 100. Larger values of cost yield lower values for training error and higher values for test error due to rigidity of the model and high variance. The test MSE results are not trending in alignment with the training or cross validation errors due to this variance present in the models."
+                ))
+```
+
+* **Question 6-d**:
+  * **Answer**:
+```{r}
+f_print(sprintf("Section 9.6.1 claims that smaller values of cost will result in smaller test errors due to the fact that the cost of crossing the boundary is less - allowing a more flexible fit to the data, a more generalized model, and fewer test errors. The results have proven this to be the case. When the linear decision boundary is very narrow, large values of cost will create narrow margins and results in a model that tolerates less misclassifications of observations. However, applying this same model to test data where the linear decision boundary of the separating hyperplane is not necessarily narrow will lead to an increased number of observations being misclassified. Therefore, lower costs allow for more generalized models and lower test error when the training data has a very narrow decision boundary."))
+```
+### Question 7:
+In this problem, you will use support vector approaches in order to predict whether a given car gets high or low gas mileage based on the Auto data set.
+
+* **Question 7-a**: Create a binary variable that takes on a 1 for cars with gas mileage above the median, and a 0 for cars with gas mileage below the median.
+  * **Answer**:
+```{r}
+auto <- na.omit(Auto)
+auto <- auto %>% mutate(mpg_median = mpg > median(mpg)) %>% select(mpg_median, everything())
+auto[auto[, 'mpg_median'] == 'FALSE', 'mpg_median'] <- 0
+auto[auto[, 'mpg_median'] == 'TRUE', 'mpg_median'] <- 1
+auto_formatted <- auto %>% mutate(mpg_median = as.factor(mpg_median)) %>% select(everything(), -mpg)
+head(auto_formatted)
+attach(auto_formatted)
+```
+
+* **Question 7-b**: Fit a support vector classifier to the data with various values of cost, in order to predict whether a car gets high or low gas mileage. Report the cross-validation errors associated with different values of this parameter. Comment on your results. Note you will need to fit the classifier without the gas mileage variable to produce sensible results.
+  * **Answer**:
+```{r}
+set.seed(42)
+seven.svm_tune <- tune(svm, mpg_median ~ ., data = auto_formatted, kernel = "linear", ranges = list(cost = c(0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 5, 10, 100)))
+summary(seven.svm_tune)
+f_print(sprintf("The minimum cross validation error is associated with a cost of .01. The cross validation error of this cost is %0.3f.", seven.svm_tune$best.performance))
+```
+* **Question 7-c**: Now repeat (b), this time using SVMs with radial and polynomial basis kernels, with different values of gamma and degree and cost. Comment on your results.
+  * **Answer**:
+```{r}
+set.seed(42)
+seven.svm_tune_poly <- tune(svm, mpg_median ~ ., data = auto_formatted, kernel = "polynomial", ranges = list(cost = c(0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 5, 10, 100), degree = c(.001, .01, .1, 1, 10, 100)))
+summary(seven.svm_tune_poly)
+
+seven.svm_tune_radial <- tune(svm, mpg_median ~ ., data = auto_formatted, kernel = "radial", ranges = list(cost = c(0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 5, 10, 100), gamma = c(.001, .01, .1, 1, 10, 100)))
+summary(seven.svm_tune_radial)
+```
+
+```{r}
+f_print(sprintf("The best polynomial performance is %0.3f with an associated cost of %0.0f and a degree of %0.0f.", seven.svm_tune_poly$best.performance, seven.svm_tune_poly$best.parameters[1], seven.svm_tune_poly$best.parameters[2]))
+cat("\n")
+f_print(sprintf("The best radial performance is %0.3f with an associated cost of %0.0f and a gamma value of %0.2f.", seven.svm_tune_radial$best.performance, seven.svm_tune_radial$best.parameters[1], seven.svm_tune_radial$best.parameters[2]))
+```
+* **Question 7-d**: Make some plots to back up your assertions in (b) and (c).
+  * **Answer**: 
+
+```{r}
+auto_plot <- auto %>% mutate(mpg_median = mpg > median(mpg))
+```
+
+  
+```{r}
+seven.svm_fit_pred <- predict(seven.svm_tune$best.model, auto_formatted)
+plot(auto_plot$mpg, col = (as.integer(seven.svm_fit_pred)), xlab = "Observation", ylab = "Miles Per Gallon", main = "Support Vector Classifier Prediction of MPG\nPredicted Above Median MPG: Red\n Predicted Below Median MPG: Black", sub = "Median MPG: Blue Line")
+abline(h = median(auto_plot$mpg), col = custom_lightblue)
+
+```
+  
+  
+```{r}
+seven.svm_tune_poly_pred <- predict(seven.svm_tune_poly$best.model, auto_formatted)
+plot(auto_plot$mpg, col = (as.integer(seven.svm_tune_poly_pred)), xlab = "Observation", ylab = "Miles Per Gallon", main = "SVM Polynomial Kernel Prediction of MPG\nPredicted Above Median MPG: Red\n Predicted Below Median MPG: Black", sub = "Median MPG: Blue Line")
+abline(h = median(auto_plot$mpg), col = custom_lightblue)
+```
+
+```{r}
+seven.svm_tune_radial_pred <- predict(seven.svm_tune_radial$best.model, auto_formatted)
+plot(auto_plot$mpg, col = (as.integer(seven.svm_tune_radial_pred)), xlab = "Observation", ylab = "Miles Per Gallon", main = "SVM Radial Kernel Prediction of MPG\nPredicted Above Median MPG: Red\n Predicted Below Median MPG: Black", sub = "Median MPG: Blue Line")
+abline(h = median(auto_plot$mpg), col = custom_lightblue)
+```
+
+
+
+### Question 8:
+This problem involves the OJ data set which is part of the ISLR2 package.
+
+* **Question 8-a**: Create a training set containing a random sample of 800 observations, and a test set containing the remaining observations.
+  * **Answer**:
+```{r}
+oj <- na.omit(OJ)
+train <- sample(nrow(OJ), 800)
+head(oj[train,])
+head(oj[-train,])
+```
+* **Question 8-b**: Fit a support vector classifier to the training data using cost = 0.01, with Purchase as the response and the other variables as predictors. Use the summary() function to produce summary statistics, and describe the results obtained.
+  * **Answer**:
+```{r}
+set.seed(42)
+eight.svm_fit <- svm(Purchase ~ ., data = oj[train, ], cost = 0.01, kernel = "linear", scale = FALSE)
+summary(eight.svm_fit)
+f_print(sprintf("The summary statistics show a linear kernel with a cost of 0.01. There are 631 support vectors and 2 classes. 314 support vectors belong to the CH class whereas 317 support vectors belong to the MM class."))
+```
+* **Question 8-c**: What are the training and test error rates?
+  * **Answer**:
+```{r}
+set.seed(42)
+eight.svm_pred <- predict(eight.svm_fit, oj[train,])
+eight.svm_pred_test <- predict(eight.svm_fit, oj[-train,])
+```
+
+```{r}
+set.seed(42)
+eight.svm_pred_mse <- mean((as.integer(eight.svm_pred) - as.integer(oj[train, "Purchase"]))^2)
+eight.svm_pred_test_mse <- mean((as.integer(eight.svm_pred_test) - as.integer(oj[train, "Purchase"]))^2) 
+
+f_print(sprintf("The training MSE is %0.3f.", eight.svm_pred_mse))
+cat("\n")
+f_print(sprintf("The test MSE is %0.3f.", eight.svm_pred_test_mse))
+```
+
+* **Question 8-d**: Use the tune() function to select an optimal cost. Consider values in the range 0.01 to 10.
+  * **Answer**:
+```{r}
+set.seed(42)
+eight.svm_tune <- tune(svm, Purchase ~ ., data = oj, kernel = "linear", ranges = list(cost = c(0.01, 0.1, 1, 5, 10)))
+summary(eight.svm_tune)
+```
+
+* **Question 8-e**: Compute the training and test error rates using this new value for cost.
+  * **Answer**:
+```{r}
+set.seed(42)
+eight.svm_tune_pred <- predict(eight.svm_tune$best.model, oj[train,])
+eight.svm_tune_pred_test <- predict(eight.svm_tune$best.model, oj[-train,])
+
+eight.svm_tune_pred_mse <- mean((as.integer(eight.svm_tune_pred) - as.integer(oj[train, "Purchase"]))^2)
+eight.svm_tune_pred_test_mse <- mean((as.integer(eight.svm_tune_pred_test) - as.integer(oj[train, "Purchase"]))^2) 
+
+f_print(sprintf("The training MSE is %0.3f.", eight.svm_tune_pred_mse))
+cat("\n")
+f_print(sprintf("The test MSE is %0.3f.", eight.svm_tune_pred_test_mse))
+
+```
+
+* **Question 8-f**: Repeat parts (b) through (e) using a support vector machine with a radial kernel. Use the default value for gamma.
+  * **Answer**:
+```{r}
+set.seed(42)
+
+eight.svm_radial_fit <- svm(Purchase ~ ., data = oj[train, ], kernel = "radial", scale = FALSE)
+summary(eight.svm_radial_fit)
+f_print(sprintf("The summary statistics show a radial kernel with a default gamma value of 1. There are 545 support vectors and 2 classes. 280 support vectors belong to the CH class whereas 265 support vectors belong to the MM class."))
+```
+
+
+```{r}
+set.seed(42)
+eight.svm_radial_pred <- predict(eight.svm_radial_fit, oj[train,])
+eight.svm_radial_pred_test <- predict(eight.svm_radial_fit, oj[-train,])
+
+eight.svm_radial_pred_mse <- mean((as.integer(eight.svm_radial_pred) - as.integer(oj[train, "Purchase"]))^2)
+eight.svm_radial_pred_test_mse <- mean((as.integer(eight.svm_radial_pred_test) - as.integer(oj[train, "Purchase"]))^2) 
+
+f_print(sprintf("The training MSE is %0.3f.", eight.svm_radial_pred_mse))
+cat("\n")
+f_print(sprintf("The test MSE is %0.3f.", eight.svm_radial_pred_test_mse))
+
+```
+
+
+```{r}
+set.seed(42)
+
+eight.svm_tune_radial <- tune(svm, Purchase ~ ., data = oj, kernel = "radial", ranges = list(cost = c(0.01, 0.1, 1, 5, 10)))
+summary(eight.svm_tune_radial)
+
+eight.svm_tune_pred_radial <- predict(eight.svm_tune_radial$best.model, oj[train,])
+eight.svm_tune_pred_test_radial <- predict(eight.svm_tune_radial$best.model, oj[-train,])
+
+eight.svm_tune_pred_mse_radial <- mean((as.integer(eight.svm_tune_pred_radial) - as.integer(oj[train, "Purchase"]))^2)
+eight.svm_tune_pred_test_mse_radial <- mean((as.integer(eight.svm_tune_pred_test_radial) - as.integer(oj[train, "Purchase"]))^2) 
+
+f_print(sprintf("The training MSE is %0.3f.", eight.svm_tune_pred_mse_radial))
+cat("\n")
+f_print(sprintf("The test MSE is %0.3f.", eight.svm_tune_pred_test_mse_radial))
+
+```
+
+
+* **Question 8-g**: Repeat parts (b) through (e) using a support vector machine with a polynomial kernel. Set degree = 2.
+  * **Answer**:
+```{r}
+set.seed(42)
+
+eight.svm_polynomial_fit <- svm(Purchase ~ ., data = oj[train, ], degree = 2, kernel = "polynomial", scale = FALSE)
+summary(eight.svm_polynomial_fit)
+f_print(sprintf("The summary statistics show a polynomial kernel with a degree of 2. There are 251 support vectors and 2 classes. 125 support vectors belong to the CH class whereas 126 support vectors belong to the MM class."))
+```
+
+
+```{r}
+set.seed(42)
+eight.svm_polynomial_pred <- predict(eight.svm_polynomial_fit, oj[train,])
+eight.svm_polynomial_pred_test <- predict(eight.svm_polynomial_fit, oj[-train,])
+
+eight.svm_polynomial_pred_mse <- mean((as.integer(eight.svm_polynomial_pred) - as.integer(oj[train, "Purchase"]))^2)
+eight.svm_polynomial_pred_test_mse <- mean((as.integer(eight.svm_polynomial_pred_test) - as.integer(oj[train, "Purchase"]))^2) 
+
+f_print(sprintf("The training MSE is %0.3f.", eight.svm_polynomial_pred_mse))
+cat("\n")
+f_print(sprintf("The test MSE is %0.3f.", eight.svm_polynomial_pred_test_mse))
+
+```
+
+
+```{r}
+set.seed(42)
+
+eight.svm_tune_polynomial <- tune(svm, Purchase ~ ., data = oj, kernel = "polynomial", degree = 2, ranges = list(cost = c(0.01, 0.1, 1, 5, 10)))
+summary(eight.svm_tune_polynomial)
+
+eight.svm_tune_pred_polynomial <- predict(eight.svm_tune_polynomial$best.model, oj[train,])
+eight.svm_tune_pred_test_polynomial <- predict(eight.svm_tune_polynomial$best.model, oj[-train,])
+
+eight.svm_tune_pred_mse_polynomial <- mean((as.integer(eight.svm_tune_pred_polynomial) - as.integer(oj[train, "Purchase"]))^2)
+eight.svm_tune_pred_test_mse_polynomial <- mean((as.integer(eight.svm_tune_pred_test_polynomial) - as.integer(oj[train, "Purchase"]))^2) 
+
+f_print(sprintf("The training MSE is %0.3f.", eight.svm_tune_pred_mse_polynomial))
+cat("\n")
+f_print(sprintf("The test MSE is %0.3f.", eight.svm_tune_pred_test_mse_polynomial))
+```
+* **Question 8-h**: Overall, which approach seems to give the best results on this data?
+  * **Answer**:
+```{r}
+f_print(sprintf("The untuned Support Machine Classifier with a cost of 0.01 appears to give the best results on this data. The lowest test MSE is %0.3f compared to the following values test MSE: %0.3f, %0.3f, %0.3f, %0.3f, and %0.3f for the tuned support vector classifier, the radial SVM, the tuned radial SVM, the polynomial SVM, and the tuned polynomial SVM respectively. These results are suprising. Where the tuning did reduce training error, the test error increased after tuning.", 
+                eight.svm_pred_test_mse, 
+                eight.svm_tune_pred_test_mse,
+                eight.svm_radial_pred_test_mse, 
+                eight.svm_tune_pred_test_mse_radial,
+                eight.svm_polynomial_pred_test_mse,
+                eight.svm_tune_pred_test_mse_polynomial
+                ))
+```
+

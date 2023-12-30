@@ -1,0 +1,327 @@
+---
+title: "Lab 9 Support Vector Machines"
+author: "Evan Woods"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(fig.width = 6)
+knitr::opts_chunk$set(fig.asp = 0.618)
+knitr::opts_chunk$set(out.width = "70%")
+knitr::opts_chunk$set(fig.align = "center")
+knitr::opts_chunk$set(
+  comment = ""
+)
+```
+
+```{r message=FALSE, include=FALSE}
+if(!require("MASS")) install.packages("MASS")
+if(!require("ISLR2")) install.packages("ISLR2")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("HH")) install.packages("HH") # VIF
+if(!require("e1071")) install.packages("e1071") # naiveBayes
+if(!require("class")) install.packages("class") # knn
+if(!require("formulaic")) install.packages("formulaic")
+if(!require("caTools")) install.packages("caTools")
+if(!require("caret")) install.packages("caret")
+if(!require("boot")) install.packages("boot")
+if(!require("leaps")) install.packages("leaps") # regsubsets
+if(!require("glmnet")) install.packages("glmnet") # Ridge and Lasso Regression
+if(!require("pls")) install.packages("pls") # Partial Least Squares & Principal Component Regression
+if(!require("splines")) install.packages("splines")
+if(!require("gam")) install.packages("gam")
+if(!require("akima")) install.packages("akima")
+if(!require("tree")) install.packages("tree") # Classification and Regression Trees
+if(!require("randomForest")) install.packages("randomForest")
+if(!require("gbm")) install.packages("gbm") # Boosted Trees
+if(!require("BART")) install.packages("BART")
+if(!require("reticulate")) install.packages("reticulate") # Use python objects in R
+if(!require("e1071")) install.packages("e1071") # Support Vector Machines
+if(!require("ROCR")) install.packages("ROCR") # Plotting Receiver Operating Characteristic Curves
+
+library(ROCR)
+library(e1071)
+library(reticulate)
+library(BART)
+library(gbm)
+library(randomForest)
+library(tree)
+library(akima)
+library(gam)
+library(splines)
+library(glmnet)
+library(pls)
+library(leaps)
+library(formulaic)
+library(class)
+library(e1071)
+library(HH)
+library(MASS)
+library(ISLR2)
+library(tidyverse)
+library(caTools)
+library(caret)
+library(boot)
+```
+
+```{r include=FALSE}
+custom_darkblue = "#1A0875"
+custom_lightblue = "#34ABEB"
+custom_red = "#a60808"
+```
+
+```{r include=FALSE}
+f_print <- function(string){
+  cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
+}
+```
+
+```{r}
+set.seed(1)
+x <- matrix(rnorm(20 * 2), ncol = 2)
+y <- c(rep(-1, 10), rep(1, 10))
+x[y==1, ] <- x[y==1, ] + 1
+plot(x, col = (3 - y))
+```
+
+```{r}
+dat <- data.frame(x = x, y = as.factor(y))
+svm.fit <- svm(y ~ ., data = dat, kernel = "linear", cost = 10, scale = FALSE)
+```
+
+```{r}
+plot(svm.fit, dat)
+```
+
+```{r}
+svm.fit$index
+```
+
+```{r}
+summary(svm.fit)
+```
+
+```{r}
+# Using a smaller value of the cost function.
+svm.fit_cost_0_1 <- svm(y ~ ., data = dat, kernel = "linear", cost = 1e5, scale = FALSE)
+plot(svm.fit_cost_0_1, dat)
+svm.fit_cost_0_1$index
+```
+
+```{r}
+# Performing cross validation
+set.seed(1)
+tune.out <- tune(svm, y ~ ., data = dat, kernel = "linear", ranges = list(cost = c(0.001, 0.01, 0.1, 1, 5, 10, 100)))
+```
+
+```{r}
+summary(tune.out)
+```
+
+```{r}
+bestmod <- tune.out$best.model
+summary(bestmod)
+```
+
+```{r}
+# Generating a test set to make a prediction
+xtest <- matrix(rnorm(20 * 2), ncol = 2)
+ytest <- sample(c(-1, 1), 20, rep = TRUE)
+xtest[ytest == 1, ] <- xtest[ytest == 1, ] + 1
+testdat = data.frame(x = xtest, y = as.factor(ytest))
+plot(xtest, col = (3 - y))
+```
+
+```{r}
+ypred <- predict(bestmod, testdat)
+table(predict = ypred, truth = testdat$y)
+```
+```{r}
+# Reducing the cost 
+svmfit <- svm(y ~ ., data = dat, cost = 0.01, scale = FALSE, kernel = "linear")
+ypred <- predict(svmfit, testdat)
+table(predict = ypred, truth = testdat$y)
+```
+
+```{r}
+# Creating a linearly separable dataset
+x[y==1, ] <- x[y==1, ] + 0.5
+plot(x, col = (y + 5) / 2, pch = 19)
+```
+
+```{r}
+dat <- data.frame(x = x, y = as.factor(y))
+svmfit <- svm(y ~ ., data = dat, kernel = "linear", cost = 1e5)
+summary(svmfit)
+plot(svmfit, dat)
+```
+
+```{r}
+set.seed(1)
+x <- matrix(rnorm(200 * 2), ncol = 2)
+x[1:100, ] <- x[1:100, ] + 2
+x[101:150, ] <- x[101:150, ] - 2
+y <- c(rep(1, 150), rep(2, 50))
+dat <- data.frame(x = x, y = as.factor(y))
+```
+
+```{r}
+plot(x, col = y)
+```
+
+```{r}
+train <- sample(200, 100)
+```
+
+
+```{r}
+set.seed(42)
+train <- sample(200, 100)
+svmfit <- svm(y ~ ., data = dat[train, ], kernel = "radial", gamma = 1, cost = 1)
+plot(svmfit, dat[train, ])
+```
+
+```{r}
+summary(svmfit)
+```
+
+```{r}
+svmfit <- svm(y ~ ., data = dat[train, ], kernel = "radial", gamma = 1, cost = 1e5)
+plot(svmfit, dat[train, ])
+```
+
+```{r}
+# Performing cross-validation using tune() to select the best choice of γ and cost for an SVM with a radial kernel
+set.seed(1)
+tune.out <- tune(
+  svm, y ~ ., 
+  data = dat[train, ], 
+  kernel = "radial", 
+  ranges = list(
+    cost = c(0.1, 1, 10 , 100, 1000),
+    gamma = c(0.5, 1, 2, 3, 4)
+  )
+)
+summary(tune.out)
+```
+
+```{r}
+table(
+  true = dat[-train, "y"],
+  pred = predict(
+    tune.out$best.model, newdata = dat[-train, ]
+  )
+)
+```
+
+```{r}
+plot(tune.out$best.model, dat, x.1 ~ x.2)
+```
+
+
+```{r}
+# ROC Curves
+rocplot <- function(pred, truth, ...) {
+  predob <- prediction(pred, truth)
+  perf <- performance(predob, "tpr", "fpr")
+  plot(perf, ...)
+}
+```
+
+```{r}
+# Training: γ is 2 and 50
+svmfit.opt <- svm(y ~ ., data = dat[train, ], kernel = "radial", gamma = 2, cost = 1, decision.values = T)
+fitted <- attributes(
+  predict(svmfit.opt, dat[train, ], decision.values = TRUE)
+  )$decision.values
+
+par(mfrow = c(1, 2))
+rocplot(-fitted, dat[train, "y"], main = "Training Data")
+
+svmfit.flex <- svm(y ~ ., data = dat[train, ], kernel = "radial", gamma = 50, cost = 1, decision.values = T)
+fitted <- attributes(
+  predict(svmfit.flex, dat[train, ], decision.values = T)
+  )$decision.values
+
+rocplot(-fitted, dat[train, "y"], add = T, col = "red")
+
+# Test: γ is 2 and 50
+fitted <- attributes(
+predict(svmfit.opt , dat[-train , ], decision.values = T)
+)$decision.values
+
+rocplot(-fitted , dat[-train , "y"], main = "Test Data")
+
+fitted <- attributes(
+predict(svmfit.flex , dat[-train , ], decision.values = T)
+)$decision.values
+
+rocplot(-fitted , dat[-train , "y"], add = T, col = "red")
+```
+
+```{r}
+# SVM with Multiple Classes
+set.seed(1)
+x <- rbind(x, matrix(rnorm(50 * 2), ncol = 2))
+y <- c(y, rep(0, 50))
+x[y == 0, 2] <- x[y == 0, 2] + 2
+
+dat <- data.frame(x = x, y = as.factor(y))
+par(mfrow = c(1, 1))
+plot(x, col = (y + 1))
+
+svmfit <- svm(y ~ ., data = dat, kernel = "radial", cost = 10, gamma = 1)
+plot(svmfit, dat)
+```
+```{r}
+# Application to Gene Expression Data
+names(Khan)
+```
+
+```{r}
+dim(Khan$xtrain)
+```
+
+```{r}
+dim(Khan$xtest)
+```
+
+```{r}
+length(Khan$ytrain)
+length(Khan$ytest)
+```
+
+```{r}
+table(Khan$ytrain)
+table(Khan$ytest)
+```
+
+
+
+```{r}
+dat <- data.frame(
+  x = Khan$xtrain, 
+  y = as.factor(Khan$ytrain)
+)
+
+out <- svm(y ~., kernel = "linear", data = dat, cost = 10)
+summary(out)
+```
+
+```{r}
+table(out$fitted, dat$y)
+```
+
+```{r}
+dat.te <- data.frame(
+  x = Khan$xtest, 
+  y = as.factor(Khan$ytest))
+pred.te <- predict(out, newdata = dat.te)
+table(pred.te, dat.te$y)
+```
+
+
