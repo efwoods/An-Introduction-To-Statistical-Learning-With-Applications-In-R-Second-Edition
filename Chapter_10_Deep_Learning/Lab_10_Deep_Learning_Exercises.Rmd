@@ -1,3 +1,4 @@
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 knitr::opts_chunk$set(warning = FALSE)
@@ -35,7 +36,10 @@ if(!require("BART")) install.packages("BART")
 if(!require("reticulate")) install.packages("reticulate") # Use python objects in R
 if(!require("ROCR")) install.packages("ROCR")
 if(!require("keras")) install.packages("keras") # Install keras for deep learning
+if(!require("jpeg")) install.packages("jpeg")
+if(!require("imager")) install.packages("imager")
 
+library(imager)
 library(keras)
 reticulate::use_condaenv(condaenv = "r-tensorflow")
 library(ROCR)
@@ -60,10 +64,11 @@ library(tidyverse)
 library(caTools)
 library(caret)
 library(boot)
+library(jpeg)
 ```
 
-```{r}
-keras::install_keras(method = "conda", python_version = "3.10")
+```{r output=FALSE, results = 'hide', message=FALSE}
+# keras::install_keras(method = "conda", python_version = "3.10")
 ```
 
 ```{r include=FALSE}
@@ -213,19 +218,20 @@ summary(model)
 ```
 
 
-```{r results='hide'}
+```{r message=FALSE, warning=FALSE, output =FALSE}
 model %>% compile(loss = "mse", optimizer = optimizer_rmsprop(), metrics = c("accuracy"))
 model %>% fit(x[-testid, ], y[-testid], epochs = 30, batch_size = 128, validation_split = 0.2)
 ```
 
 
 ```{r}
+predictions <- predict(model, x[testid, ])
 model.probs <- rep(0, length(predictions))
 model.probs[predictions > 0.5] <- 1
 
-model.table <- table(prediction = probs, truth = glm.true[testid, "default"])
+model.table <- table(prediction = model.probs, truth = glm.true[testid, "default"])
 
-model.testacc <- (val[1] + val[4]) /sum(val) * 100
+model.testacc <- (model.table[1] + model.table[4]) /sum(model.table) * 100
 
 f_print(sprintf("The accuracy of the neural network model is %0.3f%%.", model.testacc))
 cat("\n")
@@ -241,7 +247,163 @@ glm.table
 
 ### Question 8:
 From your collection of personal photographs, pick 10 images of animals (such as dogs, cats, birds, farm animals, etc.). If the subject does not occupy a reasonable part of the image, then crop the image. Now use a pretrained image classification CNN as in Lab 10.9.4 to predict the class of each of your images, and report the probabilities for the top five predicted classes for each image. 
+
+```{r}
+images <- load.dir('animals/')
+```
+
+```{r}
+img_dir <- "animals"
+image_names <- list.files(img_dir)
+num_images <- length(image_names)
+x <- array(dim = c(num_images, 224, 224, 3))
+for (i in 1:num_images) {
+  img_path <- paste(img_dir, image_names[i], sep = "/")
+  img <- image_load(img_path, target_size = c(224, 224))
+  x[i,,,] <- image_to_array(img)
+}
+```
+
+
+```{r}
+x <- imagenet_preprocess_input(x)
+
+resnet_50_animals_model <- application_resnet50(weights = "imagenet")
+summary(model)
+```
+
+
+```{r}
+predicted_animals <- resnet_50_animals_model %>% predict(x) %>%
+  imagenet_decode_predictions(top = 5)
+names(predicted_animals) <- image_names
+```
+
+```{r}
+for(i in seq(1,10)) {
+  plot(images[i])
+}
+```
+
+
+```{r}
+f_print(sprintf("The predicted classes and probabilities of the images of dogs and cats are as follows with respect to order of appearance:"))
+cat("\n")
+print(predicted_animals)
+
+```
+
+### Question 9:
+Fit a lag-5 autoregressive model to the NYSE data, as described in the text and Lab 10.9.6. Refit the model with a 12-level factor representing the month. Does this factor improve the performance of the model?
+```{r}
+xdata <- data.matrix(
+  NYSE[, c("DJ_return", "log_volume", "log_volatility")]
+)
+  istrain <- NYSE[, "train"]
+  xdata <- scale(xdata)
+```
+
+```{r}
+lagm <- function(x, k = 1) {
+  n <- nrow(x)
+  pad <- matrix(NA, k, ncol(x))
+  rbind(pad, x[1:(n-k), ])
+}
+```
+
+```{r}
+arframe <- data.frame(log_volume = xdata[, "log_volume"], L1 = lagm(xdata, 1), L2 = lagm(xdata, 2), L3 = lagm(xdata, 3), L4 = lagm(xdata, 4), L5 = lagm(xdata, 5))
+```
+
+```{r}
+arframe <- arframe[-(1:5), ]
+istrain <- istrain[-(1:5)]
+```
+
+```{r}
+arfit <- lm(log_volume ~ ., data = arframe[istrain, ])
+arpred <- predict(arfit, arframe[!istrain, ])
+V0 <- var(arframe[!istrain, "log_volume"])
+1 - mean((arpred - arframe[!istrain, "log_volume"])^2) / V0
+```
+
+```{r}
+arframed <- data.frame(day = NYSE[-(1:5), "day_of_week"], arframe)
+arfitd <- lm(log_volume ~ ., data = arframed[istrain, ])
+arpredd <- predict(arfitd, arframed[!istrain, ])
+1 - mean((arpredd - arframe[!istrain, "log_volume"])^2) / V0
+```
+
+
+```{r}
+#???
+arframe
+```
+
+```{r}
+n <- nrow(arframe)
+xrnn <- data.matrix(arframe[, -1])
+xrnn <- array(xrnn, c(n, 3, 5))
+xrnn <- xrnn[,, 5:1]
+xrnn <- aperm(xrnn , c(1, 3, 2))
+dim(xrnn)
+```
+
+```{r}
+model <- keras_model_sequential() %>%
+  layer_simple_rnn(units = 12, input_shape = list(5, 3), dropout = 0.1, recurrent_dropout = 0.1) %>%
+  layer_dense(units = 1)
+model %>% compile(optimizer = optimizer_rmsprop(), loss = "mse")
+```
+
+```{r}
+history <- model %>% fit(
+  xrnn[istrain,,], arframe[istrain, "log_volume"],
+  batch_size = 64, epochs = 200, 
+  validation_data = list(xrnn[!istrain,,], arframe[!istrain, "log_volume"])
+)
+kpred <- predict(model, xrnn[!istrain,,])
+1 - mean((kpred - arframe[!istrain, "log_volume"])^2) / V0
+
+# 0.415817
+```
+
+```{r}
+x <- model.matrix(log_volume ~ . - 1, data = arframed)
+colnames(x)
+```
+
+```{r}
+arnnd <- keras_model_sequential() %>%
+  layer_dense(units = 32, activation = 'relu', 
+              input_shape = ncol(x)) %>%
+  layer_dropout(rate = 0.5) %>%
+  layer_dense(units = 1)
+arnnd %>% compile(loss = "mse",
+                  optimizer = optimizer_rmsprop())
+```
+
+```{r}
+history <- arnnd %>% fit(
+  x[istrain, ], arframe[istrain, "log_volume"], epochs = 100,
+  batch_size = 32, validation_data = list(x[!istrain, ], arframe[!istrain, "log_volume"])
+)
+```
+
+```{r}
+plot(history)
+npred <- predict(arnnd, x[!istrain, ])
+1 - mean((arframe[!istrain, "log_volume"] - npred)^2) / V0
+```
+
+
+```{r}
+month_n <- as.factor(month(NYSE$date))
+xdata <- cbind(xdata, month_n)
+```
+
 ```{r}
 
 ```
+
 
