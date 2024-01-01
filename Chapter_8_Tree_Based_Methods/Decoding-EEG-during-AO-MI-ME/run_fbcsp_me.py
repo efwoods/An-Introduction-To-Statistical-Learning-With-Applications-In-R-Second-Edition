@@ -39,18 +39,18 @@ def load_data(subject, task, prediction_model, artifact_remover, filter_order, w
     
     # it will perform preprocessing from this order
     if artifact_remover == 'ICA': 
-        filter_medthod = {'notch_filter': notch, 
+        filter_method = {'notch_filter': notch, 
                         'highpass_filter': highpass,
                         'ica': ica,
                         'butter_bandpass_filter': bandpass}
     elif artifact_remover == 'rASR':
-        filter_medthod = {'notch_filter': notch, 
+        filter_method = {'notch_filter': notch, 
                         'highpass_filter': highpass,
                         'rASR': rASR,
                         'butter_bandpass_filter': bandpass}
     
     # apply filter and ICA 
-    data = apply_eeg_preprocessing(subject_name=subject, session='me', task=task, filter_medthod=filter_medthod)
+    data = apply_eeg_preprocessing(subject_name=subject, session='me', task=task, filter_method=filter_method)
     # apply band-pass filter in range of 0.1-3 Hz with respect to MRCPs  
     # data = peform_band_pass(data_prep, lowcut=0.1, highcut=3, fs=sfreq, order=filter_order)
     # data : 14 sec 

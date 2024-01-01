@@ -1,1 +1,1 @@
-conda create env -f environment.yaml
+conda env create -f environment.yaml

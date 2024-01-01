@@ -1,0 +1,427 @@
+---
+title: "Decoding EEG During Action Observation, Motor Imagery, & Motor Execution"
+author: "Evan Woods"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(fig.width = 6)
+knitr::opts_chunk$set(fig.asp = 0.618)
+knitr::opts_chunk$set(out.width = "70%")
+knitr::opts_chunk$set(fig.align = "center")
+knitr::opts_chunk$set(
+  comment = ""
+)
+```
+
+```{r message=FALSE, include=FALSE}
+if(!require("MASS")) install.packages("MASS")
+if(!require("ISLR2")) install.packages("ISLR2")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("HH")) install.packages("HH") # VIF
+if(!require("e1071")) install.packages("e1071") # naiveBayes
+if(!require("class")) install.packages("class") # knn
+if(!require("formulaic")) install.packages("formulaic")
+if(!require("caTools")) install.packages("caTools")
+if(!require("caret")) install.packages("caret")
+if(!require("boot")) install.packages("boot")
+if(!require("leaps")) install.packages("leaps") # regsubsets
+if(!require("glmnet")) install.packages("glmnet") # Ridge and Lasso Regression
+if(!require("pls")) install.packages("pls") # Partial Least Squares & Principal Component Regression
+if(!require("splines")) install.packages("splines")
+if(!require("gam")) install.packages("gam")
+if(!require("akima")) install.packages("akima")
+if(!require("tree")) install.packages("tree") # Classification and Regression Trees
+if(!require("randomForest")) install.packages("randomForest")
+if(!require("gbm")) install.packages("gbm") # Boosted Trees
+if(!require("BART")) install.packages("BART")
+if(!require("reticulate")) install.packages("reticulate") # Use python objects in R
+if(!require("ROCR")) install.packages("ROCR")
+if(!require("keras")) install.packages("keras") # Install keras for deep learning
+if(!require("jpeg")) install.packages("jpeg")
+if(!require("imager")) install.packages("imager")
+if(!require("tensorflow")) install.packages("te")
+
+library(tensorflow)
+library(imager)
+library(keras)
+reticulate::use_condaenv(condaenv = "r-tensorflow")
+library(ROCR)
+library(reticulate)
+library(BART)
+library(gbm)
+library(randomForest)
+library(tree)
+library(akima)
+library(gam)
+library(splines)
+library(glmnet)
+library(pls)
+library(leaps)
+library(formulaic)
+library(class)
+library(e1071)
+library(HH)
+library(MASS)
+library(ISLR2)
+library(tidyverse)
+library(caTools)
+library(caret)
+library(boot)
+library(jpeg)
+```
+
+```{r output=FALSE, results = 'hide', message=FALSE}
+# keras::install_keras(method = "conda", python_version = "3.10")
+```
+
+```{r include=FALSE}
+# Check tensorflow GPU configuration
+# tf$config$list_physical_devices("GPU")
+# R.version$arch
+# tf$constant("Hello Tensorflow!")
+```
+
+```{r include=FALSE}
+custom_darkblue = "#1A0875"
+custom_lightblue = "#34ABEB"
+custom_red = "#a60808"
+```
+
+```{r include=FALSE}
+f_print <- function(string){
+  cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
+}
+```
+
+
+
+## Gathering data from IEEE Paper Decoding AO vs. MI vs. ME
+
+### Imports
+```{r}
+# Imports
+import("sklearn")
+import("mne")
+import("numpy", as = "np")
+
+base_dir <- 'pysitstand/'
+
+eeg_py <- str_c(base_dir, 'eeg.py')
+eeg_preprocessing_py <- str_c(base_dir, 'eeg_preprocessing.py')
+emg_preprocessing_py <- str_c(base_dir, 'emg_preprocessing.py')
+info_py <- str_c(base_dir, 'info.py')
+model_py <- str_c(base_dir, 'model.py')
+rASR_m <- str_c(base_dir, 'rASR.m')
+utils_py <- str_c(base_dir, 'utils.py')
+
+source_python(eeg_py) 
+source_python(eeg_preprocessing_py)
+source_python(emg_preprocessing_py)
+source_python(info_py)
+source_python(model_py)
+# source_python(rASR_m)
+source_python(utils_py)
+
+  
+# csv_file_name_EEG = 'S01_EEG_1'
+# S01_EEG_1 = EEG(csv_file_name_EEG)
+```
+
+### Function Definitions
+```{python}
+# """Create scenario data structure of all scenarios and phases
+# 
+#         Parameters
+#         ----------
+#         data_handler_p: EEG class used to hold data and call EEG methods; 
+#
+#         
+# 
+#         Returns
+#         ----------
+#         data_handler_p: EEG class with nested structure of dicitonaries
+#                         of scenarios and associated phases
+#
+#         Note on Naming of Returned Scenario & Phases
+#         --------------------------------------------
+#          The naming scheme was retained with the original study to maintain
+#          consistency.
+#         
+#         Note on Index of Returned Scenario
+#         ----------------------------------
+#         scenario : scenario number
+#                     0: resting while sit
+#                     1: resting while stand
+#                     2: physical sit and stand
+#                     3: trying to stand
+#                     4: trying to sit
+#                     5: imagining to stand
+#                     6: imagining to sit
+# 
+#         Note on Index of Returned Phase
+#         ----------------------------------
+#         phase : phase number
+#                     0: resting 
+#                     1: video stimulation
+#                     2: resting 1s after video
+#                     3: performing task
+# """
+def create_scenario_phase_data_structure(data_handler_p):
+    data_handler_p.scenario = dict()
+    data_handler_p.scenario["resting_while_sit_1"] = dict()
+    data_handler_p.scenario["resting_while_sit_1"]["scenario_data"] = []
+    data_handler_p.scenario["resting_while_sit_1"]["phase_data"] = dict()
+    data_handler_p.scenario["resting_while_sit_1"]["phase_data"]["resting_1"] = []
+    data_handler_p.scenario["resting_while_sit_1"]["phase_data"]["video_stimulation_2"] = []
+    data_handler_p.scenario["resting_while_sit_1"]["phase_data"]["resting_1s_after_video_stimulation_3"] = []
+    data_handler_p.scenario["resting_while_sit_1"]["phase_data"]["performing_task_5"] = []
+    
+    data_handler_p.scenario["resting_while_stand_2"] = dict()
+    data_handler_p.scenario["resting_while_stand_2"]["scenario_data"] = []
+    data_handler_p.scenario["resting_while_stand_2"]["phase_data"] = dict()
+    data_handler_p.scenario["resting_while_stand_2"]["phase_data"]["resting_1"] = []
+    data_handler_p.scenario["resting_while_stand_2"]["phase_data"]["video_stimulation_2"] = []
+    data_handler_p.scenario["resting_while_stand_2"]["phase_data"]["resting_1s_after_video_stimulation_3"] = []
+    data_handler_p.scenario["resting_while_stand_2"]["phase_data"]["performing_task_5"] = []
+
+    data_handler_p.scenario["physical_sit_and_stand_3"] = dict()
+    data_handler_p.scenario["physical_sit_and_stand_3"]["scenario_data"] = []
+    data_handler_p.scenario["physical_sit_and_stand_3"]["phase_data"] = dict()
+    data_handler_p.scenario["physical_sit_and_stand_3"]["phase_data"]["resting_1"] = []
+    data_handler_p.scenario["physical_sit_and_stand_3"]["phase_data"]["video_stimulation_2"] = []
+    data_handler_p.scenario["physical_sit_and_stand_3"]["phase_data"]["resting_1s_after_video_stimulation_3"] = []
+    data_handler_p.scenario["physical_sit_and_stand_3"]["phase_data"]["performing_task_5"] = []
+
+    data_handler_p.scenario["trying_to_stand_4"] = dict()
+    data_handler_p.scenario["trying_to_stand_4"]["scenario_data"] = []
+    data_handler_p.scenario["trying_to_stand_4"]["phase_data"] = dict()
+    data_handler_p.scenario["trying_to_stand_4"]["phase_data"]["resting_1"] = []
+    data_handler_p.scenario["trying_to_stand_4"]["phase_data"]["video_stimulation_2"] = []
+    data_handler_p.scenario["trying_to_stand_4"]["phase_data"]["resting_1s_after_video_stimulation_3"] = []
+    data_handler_p.scenario["trying_to_stand_4"]["phase_data"]["performing_task_5"] = []
+
+    data_handler_p.scenario["trying_to_sit_5"] = dict()
+    data_handler_p.scenario["trying_to_sit_5"]["scenario_data"] = []
+    data_handler_p.scenario["trying_to_sit_5"]["phase_data"] = dict()
+    data_handler_p.scenario["trying_to_sit_5"]["phase_data"]["resting_1"] = []
+    data_handler_p.scenario["trying_to_sit_5"]["phase_data"]["video_stimulation_2"] = []
+    data_handler_p.scenario["trying_to_sit_5"]["phase_data"]["resting_1s_after_video_stimulation_3"] = []
+    data_handler_p.scenario["trying_to_sit_5"]["phase_data"]["performing_task_5"] = []
+
+    data_handler_p.scenario["imagining_to_stand_6"] = dict()
+    data_handler_p.scenario["imagining_to_stand_6"]["scenario_data"] = []
+    data_handler_p.scenario["imagining_to_stand_6"]["phase_data"] = dict()
+    data_handler_p.scenario["imagining_to_stand_6"]["phase_data"]["resting_1"] = []
+    data_handler_p.scenario["imagining_to_stand_6"]["phase_data"]["video_stimulation_2"] = []
+    data_handler_p.scenario["imagining_to_stand_6"]["phase_data"]["resting_1s_after_video_stimulation_3"] = []
+    data_handler_p.scenario["imagining_to_stand_6"]["phase_data"]["performing_task_5"] = []
+
+    data_handler_p.scenario["imagining_to_sit_7"] = dict()
+    data_handler_p.scenario["imagining_to_sit_7"]["scenario_data"] = []
+    data_handler_p.scenario["imagining_to_sit_7"]["phase_data"] = dict()
+    data_handler_p.scenario["imagining_to_sit_7"]["phase_data"]["resting_1"] = []
+    data_handler_p.scenario["imagining_to_sit_7"]["phase_data"]["video_stimulation_2"] = []
+    data_handler_p.scenario["imagining_to_sit_7"]["phase_data"]["resting_1s_after_video_stimulation_3"] = []
+    data_handler_p.scenario["imagining_to_sit_7"]["phase_data"]["performing_task_5"] = []
+
+    data_handler_p.scenario
+    return(data_handler_p)
+```
+
+```{python}
+# WIP
+# """Collect All Phases Per Scenario
+# 
+#         Parameters
+#         ----------
+#         data_handler: EEG class used to call split_phase(); 
+#                       Presumes a data structure of 
+#                       NAME_OF_HANDLER.scenario_p_arr where 
+#                       scenario_p_arr is the return from the function
+#                       "collect_all_scenarios".
+#         
+# 
+#         Returns
+#         ----------
+#         raw_phase_data: EEG raw data in numpy array in block format of the 
+#                         phase of an input scenario 
+#         
+#         Note on Index of Returned Phase
+#         ----------------------------------
+#         phase : phase number
+#                     0: resting 
+#                     1: video stimulation
+#                     2: resting 1s after video
+#                     3: performing task
+# """
+        
+def collect_all_phases(data_handler):
+  phase_p_arr = []
+  phase_index = [1,2,3,5]
+  for i in (phase_index):
+    # print(i)
+    phase_p_arr.append()
+  return phase_p_arr
+  # return scenario_p_arr
+# def collect_all_phases()
+S01_EEG_1.scenario_p_arr[1]
+```
+
+```{python}
+# """Collect All Scenarios of EEG raw data
+# 
+#         Parameters
+#         ----------
+#         data_handler_p: EEG class used to call collect_data_allphase();
+#                         Expects data_handler_p.raw_data to exists where 
+#                         raw_data is in numpy array in block format & is the
+#                         returned output from data_handler's read_CSV method.
+# 
+#         Returns
+#         ----------
+#         data_handler_p: data_handler_p has been updated with EEG raw data in 
+#                          numpy array in block format of each scenario. The 
+#                          scenario is located at 
+#                          data_handler_p.scenario["SCENARIO"].
+#         
+#         Note on Index of Scenario
+#         --------------------------
+#         pythonic scenario index : scenario description
+#                     0: resting while sit
+#                     1: resting while stand
+#                     2: physical sit and stand
+#                     3: trying to stand
+#                     4: trying to sit
+#                     5: imagining to stand
+#                     6: imagining to sit
+# """
+def collect_all_scenarios(data_handler_p):
+  for i, (key_i, value_i) in enumerate(data_handler_p.scenario.items()):
+    scenario_index = i + 1
+    # print(i)
+    data_handler_p.scenario[key_i]["scenario_data"] = data_handler_p.collect_data_allphase(scenario_index, data_handler_p.raw_data)
+    for j, (key_j, value_j) in enumerate(data_handler_p.scenario[key_i]["phase_data"].items()):
+      # data_handler_p.scenario[key_i]["phase_data"]
+      if j == 3:
+        phase_index = 5
+      else:
+        phase_index = j+1
+      # data_handler_p.scenario[key_i]["phase_data"][key_j] = data_handler_p.split_phase(phase_index, data_handler_p.scenario[key_i]["scenario_data"])
+  return data_handler_p
+```
+
+```{python}
+collect_all_scenarios(S01_EEG_1_p)
+# S01_EEG_1_p.scenario
+```
+
+
+```{python}
+# data_handler_p.scenario[key_i]["scenario_data"] = data_handler.collect_data_allphase(i, data_handler_p.raw_data)
+
+# S01_EEG_1_p.collect_data_allphase(1, S01_EEG_1_p.raw_data)
+# S01_EEG_1_p.scenario['resting_while_sit_1']['scenario_data']
+
+S01_EEG_1_p.scenario['resting_while_sit_1']['scenario_data'] = S01_EEG_1_p.collect_data_allphase(1, S01_EEG_1_p.raw_data)
+
+```
+
+```{python}
+(S01_EEG_1_p.scenario.keys())
+# (S01_EEG_1_p.scenario['resting_while_sit_1']['phase_data'].keys)
+
+# S01_EEG_1_p.scenario["physical_sit_and_stand_3"]["scenario_data"]
+
+# S01_EEG_1_p.split_phase(1,S01_EEG_1_p.scenario["physical_sit_and_stand_3"]["scenario_data"])
+
+phase_1_all_scenario = S01_EEG_1_p.split_phase(1,S01_EEG_1_p.raw_data)
+scenario_1_all_phase = S01_EEG_1_p.collect_data_allphase(2, S01_EEG_1_p.raw_data)
+
+# S01_EEG_1_p.scenario['resting_while_sit_1']['phase_data']["resting_1"]
+```
+
+
+```{python}
+phase_1_all_scenario.shape
+```
+
+```{python}
+scenario_1_all_phase = S01_EEG_1_p.collect_data_allphase(2, S01_EEG_1_p.raw_data)
+scenario_1_all_phase
+```
+
+
+```{r}
+S01_EEG_1_p.scenario['resting_while_sit_1']['scenario_data']
+```
+
+
+```{python}
+# S01_EEG_1_p.raw_data.shape
+S01_EEG_1_p.raw_data[28,1]
+```
+
+
+### Body
+```{python}
+# Create S01_EEG_1 handler
+csv_file_name = './pysitstand/raw_data/S01_EEG/S01_EEG_1.csv'
+S01_EEG_1_p = EEG(csv_file_name)
+```
+
+```{python}
+# Create Scenario & Phase Structure
+create_scenario_phase_data_structure(S01_EEG_1_p)
+# S01_EEG_1_p = 
+```
+
+
+```{python}
+# Reading Raw Data
+S01_EEG_1_p.raw_data = S01_EEG_1_p.read_CSV()
+S01_EEG_1_p.raw_data
+```
+
+```{python}
+S01_EEG_1_p.scenario
+```
+
+```{python}
+# collecting all scenarios
+collect_all_scenarios(S01_EEG_1_p)
+```
+
+```{python}
+# Collecting all phases for a giving scenario
+def collect_all_phases(data_handler):
+  
+```
+
+
+```{python}
+# Resting while sitting scenario
+S01_EEG_1_data_scenario_1_resting_while_sit_phase_1_resting_phase = S01_EEG_1.split_phase(1, S01_EEG_1_data_scenario_1_resting_while_sit)
+S01_EEG_1_data_scenario_1_resting_while_sit_phase_2_video_stimulation_phase = S01_EEG_1.split_phase(2, S01_EEG_1_data_scenario_1_resting_while_sit)
+S01_EEG_1_data_scenario_1_resting_while_sit_phase_3_resting_one_second_after_video_phase = S01_EEG_1.split_phase(3, S01_EEG_1_data_scenario_1_resting_while_sit)
+S01_EEG_1_data_scenario_1_resting_while_sit_phase_5_performing_task_phase = S01_EEG_1.split_phase(5, S01_EEG_1_data_scenario_1_resting_while_sit)
+
+```
+
+```{python}
+S01_EEG_1_data_scenario_1_resting_while_sit_phase_1_resting_phase
+S01_EEG_1_data_scenario_1_resting_while_sit_phase_2_video_stimulation_phase
+S01_EEG_1_data_scenario_1_resting_while_sit_phase_3_resting_one_second_after_video_phase
+S01_EEG_1_data_scenario_1_resting_while_sit_phase_5_performing_task_phase
+```
+
+
+```{r}
+
+```
+
+

@@ -78,7 +78,7 @@ def rASR(data, sfreq, new_sfreq):
     data = reshape2Dto3D(np.array(raw_corrected), trials=5)
     return data
 
-def ica(data, sfreq, new_sfreq, save_name=None, threshold=2):
+def perform_ica(data, sfreq, new_sfreq, save_name=None, threshold=2):
 
     if save_name is not None:
         for directory in ['ica','eog_score','eog_avg','raw_EEG','corrected_EEG','montage','new_raw']:
@@ -134,9 +134,9 @@ def ica(data, sfreq, new_sfreq, save_name=None, threshold=2):
         raw_corrected.save('new_raw/'+save_name+'_raw.fif', overwrite=True)
     return reshape2Dto3D(raw_corrected.get_data(), trials=5)
 
-# preprocessing step, perform from filter_medthod order
-def preprocessing(data, filter_medthod, sfreq):
-    for key, value in filter_medthod.items():
+# preprocessing step, perform from filter_method order
+def preprocessing(data, filter_method, sfreq):
+    for key, value in filter_method.items():
         if key == 'butter_bandpass_filter':
             data = peform_butter_bandpass_filter(data, value['lowcut'], value['highcut'], sfreq, value['order'])
             print('butter_bandpass_filter:', value)
@@ -147,7 +147,7 @@ def preprocessing(data, filter_medthod, sfreq):
             data = peform_highpass_filter(data, value['highcut'], sfreq, value['order'])
             print('highpass_filter:', value)
         elif key == 'ica':
-            data = ica(data, sfreq, value['new_sfreq'], value['save_name'], value['threshold'])
+            data = perform_ica(data, sfreq, value['new_sfreq'], value['save_name'], value['threshold'])
             sfreq = value['new_sfreq'] # after resample
             print('ica:', value)
         elif key == 'rASR':
@@ -155,13 +155,13 @@ def preprocessing(data, filter_medthod, sfreq):
             print('rASR', value)
     return data
 
-def apply_eeg_preprocessing(subject_name=None, session='mi', task='sit', filter_medthod=None):
+def apply_eeg_preprocessing(subject_name=None, session='mi', task='sit', filter_method=None):
     '''Collect data from each run to preprocess data such as filtering and calulate ICA, then remove EOG signals from data
 
     Parameters
     ----------
     subject_name: ex. 'S04'
-    filter_medthod: dict
+    filter_method: dict
 
     Usage
     ----------
@@ -172,21 +172,21 @@ def apply_eeg_preprocessing(subject_name=None, session='mi', task='sit', filter_
     ica = {'new_sfreq': new_sfreq, 'save_name': None, 'threshold': 2}
 
     # it will perform preprocessing from this order
-    filter_medthod = {'notch_filter': notch, 
+    filter_method = {'notch_filter': notch, 
                     'butter_bandpass_filter': bandpass,
                     'ica': ica}
 
     # apply filter and ICA 
-    eeg = apply_eeg_preprocessing(subject_name='S01', session='mi', task='sit', filter_medthod=filter_medthod)
+    eeg = apply_eeg_preprocessing(subject_name='S01', session='mi', task='sit', filter_method=filter_method)
     '''
 
     subject_path = DATASET_PATH+'/'+subject_name+'_EEG/'
     sfreq = 1200
     new_sfreq = sfreq
-    if filter_medthod is not None:
-        for key in filter_medthod.keys():
+    if filter_method is not None:
+        for key in filter_method.keys():
             if key=='ica' or key=='rASR':
-                new_sfreq = filter_medthod[key]['new_sfreq'] if filter_medthod[key]['new_sfreq'] is not None else sfreq
+                new_sfreq = filter_method[key]['new_sfreq'] if filter_method[key]['new_sfreq'] is not None else sfreq
     # subject_path = 'pysitstand/raw_data/'+subject_name+'_EEG/'
     runs, trials, channels, datapoint = 3, 5, 11, 15*new_sfreq
     processed_data = np.zeros((runs, trials, channels, datapoint)) # 3 runs, 5 trials, 11 eeg channels, 14 sec*250 Hz
@@ -209,7 +209,7 @@ def apply_eeg_preprocessing(subject_name=None, session='mi', task='sit', filter_
             elif task == 'stand':
                 data = eeg.collect_data_allphase(6, raw_array)
 
-        tmp = preprocessing(data=data, filter_medthod=filter_medthod, sfreq=sfreq)
+        tmp = preprocessing(data=data, filter_method=filter_method, sfreq=sfreq)
         processed_data[i] = tmp[:,:channels,:] # drop EOG channels
     processed_data = processed_data.reshape(-1, channels, datapoint) # reshape 4D to 3D
     return processed_data

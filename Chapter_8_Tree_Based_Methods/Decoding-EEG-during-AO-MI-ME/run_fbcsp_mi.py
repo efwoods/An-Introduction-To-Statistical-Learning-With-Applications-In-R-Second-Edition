@@ -36,17 +36,17 @@ def load_data(subject, task, prediction_model, artifact_remover, filter_order, w
 
     # it will perform preprocessing from this order
     if artifact_remover == 'ICA':
-        filter_medthod = {'notch_filter': notch, 
+        filter_method = {'notch_filter': notch, 
                     'butter_bandpass_filter': bandpass,
                     'ica': ica}
     elif artifact_remover == 'rASR':
-        filter_medthod = {'notch_filter': notch, 
+        filter_method = {'notch_filter': notch, 
                     'butter_bandpass_filter': bandpass,
                     'rASR': rASR}
 
     
     # apply filter and ICA 
-    data = apply_eeg_preprocessing(subject_name=subject, session='mi', task=task, filter_medthod=filter_medthod)
+    data = apply_eeg_preprocessing(subject_name=subject, session='mi', task=task, filter_method=filter_method)
 
     # data : 15 sec 
     # define data

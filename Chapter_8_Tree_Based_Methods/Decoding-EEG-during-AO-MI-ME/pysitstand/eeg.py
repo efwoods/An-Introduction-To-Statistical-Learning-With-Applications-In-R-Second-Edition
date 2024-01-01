@@ -215,7 +215,7 @@ class EEG:
         t = np.arange(0, 1504.0, 1)
         s = 1 + np.sin(2*np.pi*t)
 
-        f_array = re_shape.astype(np.float)
+        f_array = re_shape.astype(float)
         return f_array
 
     def collect_data_allphase(self, scenario, raw_array):
