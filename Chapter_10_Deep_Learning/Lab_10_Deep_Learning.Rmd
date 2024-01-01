@@ -70,7 +70,7 @@ library(boot)
 ```
 
 ```{r}
-keras::install_keras(method = "conda", python_version = "3.10")
+# keras::install_keras(method = "conda", python_version = "3.10")
 ```
 
 
@@ -302,6 +302,11 @@ pred6 <- model %>% predict(x) %>%
 names(pred6) <- image_names
 print(pred6)
 ```
+
+```{r}
+#???
+```
+
 
 ## IMDb Document Classification
 ```{r}

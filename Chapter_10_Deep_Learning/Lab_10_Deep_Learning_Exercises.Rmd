@@ -220,7 +220,7 @@ summary(model)
 
 ```{r message=FALSE, warning=FALSE, output =FALSE}
 model %>% compile(loss = "mse", optimizer = optimizer_rmsprop(), metrics = c("accuracy"))
-model %>% fit(x[-testid, ], y[-testid], epochs = 30, batch_size = 128, validation_split = 0.2)
+model %>% fit(x[-testid, ], y[-testid], epochs = 30, batch_size = 128, validation_split = 0.2, verbose = 0)
 ```
 
 
@@ -285,12 +285,10 @@ for(i in seq(1,10)) {
 }
 ```
 
-
 ```{r}
 f_print(sprintf("The predicted classes and probabilities of the images of dogs and cats are as follows with respect to order of appearance:"))
 cat("\n")
 print(predicted_animals)
-
 ```
 
 ### Question 9:
@@ -320,24 +318,96 @@ arframe <- arframe[-(1:5), ]
 istrain <- istrain[-(1:5)]
 ```
 
+
+```{r}
+arframed <- data.frame(day = NYSE[-(1:5), "day_of_week"], arframe)
+```
+
+```{r}
+x <- model.matrix(log_volume ~ . - 1, data = arframed)
+colnames(x)
+```
+
+```{r warning=FALSE, message=FALSE}
+arnnd <- keras_model_sequential() %>%
+  layer_dense(units = 32, activation = 'relu', 
+              input_shape = ncol(x)) %>%
+  layer_dropout(rate = 0.5) %>%
+  layer_dense(units = 1)
+arnnd %>% compile(loss = "mse",
+                  optimizer = optimizer_rmsprop())
+```
+
+```{r results='hide', warning=FALSE, message=FALSE}
+history <- arnnd %>% fit(
+  x[istrain, ], arframe[istrain, "log_volume"], epochs = 100,
+  batch_size = 32, validation_data = list(x[!istrain, ], arframe[!istrain, "log_volume"]), verbose = 0
+)
+```
+
+```{r}
+plot(history)
+```
+
+
+```{r}
+npred <- predict(arnnd, x[!istrain, ])
+V0 <- var(arframe[!istrain, "log_volume"])
+r_2 <- 1 - mean(((arframe[!istrain, "log_volume"] - npred)^2)) / V0
+```
+
+```{r}
+f_print(sprintf("The R-squared value of the lag-5 autoregressive model with a 5-level factor representing the day of the week is %0.3f.", r_2))
+```
+
+
+```{r}
+arframem <- data.frame(month = month(NYSE[-(1:5),"date"]), arframe)
+xmm <- model.matrix(log_volume ~ . - 1, data = arframem)
+months <- to_categorical(xmm[,"month"])[,-1]
+colnames(months) <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+arnnm.data <- cbind(months, xmm[,-1])[,]
+```
+
+```{r warning=FALSE}
+arnnm.model <- keras_model_sequential() %>%
+  layer_dense(units = 32, activation = 'relu', 
+              input_shape = ncol(arnnm.data)) %>%
+  layer_dropout(rate = 0.5) %>%
+  layer_dense(units = 1)
+arnnm.model %>% compile(loss = "mse",
+                  optimizer = optimizer_rmsprop())
+```
+
+```{r results='hide'}
+history <- arnnm.model %>% fit(
+  arnnm.data[istrain, ], arframe[istrain, "log_volume"], epochs = 100,
+  batch_size = 32, validation_data = list(arnnm.data[!istrain, ], arframe[!istrain, "log_volume"]), verbose = 0
+)
+```
+
+```{r}
+plot(history)
+```
+
+```{r}
+arm_pred <- predict(arnnm.model, arnnm.data[!istrain, ])
+arm_r_2 <- 1 - mean((arframe[!istrain, "log_volume"] - arm_pred)^2) / V0
+f_print(sprintf("The lag-5 autoregressive model refit with a 12-level factor representing the month has an R-squared value of %0.3f.", arm_r_2))
+```
+```{r}
+f_print(sprintf("The inclusion of the 12-level factor representing the month reduced the fit of the model to the data."))
+```
+
+
+### Question 10:
+In Section 10.9.6, we showed how to fit a linear AR model to the NYSE data using the lm() function. However, we also mentioned that we can "flatten" the short sequences produced for the RNN model in order to fit a linear AR model. Use this latter approach to fit a linear AR model to the NYSE data. Compare the test R-squared of this linear AR model to that of the linear AR model that we fit in the lab. What are the advantages/disadvantages of each approach?
+
 ```{r}
 arfit <- lm(log_volume ~ ., data = arframe[istrain, ])
 arpred <- predict(arfit, arframe[!istrain, ])
 V0 <- var(arframe[!istrain, "log_volume"])
-1 - mean((arpred - arframe[!istrain, "log_volume"])^2) / V0
-```
-
-```{r}
-arframed <- data.frame(day = NYSE[-(1:5), "day_of_week"], arframe)
-arfitd <- lm(log_volume ~ ., data = arframed[istrain, ])
-arpredd <- predict(arfitd, arframed[!istrain, ])
-1 - mean((arpredd - arframe[!istrain, "log_volume"])^2) / V0
-```
-
-
-```{r}
-#???
-arframe
+lar_lab_r_2 <- 1 - mean((arpred - arframe[!istrain, "log_volume"])^2) / V0
 ```
 
 ```{r}
@@ -349,9 +419,9 @@ xrnn <- aperm(xrnn , c(1, 3, 2))
 dim(xrnn)
 ```
 
-```{r}
+```{r warning=FALSE}
 model <- keras_model_sequential() %>%
-  layer_simple_rnn(units = 12, input_shape = list(5, 3), dropout = 0.1, recurrent_dropout = 0.1) %>%
+  layer_flatten(input_shape = c(5, 3)) %>%
   layer_dense(units = 1)
 model %>% compile(optimizer = optimizer_rmsprop(), loss = "mse")
 ```
@@ -360,50 +430,166 @@ model %>% compile(optimizer = optimizer_rmsprop(), loss = "mse")
 history <- model %>% fit(
   xrnn[istrain,,], arframe[istrain, "log_volume"],
   batch_size = 64, epochs = 200, 
-  validation_data = list(xrnn[!istrain,,], arframe[!istrain, "log_volume"])
+  validation_data = list(xrnn[!istrain,,], arframe[!istrain, "log_volume"]), verbose = 0
 )
-kpred <- predict(model, xrnn[!istrain,,])
-1 - mean((kpred - arframe[!istrain, "log_volume"])^2) / V0
-
-# 0.415817
 ```
 
 ```{r}
-x <- model.matrix(log_volume ~ . - 1, data = arframed)
-colnames(x)
+V0 <- var(arframe[!istrain, "log_volume"])
+larm_kpred <- predict(model, xrnn[!istrain,,])
+larm_r_2 <- 1 - mean((larm_kpred - arframe[!istrain, "log_volume"])^2) / V0
 ```
 
 ```{r}
-arnnd <- keras_model_sequential() %>%
-  layer_dense(units = 32, activation = 'relu', 
-              input_shape = ncol(x)) %>%
-  layer_dropout(rate = 0.5) %>%
+f_print(sprintf("The R-squared value of the linear autoregressive model fit in the lab is: %0.6f. The R-squared value of the linear autoregressive model fit using a flattened sequences produced for the RNN model is %0.6f. These figures are identical to at least 5 significant digits. The advantages of using the lm function to create an autoregressive model is a reduction in time training the model. The advantage of using a neural network is the ability to add non-linearities to the existing model by including hidden layers in the future.", lar_lab_r_2, larm_r_2))
+```
+### Question 11:
+Repeat the previous exercise, but now fit a nonlinear AR model by "flattening" the short sequences produced for the RNN model.
+```{r warning=FALSE}
+ar_nl_flat_model <- keras_model_sequential() %>%
+  layer_flatten(input_shape = c(5, 3)) %>%
+  layer_dense(units = 12, activation = "relu") %>%
+  layer_dropout(rate = 0.1) %>%
   layer_dense(units = 1)
-arnnd %>% compile(loss = "mse",
-                  optimizer = optimizer_rmsprop())
-```
+ar_nl_flat_model %>% compile(optimizer = optimizer_rmsprop(), loss = "mse")
 
-```{r}
-history <- arnnd %>% fit(
-  x[istrain, ], arframe[istrain, "log_volume"], epochs = 100,
-  batch_size = 32, validation_data = list(x[!istrain, ], arframe[!istrain, "log_volume"])
+history <- ar_nl_flat_model %>% fit(
+  xrnn[istrain,,], arframe[istrain, "log_volume"],
+  batch_size = 64, epochs = 200, 
+  validation_data = list(xrnn[!istrain,,], arframe[!istrain, "log_volume"]), verbose = 0
 )
 ```
 
 ```{r}
-plot(history)
-npred <- predict(arnnd, x[!istrain, ])
-1 - mean((arframe[!istrain, "log_volume"] - npred)^2) / V0
+V0 <- var(arframe[!istrain, "log_volume"])
+ar_nl_flat_model.pred <- predict(ar_nl_flat_model, xrnn[!istrain,,])
+ar_nl_flat_model.r_2 <- 1 - mean((ar_nl_flat_model.pred - arframe[!istrain, "log_volume"])^2) / V0
+f_print(sprintf("The R-squared value of the flat-input, non-linear autoregressive model is %0.5f.", ar_nl_flat_model.r_2))
+```
+
+### Question 12:
+Consider the RNN fit to the NYSE data in Section 10.9.6. Modify the code to allow inclusion of the variable day_of_week, and fit the RNN. Compute the test R-squared.
+
+```{r}
+arframem <- data.frame(month = month(NYSE[-(1:5),"date"]), arframe)
+xmm <- model.matrix(log_volume ~ . - 1, data = arframem)
+months <- to_categorical(xmm[,"month"])[,-1]
+colnames(months) <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 ```
 
 
 ```{r}
-month_n <- as.factor(month(NYSE$date))
-xdata <- cbind(xdata, month_n)
+day_of_week <- to_categorical(as.integer(as.factor(NYSE[, "day_of_week"])))
+day_of_week <- (day_of_week[,-1])
+col_names_day_of_week <- c(unique(NYSE[, "day_of_week"]))
+colnames(day_of_week) <- col_names_day_of_week
 ```
 
 ```{r}
+xdata <- cbind(day_of_week, xdata)
+```
+
+```{r}
+arframe <- data.frame(log_volume = xdata[, "log_volume"], L1 = lagm(xdata, 1), L2 = lagm(xdata, 2), L3 = lagm(xdata, 3), L4 = lagm(xdata, 4), L5 = lagm(xdata, 5))
+
+arframe <- arframe[-(1:5), ]
+istrain <- istrain[-(1:5)]
+```
+
+```{r}
+n <- nrow(arframe)
+xrnn <- data.matrix(arframe[, -1])
+xrnn <- array(xrnn, c(n, 8, 5))
+xrnn <- array(xrnn, c(n, 8, 5))
+xrnn <- xrnn[,, 5:1]
+xrnn <- aperm(xrnn , c(1, 3, 2))
+```
+
+```{r warning=FALSE}
+model <- keras_model_sequential() %>%
+  layer_simple_rnn(units = 12, input_shape = list(5, 8), dropout = 0.1, recurrent_dropout = 0.1) %>%
+  layer_dense(units = 1)
+model %>% compile(optimizer = optimizer_rmsprop(), loss = "mse")
+```
+
+```{r}
+history <- model %>% fit(
+  xrnn[istrain,,], arframe[istrain, "log_volume"],
+  batch_size = 64, epochs = 200, 
+  validation_data = list(xrnn[!istrain,,], arframe[!istrain, "log_volume"]), verbose = 0
+)
+```
+
+
+```{r}
+rnn_day_of_week_kpred <- predict(model, xrnn[!istrain,,])
+rnn_day_of_week_test_r_2 <- 1 - mean((rnn_day_of_week_kpred - arframe[!istrain, "log_volume"])^2) / V0
+f_print(sprintf("The test R-squared of the RNN fit to include the day of the week is %0.7f.", rnn_day_of_week_test_r_2))
+```
+
+### Question 13:
+Repeat the analysis of Lab 10.9.5 on the IMDb data using a similarly structured neural network. There we used a dictionary of size 10,000. Consider the effects of varying the dictionary size. Try the values 1000, 3000, 5000, and 10,000, and compare the results.
+
+```{r}
+library(Matrix)
+one_hot <- function(sequences, dimension) {
+  seqlen <- sapply(sequences, length)
+  n <- length(seqlen)
+  rowind <- rep(1:n, seqlen)
+  colind <- unlist(sequences)
+  sparseMatrix(i = rowind, j = colind, dims = c(n, dimension))
+}
+```
+
+```{r message=FALSE}
+
+dictionary_size <- c(1000, 3000, 5000, 10000)
+results_train <- c("The model training accuracy for dictionary size of 1000:", "The model training accuracy for dictionary size of 3000:", "The model training accuracy for dictionary size of 5000:", "The model training accuracy for dictionary size of 10000:")
+results_test <- c("The model test accuracy for dictionary size of 1000:", "The model test accuracy for dictionary size of 3000:", "The model test accuracy for dictionary size of 5000:", "The model test accuracy for dictionary size of 10000:")
+
+for(i in seq(1, length(dictionary_size))){
+    max_features <- dictionary_size[i]
+    imdb <- dataset_imdb(num_words = max_features)
+    c(c(x_train, y_train), c(x_test, y_test)) %<-% imdb
+    
+    x_train_1h <- one_hot(x_train, dictionary_size[i])
+    x_test_1h <- one_hot(x_test, dictionary_size[i])
+    
+    set.seed(3)
+    ival <- sample(seq(along = y_train), dictionary_size[i]/5)
+    
+    # Compute train accuracy
+    model <- keras_model_sequential() %>%
+      layer_dense(units = 16, activation = "relu", input_shape = c(dictionary_size[i])) %>%
+      layer_dense(units = 16, activation = "relu") %>%
+      layer_dense(units = 1, activation = "sigmoid")
+    model %>% compile(optimizer = "rmsprop", loss = "binary_crossentropy", metrics = c("accuracy"))
+    history_train <- model %>% fit(x_train_1h[-ival, ], y_train[-ival], epochs = 20, batch_size = 512, validation_data = list(x_train_1h[ival, ], y_train[ival]), verbose = 0)
+    
+    # Compute test accuracy
+    model <- keras_model_sequential() %>%
+      layer_dense(units = 16, activation = "relu", input_shape = c(dictionary_size[i])) %>%
+      layer_dense(units = 16, activation = "relu") %>%
+      layer_dense(units = 1, activation = "sigmoid")
+    model %>% compile(optimizer = "rmsprop", loss = "binary_crossentropy", metrics = c("accuracy"))
+    history_test <- model %>% fit(
+      x_train_1h[-ival, ], y_train[-ival], epochs = 20, 
+      batch_size = 512, validation_data = list(x_test_1h, y_test),
+      verbose = 0
+    )
+    f_print(sprintf("%s", results_train[i]))
+    print(history_train)
+    cat("\n\n")
+    f_print(sprintf("%s", results_test[i]))
+    print(history_test)
+}
 
 ```
+
+```{r}
+# Compare results
+f_print(sprintf("The training accuracy of the model increased with dictionary size. The test validation accuracy peaked at a dictionary size of 3000. Increasing the dicitonary size did not necessarily increase the test validation accuracy."))
+```
+
 
 
