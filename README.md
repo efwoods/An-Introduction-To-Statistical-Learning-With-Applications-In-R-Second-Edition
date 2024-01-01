@@ -9,3 +9,4 @@ My Work on "An Introduction to Statistical Learning with Applications in R Secon
 - [Lab 7: Moving Beyond Linearity](Chapter_7_Moving_Beyond_Linearity/Lab_7_Non-Linear_Modeling_Exercises.md)
 - [Lab 8: Tree-Based Methods](Chapter_8_Tree_Based_Methods/Lab_8_Decision_Trees_Exercises.md)
 - [Lab 9: Support Vector Machines](Chapter_9_Support_Vector_Machines/Lab_9_Support_Vector_Machines_Exercises.md)
+- [Lab 10: Deep Learning](Chapter_10_Deep_Learning/Lab_10_Deep_Learning_Exercises.md)
