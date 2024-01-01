@@ -1,0 +1,212 @@
+---
+title: "Decoding EEG During Action Observation, Motor Imagery, & Motor Execution"
+author: "Evan Woods"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(fig.width = 6)
+knitr::opts_chunk$set(fig.asp = 0.618)
+knitr::opts_chunk$set(out.width = "70%")
+knitr::opts_chunk$set(fig.align = "center")
+knitr::opts_chunk$set(
+  comment = ""
+)
+```
+
+```{r message=FALSE, include=FALSE}
+if(!require("MASS")) install.packages("MASS")
+if(!require("ISLR2")) install.packages("ISLR2")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("HH")) install.packages("HH") # VIF
+if(!require("e1071")) install.packages("e1071") # naiveBayes
+if(!require("class")) install.packages("class") # knn
+if(!require("formulaic")) install.packages("formulaic")
+if(!require("caTools")) install.packages("caTools")
+if(!require("caret")) install.packages("caret")
+if(!require("boot")) install.packages("boot")
+if(!require("leaps")) install.packages("leaps") # regsubsets
+if(!require("glmnet")) install.packages("glmnet") # Ridge and Lasso Regression
+if(!require("pls")) install.packages("pls") # Partial Least Squares & Principal Component Regression
+if(!require("splines")) install.packages("splines")
+if(!require("gam")) install.packages("gam")
+if(!require("akima")) install.packages("akima")
+if(!require("tree")) install.packages("tree") # Classification and Regression Trees
+if(!require("randomForest")) install.packages("randomForest")
+if(!require("gbm")) install.packages("gbm") # Boosted Trees
+if(!require("BART")) install.packages("BART")
+if(!require("reticulate")) install.packages("reticulate") # Use python objects in R
+if(!require("ROCR")) install.packages("ROCR")
+if(!require("keras")) install.packages("keras") # Install keras for deep learning
+if(!require("jpeg")) install.packages("jpeg")
+if(!require("imager")) install.packages("imager")
+if(!require("tensorflow")) install.packages("te")
+
+library(tensorflow)
+library(imager)
+library(keras)
+reticulate::use_condaenv(condaenv = "r-tensorflow")
+library(ROCR)
+library(reticulate)
+library(BART)
+library(gbm)
+library(randomForest)
+library(tree)
+library(akima)
+library(gam)
+library(splines)
+library(glmnet)
+library(pls)
+library(leaps)
+library(formulaic)
+library(class)
+library(e1071)
+library(HH)
+library(MASS)
+library(ISLR2)
+library(tidyverse)
+library(caTools)
+library(caret)
+library(boot)
+library(jpeg)
+```
+
+```{r output=FALSE, results = 'hide', message=FALSE}
+# keras::install_keras(method = "conda", python_version = "3.10")
+```
+
+```{r include=FALSE}
+# Check tensorflow GPU configuration
+# tf$config$list_physical_devices("GPU")
+# R.version$arch
+# tf$constant("Hello Tensorflow!")
+```
+
+```{r include=FALSE}
+custom_darkblue = "#1A0875"
+custom_lightblue = "#34ABEB"
+custom_red = "#a60808"
+```
+
+```{r include=FALSE}
+f_print <- function(string){
+  cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
+}
+```
+
+## Gathering data from IEEE Paper Decoding AO vs. MI vs. ME
+
+
+
+```{r}
+# setwd('/Volumes/T7/Github/An-Introduction-To-Statistical-Learning-With-Applications-In-R-Second-Edition/Chapter_8_Tree_Based_Methods/Decoding-EEG-during-AO-MI-ME')
+```
+```{r}
+getwd()
+```
+
+```{r}
+import("sklearn")
+import("mne")
+```
+
+
+```{r}
+base_dir <- 'pysitstand/'
+
+eeg_py <- str_c(base_dir, 'eeg.py')
+eeg_preprocessing_py <- str_c(base_dir, 'eeg_preprocessing.py')
+emg_preprocessing_py <- str_c(base_dir, 'emg_preprocessing.py')
+info_py <- str_c(base_dir, 'info.py')
+model_py <- str_c(base_dir, 'model.py')
+rASR_m <- str_c(base_dir, 'rASR.m')
+utils_py <- str_c(base_dir, 'utils.py')
+
+source_python(eeg_py) 
+source_python(eeg_preprocessing_py)
+source_python(emg_preprocessing_py)
+source_python(info_py)
+source_python(model_py)
+# source_python(rASR_m)
+source_python(utils_py)
+
+  
+csv_file_name_EEG = 'S01_EEG_1'
+S01_EEG_1 = EEG(csv_file_name_EEG)
+# data.csv_file_name
+# attributes(data)
+# data$csv_file_name
+```
+
+```{r}
+# rm(EEG)
+```
+
+```{r}
+csv_file_name = './pysitstand/raw_data/S01_EEG/S01_EEG_1.csv'
+S01_EEG_1 = EEG(csv_file_name)
+```
+```{python}
+os.getcwd()
+# r.S01_EEG_1.read_CSV()
+```
+
+
+```{r}
+names(S01_EEG_1)
+raw_data <- S01_EEG_1$read_CSV()
+```
+
+
+```{python}
+import pandas as pd
+import numpy as np
+import glob
+import os
+
+os.path.getmtime
+```
+```{python}
+csv_file_name = 'S01_EEG_1'
+all_files = sorted(glob.glob(csv_file_name), key=os.path.getmtime)
+all_files
+```
+
+
+```{r}
+os <- import("os")
+os$listdir(".")
+```
+```{python}
+r.data.hello_world()
+```
+
+```{r}
+names(data)
+data$hello_world
+```
+
+
+```{r}
+new_data <- EEG(csv_file_name_EEG)
+```
+
+```{r}
+names(new_data)
+new_data$hello_world()
+# new_data$hello_world()
+```
+
+```{r}
+data$hello_world()
+```
+
+
+
+
+
+

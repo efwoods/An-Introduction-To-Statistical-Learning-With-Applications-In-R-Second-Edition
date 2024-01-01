@@ -1,12 +1,3 @@
----
-title: "Lab 8 Decision Trees"
-author: "Evan Woods"
-date: "`r Sys.Date()`"
-output: github_document
----
-
-### Gathering data from IEEE Paper Decoding AO vs. MI vs. ME
-```{python}
 import pandas as pd
 import numpy as np
 import glob
@@ -29,13 +20,13 @@ class EEG:
     ica/ : ICA components of EOG
     montage/ : ICA components montages
     new_raw/ : EEG mne epoch raw .fif file (data was re)
-                After run this file the data was filtered between 1-40 Hz, 
+                After run this file t!he data was filtered between 1-40 Hz, 
                 resampled to 250 Hz and removed EOG components
                 Each trial is 15s long
     raw_EEG/ : EEG figures before remove EOG signals
     
     """
-    
+      
     def __init__(self, csv_file_name, sampling_rate=1200):
         self.sampling_rate = sampling_rate
         self.csv_file_name = csv_file_name
@@ -238,7 +229,7 @@ class EEG:
         Returns
         ----------
         arr_sit, arr_stand :  list of EEG time-domain raw data of sit and stand tasks in scenario 3
-        arr : list of of EEG time-domain raw data in other scenatio
+        arr : list of of EEG time-domain raw data in other scenario
         """
         data = self.split_scenario(scenario, raw_array)
         arr_sit = []
@@ -258,25 +249,3 @@ class EEG:
             return np.array(arr)
         elif scenario <3:
             return self.extract_data(data)[:,:]
-```
-
-```{r}
-getwd()
-```
-
-
-```{python}
-# csv_file_name, sampling_rate=1200
-csv_file_name_EEG = 'S01_EEG_1.csv'
-data = EEG(csv_file_name_EEG)
-```
-```{python}
-data.csv_file_name
-```
-
-
-
-
-
-
-
