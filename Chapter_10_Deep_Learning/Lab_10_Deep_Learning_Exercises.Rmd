@@ -1,3 +1,10 @@
+---
+title: "Lab 10 Deep Learning Exercises"
+author: "Evan Woods"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
