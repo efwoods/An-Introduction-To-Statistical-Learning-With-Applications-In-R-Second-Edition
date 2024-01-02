@@ -16,7 +16,7 @@ x sec window size with y% step (0.1 means overlap 90%)
 
 >> python run_fbcsp_mi.py <window_size> <step> <filter order> <performing task> <prediction motel> <artifact remover>
 
->> python run_fbcsp_mi.py 2 0.1 4 stand R_vs_AO rASR
+>> python run_fbcsp_mi.p 2 0.1 4 stand R_vs_AO rASRy
 >> python run_fbcsp_mi.py 2 0.1 4 sit R_vs_AO rASR
 >> python run_fbcsp_mi.py 2 0.1 4 stand AO_vs_MI rASR
 >> python run_fbcsp_mi.py 2 0.1 4 sit AO_vs_MI rASR

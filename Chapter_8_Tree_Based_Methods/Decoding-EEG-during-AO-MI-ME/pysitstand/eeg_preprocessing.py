@@ -93,7 +93,7 @@ def perform_ica(data, sfreq, new_sfreq, save_name=None, threshold=2):
     raws = [mne.io.RawArray(data[i][:,:long] , info) for i in range(len(data))]
     raw = concatenate_raws(raws)
     raw.set_montage("standard_1020")
-
+    
     if new_sfreq is not None and new_sfreq!=sfreq:
         raw_resampled = raw.copy().resample(new_sfreq, npad='auto')
         raw_tmp = raw_resampled.copy()
@@ -135,7 +135,7 @@ def perform_ica(data, sfreq, new_sfreq, save_name=None, threshold=2):
     return reshape2Dto3D(raw_corrected.get_data(), trials=5)
 
 # preprocessing step, perform from filter_method order
-def preprocessing(data, filter_method, sfreq):
+def data_preprocessing(data, filter_method, sfreq):
     for key, value in filter_method.items():
         if key == 'butter_bandpass_filter':
             data = peform_butter_bandpass_filter(data, value['lowcut'], value['highcut'], sfreq, value['order'])
@@ -208,8 +208,7 @@ def apply_eeg_preprocessing(subject_name=None, session='mi', task='sit', filter_
                 data = eeg.collect_data_allphase(7, raw_array)
             elif task == 'stand':
                 data = eeg.collect_data_allphase(6, raw_array)
-
-        tmp = preprocessing(data=data, filter_method=filter_method, sfreq=sfreq)
+        tmp = data_preprocessing(data=data, filter_method=filter_method, sfreq=sfreq)
         processed_data[i] = tmp[:,:channels,:] # drop EOG channels
     processed_data = processed_data.reshape(-1, channels, datapoint) # reshape 4D to 3D
     return processed_data

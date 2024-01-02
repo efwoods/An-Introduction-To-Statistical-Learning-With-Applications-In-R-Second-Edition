@@ -98,11 +98,7 @@ f_print <- function(string){
 }
 ```
 
-
-
-## Gathering data from IEEE Paper Decoding AO vs. MI vs. ME
-
-### Imports
+## Imports
 ```{r}
 # Imports
 import("sklearn")
@@ -116,7 +112,6 @@ eeg_preprocessing_py <- str_c(base_dir, 'eeg_preprocessing.py')
 emg_preprocessing_py <- str_c(base_dir, 'emg_preprocessing.py')
 info_py <- str_c(base_dir, 'info.py')
 model_py <- str_c(base_dir, 'model.py')
-rASR_m <- str_c(base_dir, 'rASR.m')
 utils_py <- str_c(base_dir, 'utils.py')
 
 source_python(eeg_py) 
@@ -124,223 +119,77 @@ source_python(eeg_preprocessing_py)
 source_python(emg_preprocessing_py)
 source_python(info_py)
 source_python(model_py)
-# source_python(rASR_m)
 source_python(utils_py)
 
-  
-# csv_file_name_EEG = 'S01_EEG_1'
-# S01_EEG_1 = EEG(csv_file_name_EEG)
 ```
 
-### Function Definitions
-
-### Body
-
+## Preprocessing: Collect, Filter, Downsample, Remove Artifacts & Extract Phases
 ```{python}
-    # filter params
-    new_sfreq = 250 # for downsampling before applying ica
-    notch = {'f0': 50}
-    bandpass = {'lowcut': 1, 'highcut': 40, 'order': filter_order}
-    ica = {'new_sfreq': new_sfreq, 'save_name': None, 'threshold': 2}
-
-    # it will perform preprocessing from this order
-    filter_method = {'notch_filter': notch, 
-                    'butter_bandpass_filter': bandpass,
-                    'ica': ica}
-                    
-processed_data = apply_eeg_preprocessing(subject_name='S01', session='mi', task='sit', filter_method = filter_method)
-```
-
-
-```{python}
+## Acquiring Pre-processed Per Phase Data For Each Subject
 # filter params
 new_sfreq = 250 # for downsampling before applying ica
 notch = {'f0': 50}
 bandpass = {'lowcut': 1, 'highcut': 40, 'order': filter_order}
 ica = {'new_sfreq': new_sfreq, 'save_name': None, 'threshold': 2}
-# it will perform preprocessing from this order
-filter_method = {'butter_bandpass_filter': bandpass, 'ica': ica}
-                
-session = 'mi'
-task = 'sit'
+filter_methods = {'notch_filter': notch, 'butter_bandpass_filter': bandpass, 'ica': ica}
 
-subject_name='S01'
-```
-
-
-```{python}
-subject_path = DATASET_PATH+'/'+subject_name+'_EEG/'
-sfreq = 1200
-new_sfreq = sfreq
-```
-
-
-```{python}
-if filter_method is not None:
-    for key in filter_method.keys():
-        if key=='ica' or key=='rASR':
-            new_sfreq = filter_method[key]['new_sfreq'] if filter_method[key]['new_sfreq'] is not None else sfreq
-# subject_path = 'pysitstand/raw_data/'+subject_name+'_EEG/'
-runs, trials, channels, datapoint = 3, 5, 11, 15*new_sfreq
-processed_data = np.zeros((runs, trials, channels, datapoint)) # 3 runs, 5 trials, 11 eeg channels, 14 sec*250 Hz
-```
-
-```{python}
-# processed_data
-```
-
-
-```{python}
-# for each run. Normally, each subject has 3 runs
-for i in range(runs):
-    p_name = subject_path + subject_name+ '_EEG_' + str(i+1)+'.csv'
-    eeg = EEG(p_name, 1200)
-    raw_array = eeg.read_CSV()
-    if session == 'me': # ME 
-        arr_sit, arr_stand = eeg.collect_data_allphase(3, raw_array)
-        if task == 'sit':
-            del arr_stand
-            data = arr_sit
-        elif task == 'stand':
-            del arr_sit
-            data = arr_stand
-    elif session == 'mi': # MI 
-        if task == 'sit':
-            data = eeg.collect_data_allphase(7, raw_array)
-        elif task == 'stand':
-            data = eeg.collect_data_allphase(6, raw_array)
-# preprocessing method
-    data.shape
-    print(filter_method.items())
-    for key, value in filter_method.items():
-        if key == 'butter_bandpass_filter':
-            print(sfreq)
-            data = peform_butter_bandpass_filter(data, value['lowcut'], value['highcut'], sfreq, value['order'])
-            print('butter_bandpass_filter:', value)
-        elif key == 'notch_filter':
-            data = peform_notch_filter(data, value['f0'], sfreq, 25)
-            print('notch_filter:', value)
-        elif key == 'highpass_filter':
-            data = peform_highpass_filter(data, value['highcut'], sfreq, value['order'])
-            print('highpass_filter:', value)
-        elif key == 'ica':
-            print("ica")
-            data = perform_ica(data, sfreq, value['new_sfreq'], value['save_name'], value['threshold'])
-            sfreq = value['new_sfreq'] # after resample
-            print('ica:', value)
-        elif key == 'rASR':
-            data = rASR(data, sfreq, value['new_sfreq'])
-            print('rASR', value)
-    tmp = data
-# preprocessing method      
-    # tmp = preprocessing(data=data, filter_method=filter_method, sfreq=sfreq)
-    print("tmp:")
-    print(tmp)
-    processed_data[i] = tmp[:,:channels,:] # drop EOG channels
+subjects = ['S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'SO8']
+processed_data = dict()
+for i in range(0,8):
+  print("--------------------------------------------------------------------------")
+  print(subjects[i])
+  print("--------------------------------------------------------------------------")
+  processed_data[subjects[i]] = dict()
+  processed_data[subjects[i]]["mi"] = dict()
+  processed_data[subjects[i]]["mi"]["sit"] = dict()
+  processed_data[subjects[i]]["mi"]["stand"] = dict()
+  
+  processed_data[subjects[i]]["mi"]["sit"]["data"] = apply_eeg_preprocessing(subject_name=subjects[i], session='mi', task='sit', filter_method = filter_methods)
+  processed_data[subjects[i]]["mi"]["sit"]["resting"] = processed_data[subjects[i]]["mi"]["sit"]["data"][:,:,500:1500]
+  processed_data[subjects[i]]["mi"]["sit"]["AO"] = processed_data[subjects[i]]["mi"]["sit"]["data"][:,:,1500:2500]
+  processed_data[subjects[i]]["mi"]["sit"]["idle"] = processed_data[subjects[i]]["mi"]["sit"]["data"][:,:,2500:2750]
+  processed_data[subjects[i]]["mi"]["sit"]["performing"] = processed_data[subjects[i]]["mi"]["sit"]["data"][:,:,2750:3750]
+  
+  
+  processed_data[subjects[i]]["mi"]["stand"]["data"] = apply_eeg_preprocessing(subject_name=subjects[i], session='mi', task='stand', filter_method = filter_methods)
+  processed_data[subjects[i]]["mi"]["stand"]["resting"] = processed_data[subjects[i]]["mi"]["sit"]["data"][:,:,500:1500]
+  processed_data[subjects[i]]["mi"]["stand"]["AO"] = processed_data[subjects[i]]["mi"]["sit"]["data"][:,:,1500:2500]
+  processed_data[subjects[i]]["mi"]["stand"]["idle"] = processed_data[subjects[i]]["mi"]["sit"]["data"][:,:,2500:2750]
+  processed_data[subjects[i]]["mi"]["stand"]["performing"] = processed_data[subjects[i]]["mi"]["sit"]["data"][:,:,2750:3750]
+  
 ```
 
 ```{python}
-processed_data = processed_data.reshape(-1, channels, datapoint) # reshape 4D to 3D
+# Debugging subject S08; "key error"  
+  # apply_eeg_preprocessing(subject_name="S08", session='mi', task='sit', filter_method = filter_methods)  
+  # 
+  # processed_data["S08"]["mi"]["sit"]["data"] = apply_eeg_preprocessing(subject_name="S08", session='mi', task='sit', filter_method = filter_methods)
+  # processed_data["S08"]["mi"]["sit"]["resting"] = processed_data["S08"]["mi"]["sit"]["data"][:,:,500:1500]
+  # processed_data["S08"]["mi"]["sit"]["AO"] = processed_data["S08"]["mi"]["sit"]["data"][:,:,1500:2500]
+  # processed_data["S08"]["mi"]["sit"]["idle"] = processed_data["S08"]["mi"]["sit"]["data"][:,:,2500:2750]
+  # processed_data["S08"]["mi"]["sit"]["performing"] = processed_data["S08"]["mi"]["sit"]["data"][:,:,2750:3750]
+  
+  
+  # processed_data["S08"]["mi"]["stand"]["data"] = apply_eeg_preprocessing(subject_name="S08", session='mi', task='stand', filter_method = filter_methods)
+  # processed_data["S08"]["mi"]["stand"]["resting"] = processed_data["S08"]["mi"]["sit"]["data"][:,:,500:1500]
+  # processed_data["S08"]["mi"]["stand"]["AO"] = processed_data["S08"]["mi"]["sit"]["data"][:,:,1500:2500]
+  # processed_data["S08"]["mi"]["stand"]["idle"] = processed_data["S08"]["mi"]["sit"]["data"][:,:,2500:2750]
+  # processed_data["S08"]["mi"]["stand"]["performing"] = processed_data["S08"]["mi"]["sit"]["data"][:,:,2750:3750]
 ```
 
 
+## Testing Load Data
 ```{python}
-processed_data
+    # window_size = int(sys.argv[1]) # 1,2,3 sec.
+    # step = float(sys.argv[2]) # 0.1 --> overlap(90%)
+    # filter_order = int(sys.argv[3]) # 2 order of all fillter
+    # task = sys.argv[4] # stand, sit
+    # prediction_model = sys.argv[5] # R_vs_AO, AO_vs_MI
+    # artifact_remover = sys.argv[6] # ICA, rASR
+    # sfreq = 250 # new sampling rate [max = 1200 Hz]
+    # win_len_point = int(window_size*sfreq)
 ```
 
-```{python}
-subject_name='S01'
-```
-
-
-```{python}
-subject_path = DATASET_PATH+'/'+subject_name+'_EEG/'
-```
-
-
-```{python}
-subject_path
-```
-
-
-
-```{python}
-sfreq = 1200
-    new_sfreq = sfreq
-    if filter_method is not None:
-        for key in filter_method.keys():
-            if key=='ica' or key=='rASR':
-                new_sfreq = filter_method[key]['new_sfreq'] if filter_method[key]['new_sfreq'] is not None else sfreq
-    # subject_path = 'pysitstand/raw_data/'+subject_name+'_EEG/'
-    runs, trials, channels, datapoint = 3, 5, 11, 15*new_sfreq
-    processed_data = np.zeros((runs, trials, channels, datapoint)) # 3 runs, 5 trials, 11 eeg channels, 14 sec*250 Hz
-```
-
-
-```{python}
-subject_path
-```
-
-
-```{python}
-# for each run. Normally, each subject has 3 runs
-    for i in range(runs):
-        p_name = subject_path + subject_name+ '_EEG_' + str(i+1)+'.csv'
-        eeg = EEG(p_name, 1200)
-        raw_array = eeg.read_CSV()
-        if session == 'me': # ME 
-            arr_sit, arr_stand = eeg.collect_data_allphase(3, raw_array)
-            if task == 'sit':
-                del arr_stand
-                data = arr_sit
-            elif task == 'stand':
-                del arr_sit
-                data = arr_stand
-        elif session == 'mi': # MI 
-            if task == 'sit':
-                data = eeg.collect_data_allphase(7, raw_array)
-            elif task == 'stand':
-                data = eeg.collect_data_allphase(6, raw_array)
-
-        tmp = preprocessing(data=data, filter_method=filter_method, sfreq=sfreq)
-        processed_data[i] = tmp[:,:channels,:] # drop EOG channels
-
-    processed_data = processed_data.reshape(-1, channels, datapoint) # reshape 4D to 3D
-```
-
-```{python}
-proces
-```
-
-
-
-```{python}
-apply_eeg_preprocessing('S01')
-```
-
-
-```{python}
-# Create S01_EEG_1 handler
-csv_file_name = './pysitstand/raw_data/S01_EEG/S01_EEG_1.csv'
-S01_EEG_1_p = EEG(csv_file_name)
-```
-
-```{python}
-# Create Scenario & Phase Structure
-create_scenario_phase_data_structure(S01_EEG_1_p)
-```
-
-
-```{python}
-# Reading Raw Data
-S01_EEG_1_p.raw_data = S01_EEG_1_p.read_CSV()
-S01_EEG_1_p.raw_data
-```
-
-```{python}
-# collecting all scenarios
-collect_all_scenarios(S01_EEG_1_p)
-```
 
 
 
