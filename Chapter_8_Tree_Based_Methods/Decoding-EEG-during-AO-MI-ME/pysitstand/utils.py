@@ -39,7 +39,7 @@ def sliding_window2(data, win_sec_len, step, sfreq):
                     stop_pos = int(start_pos + win_len_point) 
                     data_slided[i, j, idx, :] = data[i, j, start_pos:stop_pos]
         data_swap = np.swapaxes(data_slided,1,2)
-        print("DONE!!!", "Dimension of data is:", data_swap.reshape(-1, data_swap.shape[2], data_swap.shape[3]).shape)
+        # print("Dimension of data is:", data_swap.reshape(-1, data_swap.shape[2], data_swap.shape[3]).shape)
         return data_swap.reshape(-1, data_swap.shape[2], data_swap. shape[3])
     else:
         print("Wrong dimension")

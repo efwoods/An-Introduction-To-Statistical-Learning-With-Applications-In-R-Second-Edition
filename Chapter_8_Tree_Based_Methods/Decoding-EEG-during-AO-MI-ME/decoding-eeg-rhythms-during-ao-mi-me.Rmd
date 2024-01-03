@@ -92,11 +92,206 @@ custom_lightblue = "#34ABEB"
 custom_red = "#a60808"
 ```
 
+## Function Definitions
+
 ```{r include=FALSE}
 f_print <- function(string){
   cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
 }
 ```
+
+```{r}
+source_scripts <- function(){
+  base_dir <- 'pysitstand/'
+
+  eeg_py <- str_c(base_dir, 'eeg.py')
+  eeg_preprocessing_py <- str_c(base_dir, 'eeg_preprocessing.py')
+  emg_preprocessing_py <- str_c(base_dir, 'emg_preprocessing.py')
+  info_py <- str_c(base_dir, 'info.py')
+  model_py <- str_c(base_dir, 'model.py')
+  utils_py <- str_c(base_dir, 'utils.py')
+
+  source_python(eeg_py) 
+  source_python(eeg_preprocessing_py)
+  source_python(emg_preprocessing_py)
+  source_python(info_py)
+  source_python(model_py)
+  source_python(utils_py)
+}
+```
+
+```{python}
+# """ Create Sliding Window
+# 
+#     Purpose
+#     -------
+#     This function will accept pre-processed data and create a sliding window 
+#     to augment the data.
+# 
+#     Parameters
+#     ----------
+#     class_data: Phase data per subject for binary classification.
+#              The data is expected to have been filtered, downsampled, and free 
+#              of artifacts. Expected phases are resting, action observation (AO), 
+#              and performing. Example input per subject is as follows:
+#              processed_data[0]["mi"]["sit"]["resting"]["data"]
+#              where 0 is the 0 based index of the 8 total subjects (0-7).
+#     
+#     Returns
+#     -------
+#     class-slided: Slided array of the input data. The window size is 2 seconds, 
+#     the sample frequency is 250, the window shifts by 0.2 seconds, and the 
+#     total number of windows is dependent upon the total number of samples per 
+#     input phase. The output is anticipated to be stored in:
+#     processed_data[0]["mi"]["sit"]["resting"]["slided"]
+#     where 0 is the 0 based index of the 8 total subjects (0-7).
+#     
+#     Note
+#     ----
+#     This code will drive the sliding_window2 method which will create the 
+#     window shift by a factor of 2 times the input step.
+#              
+# """
+def create_sliding_window(class_data):
+  window_size = 2
+  sample_frequency = 250
+  time_points = window_size*sample_frequency
+  step_size = 0.1
+  total_samples_per_phase = class_data.shape[-1]
+  number_of_windows = int(((total_samples_per_phase - time_points)/(time_points*step_size))+1)
+
+  class_slided = np.zeros([15, number_of_windows, 11, time_points])
+  for i, (enumerated_class_data) in enumerate(class_data):
+    class_slided[i,:, :, :] = np.copy(sliding_window2(np.array([enumerated_class_data]), win_sec_len=window_size, step = step_size, sfreq = sample_frequency))
+  return class_slided
+  
+```
+
+```{python}
+# """Aggregate Data
+#    
+#    Purpose
+#    -------
+#    The function defines the classes to be tested and aggregates the data 
+#    with respect to dependent and independent variables. The initial class is 
+#    indicated by a 0 where as the second class input to this function is 
+#    indicated from the response by a 1.
+#
+#    Parameters
+#    ----------
+#    class_1_slided_data: This data is slided to augment the dataset. Expected 
+#                         phases include "resting", "AO", and "performing".
+#                         Expected situation includes "stand" or "sit". Expected
+#                         use is for motor imagery. Example input is as follows:
+#                         processed_data[subj_#]['mi']['sit']['AO']['slided']
+#  
+#    class_2_slided_data: This data is slided to augment the dataset. Expected 
+#                         phases include "resting", "AO", and "performing".
+#                         Expected situation includes "stand" or "sit". Expected
+#                         use is for motor imagery. Example input is as follows:
+#                         processed_data[subj_#]['mi']['sit']['resting']['slided']
+#    Return
+#    ------
+#    X: Combined numpy array of class 1 and class 2 data. 
+#  
+#    y: Combined numpy array of truth values which pertain to class.
+#       Class 1 is 0 and class 2 is indicated by a 1.
+#  
+# """
+def aggregate_data(class_1_slided_data, class_2_slided_data):
+  X0 = np.copy(class_1_slided_data)
+  X1 = np.copy(class_2_slided_data)
+  y0 = np.zeros([X0.shape[0], X0.shape[1]])
+  y1 = np.ones([X1.shape[0], X1.shape[1]])
+
+  X = np.concatenate((X0.reshape(-1, X0.shape[-2], X0.shape[-1]), 
+                        X1.reshape(-1, X1.shape[-2], X1.shape[-1])), axis=0)
+  y = np.concatenate((y0.reshape(-1), y1.reshape(-1)), axis = 0)
+  return X,y
+```
+
+```{r}
+# """ Create Train and Test Sets
+#   Parameters
+#   ----------
+#   x: A numpy array of pre-processed signal test and train data for binary 
+#     classification. The data is to be split into train and test, and contains
+#     either resting vs AO or AO vs MI for both sit-to-stand and stand-to-sit
+#     situations for motor imagery. This data has not yet been through the final
+#     processing step involving a filter bank common spatial pattern.
+#
+#   y: A numpy array of pre-processed truth values test & train data for binary 
+#     classification. The data is to be split into train and test, and contains
+#     either resting vs AO or AO vs MI for both sit-to-stand and stand-to-sit
+#     situations for motor imagery. This data has not yet been through the final
+#     processing step involving a filter bank common spatial pattern.
+#   
+# """
+set.seed(115)
+create_train_and_test_sets <- function(x, y){
+  py$train_index <- sample(c(TRUE, FALSE), nrow(x), replace = TRUE, prob = c((14/15), (1/15)))
+  
+  py$X_train = x[py$train_index,,]
+  py$y_train = y[py$train_index]
+  py$X_test = x[!py$train_index,,]
+  py$y_test = y[!py$train_index]
+  
+}
+```
+
+```{python}
+# """ Process with Filter Bank Common Spatial Pattern
+# 
+#
+# """
+def process_with_filter_bank_common_spatial_pattern(X_train, y_train, X_test, y_test, filter_order=2, session='mi'):
+    
+    '''
+    X_train, X_test: EEG data, 3D numpy array (#windows, #channels #timepoint)
+    y_train, y_test: labels, 1D numpy array (#windows)
+    '''
+
+    if session == 'mi':
+        filters = [[4, 8], [8, 12], [12, 16], 
+                [16, 20], [20, 24], [24, 28], 
+                [28, 32], [32, 36], [36, 40]]
+    elif session == 'me':
+        filters = [[0.1, 0.5], [0.5, 1], [1, 1.5],
+                   [1.5, 2], [2, 2.5], [2.5, 3]]
+
+    n_components = 3   
+    n_features = 9
+
+    n_fbank = len(filters)   
+    
+    csp = CSP(n_components=n_components, norm_trace=False)
+    X_train_fbcsp = np.zeros([X_train.shape[0], n_fbank, n_components])
+    X_test_fbcsp = np.zeros((X_test.shape[0], n_fbank, n_components))
+
+    fbcsp = {} # dict
+    for idx, (f1,f2) in enumerate(filters, start=0):        
+        X_train_fb = butter_bandpass_filter(X_train, f1, f2, fs=250, order=filter_order)
+        X_test_fb = butter_bandpass_filter(X_test, f1, f2, fs=250, order=filter_order)
+        csp = CSP(n_components=n_components, norm_trace=False)
+        X_train_fbcsp[:, idx, :] = csp.fit_transform(X_train_fb, y_train) 
+        fbcsp[(f1,f2)] = csp
+        for n_sample in range(X_test_fb.shape[0]):
+            csp_test = X_test_fb[n_sample, :, :].reshape(1, X_test_fb.shape[1], X_test_fb.shape[2])
+            X_test_fbcsp[n_sample, idx, :] = csp.transform(csp_test)
+
+    nsamples, nx, ny = X_train_fbcsp.shape
+    X_train_fbcsp = X_train_fbcsp.reshape((nsamples, nx*ny))
+
+    nsamples, nx, ny = X_test_fbcsp.shape
+    X_test_fbcsp = X_test_fbcsp.reshape((nsamples, nx*ny))
+    
+    selector = SelectKBest(score_func=mutual_info_classif, k=n_features)
+    X_train_fbcsp = selector.fit_transform(X_train_fbcsp, y_train)
+    X_test_fbcsp = selector.transform(X_test_fbcsp)        
+    
+    return [X_train_fbcsp, X_test_fbcsp]
+```
+
 
 ## Imports
 ```{r}
@@ -105,26 +300,62 @@ import("sklearn")
 import("mne")
 import("numpy", as = "np")
 
-base_dir <- 'pysitstand/'
+source_scripts()
+```
 
-eeg_py <- str_c(base_dir, 'eeg.py')
-eeg_preprocessing_py <- str_c(base_dir, 'eeg_preprocessing.py')
-emg_preprocessing_py <- str_c(base_dir, 'emg_preprocessing.py')
-info_py <- str_c(base_dir, 'info.py')
-model_py <- str_c(base_dir, 'model.py')
-utils_py <- str_c(base_dir, 'utils.py')
+# Motor Imagery
 
-source_python(eeg_py) 
-source_python(eeg_preprocessing_py)
-source_python(emg_preprocessing_py)
-source_python(info_py)
-source_python(model_py)
-source_python(utils_py)
+## Create data structure to hold pre-processed data
+```{python}
+processed_data = []
+for i in range(0,8):
+  processed_data.append({})
+  processed_data[i]["mi"] = dict()
+  processed_data[i]["mi"]["sit"] = dict()
+  processed_data[i]["mi"]["stand"] = dict()
+  
+  processed_data[i]["mi"]["sit"]["resting"] = dict()
+  processed_data[i]["mi"]["sit"]["AO"] = dict()
+  processed_data[i]["mi"]["sit"]["idle"] = dict()
+  processed_data[i]["mi"]["sit"]["performing"] = dict()
+  
+  processed_data[i]["mi"]["sit"]["resting"]["data"] = []
+  processed_data[i]["mi"]["sit"]["AO"]["data"] = [] 
+  processed_data[i]["mi"]["sit"]["idle"]["data"] = []
+  processed_data[i]["mi"]["sit"]["performing"]["data"] = []
+  
+  processed_data[i]["mi"]["sit"]["resting"]["slided"] = []
+  processed_data[i]["mi"]["sit"]["AO"]["slided"] = [] 
+  processed_data[i]["mi"]["sit"]["idle"]["slided"] = []
+  processed_data[i]["mi"]["sit"]["performing"]["slided"] = []
+  
+  processed_data[i]["mi"]["stand"]["resting"] = dict()
+  processed_data[i]["mi"]["stand"]["AO"] = dict()
+  processed_data[i]["mi"]["stand"]["idle"] = dict()
+  processed_data[i]["mi"]["stand"]["performing"] = dict()
 
+  processed_data[i]["mi"]["stand"]["resting"]["data"] = []
+  processed_data[i]["mi"]["stand"]["AO"]["data"] = [] 
+  processed_data[i]["mi"]["stand"]["idle"]["data"] = []
+  processed_data[i]["mi"]["stand"]["performing"]["data"] = []
+  
+  processed_data[i]["mi"]["stand"]["resting"]["slided"] = []
+  processed_data[i]["mi"]["stand"]["AO"]["slided"] = [] 
+  processed_data[i]["mi"]["stand"]["performing"]["slided"] = []
+  
+  processed_data[i]["mi"]["sit"]["resting"]["fbcsp"] = []
+  processed_data[i]["mi"]["sit"]["AO"]["fbcsp"] = []
+  processed_data[i]["mi"]["sit"]["performing"]["fbcsp"] = []
+  
+  processed_data[i]["mi"]["stand"]["resting"]["fbcsp"] = []
+  processed_data[i]["mi"]["stand"]["AO"]["fbcsp"] = []
+  processed_data[i]["mi"]["stand"]["performing"]["fbcsp"] = []
+  
 ```
 
 ## Preprocessing: Collect, Filter, Downsample, Remove Artifacts & Extract Phases
-```{python}
+```{python results='hide'}
+
 ## Acquiring Pre-processed Per Phase Data For Each Subject
 # filter params
 new_sfreq = 250 # for downsampling before applying ica
@@ -134,64 +365,255 @@ ica = {'new_sfreq': new_sfreq, 'save_name': None, 'threshold': 2}
 filter_methods = {'notch_filter': notch, 'butter_bandpass_filter': bandpass, 'ica': ica}
 
 subjects = ['S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'SO8']
-processed_data = dict()
+
 for i in range(0,8):
   print("--------------------------------------------------------------------------")
   print(subjects[i])
   print("--------------------------------------------------------------------------")
-  processed_data[subjects[i]] = dict()
-  processed_data[subjects[i]]["mi"] = dict()
-  processed_data[subjects[i]]["mi"]["sit"] = dict()
-  processed_data[subjects[i]]["mi"]["stand"] = dict()
   
-  processed_data[subjects[i]]["mi"]["sit"]["data"] = apply_eeg_preprocessing(subject_name=subjects[i], session='mi', task='sit', filter_method = filter_methods)
-  processed_data[subjects[i]]["mi"]["sit"]["resting"] = processed_data[subjects[i]]["mi"]["sit"]["data"][:,:,500:1500]
-  processed_data[subjects[i]]["mi"]["sit"]["AO"] = processed_data[subjects[i]]["mi"]["sit"]["data"][:,:,1500:2500]
-  processed_data[subjects[i]]["mi"]["sit"]["idle"] = processed_data[subjects[i]]["mi"]["sit"]["data"][:,:,2500:2750]
-  processed_data[subjects[i]]["mi"]["sit"]["performing"] = processed_data[subjects[i]]["mi"]["sit"]["data"][:,:,2750:3750]
+  processed_data[i]["mi"]["sit"]["data"] = apply_eeg_preprocessing(subject_name=subjects[i], session='mi', task='sit', filter_method = filter_methods)
+  processed_data[i]["mi"]["sit"]["resting"]["data"] = processed_data[i]["mi"]["sit"]["data"][:,:,500:1500]
+  processed_data[i]["mi"]["sit"]["AO"]["data"] = processed_data[i]["mi"]["sit"]["data"][:,:,1500:2500]
+  processed_data[i]["mi"]["sit"]["idle"]["data"] = processed_data[i]["mi"]["sit"]["data"][:,:,2500:2750]
+  processed_data[i]["mi"]["sit"]["performing"]["data"] = processed_data[i]["mi"]["sit"]["data"][:,:,2750:3750]
   
+  processed_data[i]["mi"]["stand"]["data"] = apply_eeg_preprocessing(subject_name=subjects[i], session='mi', task='stand', filter_method = filter_methods)
+  processed_data[i]["mi"]["stand"]["resting"]["data"] = processed_data[i]["mi"]["sit"]["data"][:,:,500:1500]
+  processed_data[i]["mi"]["stand"]["AO"]["data"] = processed_data[i]["mi"]["sit"]["data"][:,:,1500:2500]
+  processed_data[i]["mi"]["stand"]["idle"]["data"] = processed_data[i]["mi"]["sit"]["data"][:,:,2500:2750]
+  processed_data[i]["mi"]["stand"]["performing"]["data"] = processed_data[i]["mi"]["sit"]["data"][:,:,2750:3750]
   
-  processed_data[subjects[i]]["mi"]["stand"]["data"] = apply_eeg_preprocessing(subject_name=subjects[i], session='mi', task='stand', filter_method = filter_methods)
-  processed_data[subjects[i]]["mi"]["stand"]["resting"] = processed_data[subjects[i]]["mi"]["sit"]["data"][:,:,500:1500]
-  processed_data[subjects[i]]["mi"]["stand"]["AO"] = processed_data[subjects[i]]["mi"]["sit"]["data"][:,:,1500:2500]
-  processed_data[subjects[i]]["mi"]["stand"]["idle"] = processed_data[subjects[i]]["mi"]["sit"]["data"][:,:,2500:2750]
-  processed_data[subjects[i]]["mi"]["stand"]["performing"] = processed_data[subjects[i]]["mi"]["sit"]["data"][:,:,2750:3750]
+  print("--------------------------------------------------------------------------")
+  print("Completed Processing")
+  print("--------------------------------------------------------------------------")
+```
+
+```{python results='hide'}
+processed_data[7]["mi"]["sit"]["data"] = apply_eeg_preprocessing(subject_name="S08", session='mi', task='sit', filter_method = filter_methods)
+processed_data[7]["mi"]["sit"]["resting"]["data"] = processed_data[7]["mi"]["sit"]["data"][:,:,500:1500]
+processed_data[7]["mi"]["sit"]["AO"]["data"] = processed_data[7]["mi"]["sit"]["data"][:,:,1500:2500]
+processed_data[7]["mi"]["sit"]["idle"]["data"] = processed_data[7]["mi"]["sit"]["data"][:,:,2500:2750]
+processed_data[7]["mi"]["sit"]["performing"]["data"] = processed_data[7]["mi"]["sit"]["data"][:,:,2750:3750]
+
+processed_data[7]["mi"]["stand"]["data"] = apply_eeg_preprocessing(subject_name="S08", session='mi', task='sit', filter_method = filter_methods)
+processed_data[7]["mi"]["stand"]["resting"]["data"] = processed_data[7]["mi"]["sit"]["data"][:,:,500:1500]
+processed_data[7]["mi"]["stand"]["AO"]["data"] = processed_data[7]["mi"]["sit"]["data"][:,:,1500:2500]
+processed_data[7]["mi"]["stand"]["idle"]["data"] = processed_data[7]["mi"]["sit"]["data"][:,:,2500:2750]
+processed_data[7]["mi"]["stand"]["performing"]["data"] = processed_data[7]["mi"]["sit"]["data"][:,:,2750:3750]
+```
+
+## Sliding window size of 2s
+```{python}
+# slide all subject data 
+for i in range(0, 8):
+  processed_data[i]["mi"]["sit"]["resting"]["slided"] = create_sliding_window(processed_data[i]["mi"]["sit"]["resting"]["data"])
+  processed_data[i]["mi"]["sit"]["AO"]["slided"] = create_sliding_window(processed_data[i]["mi"]["sit"]["AO"]["data"])
+  processed_data[i]["mi"]["sit"]["performing"]["slided"] = create_sliding_window(processed_data[i]["mi"]["sit"]["performing"]["data"])
   
+  processed_data[i]["mi"]["stand"]["resting"]["slided"] = create_sliding_window(processed_data[i]["mi"]["stand"]["resting"]["data"])
+  processed_data[i]["mi"]["stand"]["AO"]["slided"] = create_sliding_window(processed_data[i]["mi"]["stand"]["AO"]["data"])
+  processed_data[i]["mi"]["stand"]["performing"]["slided"] = create_sliding_window(processed_data[i]["mi"]["stand"]["performing"]["data"])
+```
+
+
+## Define Dependent and Independent Variables & MI classes
+```{python}
+set.seed(115)
+X_mi_sit_R_AO = []
+y_mi_sit_R_AO = []
+
+X_mi_sit_AO_MI = []
+y_mi_sit_AO_MI = []
+
+X_mi_stand_R_AO = []
+y_mi_stand_R_AO = []
+
+X_mi_stand_AO_MI = []
+y_mi_stand_AO_MI = []
+
+for i in range(0, 8):
+  X_mi_sit_R_AO_val, y_mi_sit_R_AO_val = aggregate_data(processed_data[i]['mi']['sit']['resting']['slided'], processed_data[i]['mi']['sit']['AO']['slided'])
+  X_mi_sit_R_AO.append(X_mi_sit_R_AO_val)
+  y_mi_sit_R_AO.append(y_mi_sit_R_AO_val)
+  
+  X_mi_sit_AO_MI_val, y_mi_sit_AO_MI_val = aggregate_data(processed_data[i]['mi']['sit']['AO']['slided'], processed_data[i]['mi']['sit']['performing']['slided'])
+  X_mi_sit_AO_MI.append(X_mi_sit_AO_MI_val)
+  y_mi_sit_AO_MI.append(y_mi_sit_AO_MI_val)
+  
+  X_mi_stand_R_AO_val, y_mi_stand_R_AO_val = aggregate_data(processed_data[i]['mi']['stand']['resting']['slided'], processed_data[i]['mi']['stand']['AO']['slided'])
+  X_mi_stand_R_AO.append(X_mi_stand_R_AO_val)
+  y_mi_stand_R_AO.append(y_mi_stand_R_AO_val)
+  
+  X_mi_stand_AO_MI_val, y_mi_stand_AO_MI_val = aggregate_data(processed_data[i]['mi']['stand']['AO']['slided'], processed_data[i]['mi']['stand']['performing']['slided'])
+  X_mi_stand_AO_MI.append(X_mi_stand_AO_MI_val)
+  y_mi_stand_AO_MI.append(y_mi_stand_AO_MI_val)
+```
+
+
+
+```{r}
+
+# dim(py$X_mi_sit_R_AO[[1]][1,,])
+
+# py$y_mi_sit_R_AO[[1]]
+
+# test_index <- -train_index
+
+# test_index
+# dim(py$X_mi_sit_R_AO[[1]][train_index,,])
+
+# py$y_mi_sit_R_AO[[1]][py$train_index]
+
+
+
+# sample(nrow(py$X_mi_sit_R_AO[[1]])*(14/15))
+
+
+# train_index <- sample(c(TRUE, FALSE), nrow(py$X_mi_sit_R_AO[[1]]), replace = TRUE, prob = c((14/15), (1/15)))
+# !train_index
+
+# dim(py$y_mi_sit_R_AO[[1]][!train_index])
+```
+
+
+```{python}
+# r.create_train_and_test_sets(X_mi_sit_R_AO[j], y_mi_sit_R_AO[j])
+```
+
+```{r}
+
+```
+
+
+```{python}
+set.seed(115)
+r.create_train_and_test_sets(X_mi_sit_R_AO[0], y_mi_sit_R_AO[0])
 ```
 
 ```{python}
-# Debugging subject S08; "key error"  
-  # apply_eeg_preprocessing(subject_name="S08", session='mi', task='sit', filter_method = filter_methods)  
-  # 
-  # processed_data["S08"]["mi"]["sit"]["data"] = apply_eeg_preprocessing(subject_name="S08", session='mi', task='sit', filter_method = filter_methods)
-  # processed_data["S08"]["mi"]["sit"]["resting"] = processed_data["S08"]["mi"]["sit"]["data"][:,:,500:1500]
-  # processed_data["S08"]["mi"]["sit"]["AO"] = processed_data["S08"]["mi"]["sit"]["data"][:,:,1500:2500]
-  # processed_data["S08"]["mi"]["sit"]["idle"] = processed_data["S08"]["mi"]["sit"]["data"][:,:,2500:2750]
-  # processed_data["S08"]["mi"]["sit"]["performing"] = processed_data["S08"]["mi"]["sit"]["data"][:,:,2750:3750]
-  
-  
-  # processed_data["S08"]["mi"]["stand"]["data"] = apply_eeg_preprocessing(subject_name="S08", session='mi', task='stand', filter_method = filter_methods)
-  # processed_data["S08"]["mi"]["stand"]["resting"] = processed_data["S08"]["mi"]["sit"]["data"][:,:,500:1500]
-  # processed_data["S08"]["mi"]["stand"]["AO"] = processed_data["S08"]["mi"]["sit"]["data"][:,:,1500:2500]
-  # processed_data["S08"]["mi"]["stand"]["idle"] = processed_data["S08"]["mi"]["sit"]["data"][:,:,2500:2750]
-  # processed_data["S08"]["mi"]["stand"]["performing"] = processed_data["S08"]["mi"]["sit"]["data"][:,:,2750:3750]
+del y_test
 ```
 
 
-## Testing Load Data
+```{r}
+py$y_test
+```
+
+
 ```{python}
-    # window_size = int(sys.argv[1]) # 1,2,3 sec.
-    # step = float(sys.argv[2]) # 0.1 --> overlap(90%)
-    # filter_order = int(sys.argv[3]) # 2 order of all fillter
-    # task = sys.argv[4] # stand, sit
-    # prediction_model = sys.argv[5] # R_vs_AO, AO_vs_MI
-    # artifact_remover = sys.argv[6] # ICA, rASR
-    # sfreq = 250 # new sampling rate [max = 1200 Hz]
-    # win_len_point = int(window_size*sfreq)
+# X_mi_sit_R_AO[0]
+# y_mi_sit_R_AO[0]
 ```
 
 
 
+## Create Training & Test Sets & Complete Processing using FBCSP
+```{python results='hide'}
+X_train_arr_mi_sit_R_AO = []
+y_train_arr_mi_sit_R_AO = []
+X_test_arr_mi_sit_R_AO = []
+y_test_arr_mi_sit_R_AO = []
+
+X_train_arr_mi_sit_AO_MI = []
+y_train_arr_mi_sit_AO_MI = []
+X_test_arr_mi_sit_AO_MI = []
+y_test_arr_mi_sit_AO_MI = []
+      
+X_train_arr_mi_stand_R_AO = []
+y_train_arr_mi_stand_R_AO = []
+X_test_arr_mi_stand_R_AO = []
+y_test_arr_mi_stand_R_AO = []
+      
+X_train_arr_mi_stand_AO_MI = []
+y_train_arr_mi_stand_AO_MI = []
+X_test_arr_mi_stand_AO_MI = []
+y_test_arr_mi_stand_AO_MI = []
+      
+
+for i in range(0, 4):
+  for j in range(0, 8):
+    if i == 0:
+      r.create_train_and_test_sets(X_mi_sit_R_AO[j], y_mi_sit_R_AO[j])
+      data_fbcsp = process_with_filter_bank_common_spatial_pattern(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, filter_order=filter_order, session='mi')
+      X_train_arr_mi_sit_R_AO.append(data_fbcsp[0])
+      y_train_arr_mi_sit_R_AO.append(y_train)
+      X_test_arr_mi_sit_R_AO.append(data_fbcsp[1])
+      y_test_arr_mi_sit_R_AO.append(y_test)
+      
+    elif i == 1:
+      r.create_train_and_test_sets(X_mi_sit_AO_MI[j], y_mi_sit_AO_MI[j])
+      data_fbcsp = process_with_filter_bank_common_spatial_pattern(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, filter_order=filter_order, session='mi')
+      X_train_arr_mi_sit_AO_MI.append(data_fbcsp[0])
+      y_train_arr_mi_sit_AO_MI.append(y_train)
+      X_test_arr_mi_sit_AO_MI.append(data_fbcsp[1])
+      y_test_arr_mi_sit_AO_MI.append(y_test)
+      
+    elif i == 2:
+      r.create_train_and_test_sets(X_mi_stand_R_AO[j], y_mi_stand_R_AO[j])
+      data_fbcsp = process_with_filter_bank_common_spatial_pattern(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, filter_order=filter_order, session='mi')
+      X_train_arr_mi_stand_R_AO.append(data_fbcsp[0])
+      y_train_arr_mi_stand_R_AO.append(y_train)
+      X_test_arr_mi_stand_R_AO.append(data_fbcsp[1])
+      y_test_arr_mi_stand_R_AO.append(y_test)
+    
+    elif i == 3:
+      r.create_train_and_test_sets(X_mi_stand_AO_MI[j], y_mi_stand_AO_MI[j])
+      data_fbcsp = process_with_filter_bank_common_spatial_pattern(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, filter_order=filter_order, session='mi')
+      X_train_arr_mi_stand_AO_MI.append(data_fbcsp[0])
+      y_train_arr_mi_stand_AO_MI.append(y_train)
+      X_test_arr_mi_stand_AO_MI.append(data_fbcsp[1])
+      y_test_arr_mi_stand_AO_MI.append(y_test)
+      
+    else:
+      print("Error: i not equal to 0, 1, 2, or 3")
+  
+```
+
+
+```{python}
+# X_train_arr_mi_sit_AO_MI[0].shape
+# y_train_arr_mi_sit_AO_MI[0]
+
+# X_test_arr_mi_sit_AO_MI[0].shape
+
+for i in range(0, 8):
+  y_test_arr_mi_sit_AO_MI[i]
+```
+
+```{python}
+y_test_arr_mi_sit_AO_MI[0]
+```
+
+
+### DataFrame of dependent and independent variables
+```{python}
+# X0, y0, X1, y1 where X0, X1 are class1 (i.e. rest) class2 (i.e. AO) processed EEG data
+# y0, y1 are truth values per class: 0 if class1 (i.e. rest) 1 if class2
+# Example:
+#        X0 = np.copy(AO_class_slided)
+#        X1 = np.copy(MI_class_slided)
+#
+#    y0 = np.zeros([X0.shape[0], X0.shape[1]])
+#    y1 = np.ones([X1.shape[0], X1.shape[1]])
+#    assert len(X0) == len(y0)
+#    assert len(X1) == len(y1)
+```
+
+
+### Fit the data to models (logistic, SVM, DeepNN)
+```{python}
+
+```
+
+### Evaluate results
+```{python}
+
+```
+
+### Discuss Findings
+```{python}
+
+```
 
 
 
