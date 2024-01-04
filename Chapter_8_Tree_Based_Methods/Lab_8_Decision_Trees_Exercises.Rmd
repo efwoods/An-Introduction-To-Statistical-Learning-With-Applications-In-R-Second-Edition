@@ -79,7 +79,7 @@ f_print <- function(string){
 ```{r}
 # Input:
 # response: This is a response variable. Example input is py$y_train
-# predictors: This are the predictors. Example input is py$X. There are expected to be 10 predictors with 5 pairs of predictors corresponding to power spectral density bands with respect to 5 different frequencies.
+# predictors: These are the predictors. Example input is py$X. There are expected to be 10 predictors with 5 pairs of predictors corresponding to power spectral density bands with respect to 5 different frequencies.
 # Output: A tibble containing a response (sleep state) and the predictors (power spectral density bands)
 create_tibble_from_eeg_power_band <- function(response, predictor){
     sleep_per_psd_band <- tibble(sleep_stage = response[1], 

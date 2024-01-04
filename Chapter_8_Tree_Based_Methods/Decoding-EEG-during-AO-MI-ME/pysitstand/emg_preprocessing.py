@@ -249,7 +249,7 @@ def final_perform_preprocessing(data_sit, data_stand):
 
 # We created the detective onset for actual movements
 def detective_onset(data, h):
-    # selected the time interval from 6 s to 9 s as a quet or resting state (This period supposed that there were no any actual movements.)
+    # selected the time interval from 6 s to 9 s as a quiet or resting state (This period supposed that there were no any actual movements.)
     ref_signals = data[int(6*smp_freq):int(9*smp_freq)]
     mean_ref = ref_signals.mean()
     std_ref = ref_signals.std()

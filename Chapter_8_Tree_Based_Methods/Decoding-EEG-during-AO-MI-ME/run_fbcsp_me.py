@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     window_size = int(sys.argv[1]) # 1,2,3 sec.
     step = float(sys.argv[2]) # 0.5 --> overlap(50%)
-    filter_order = int(sys.argv[3]) # 2 order of all fillter
+    filter_order = int(sys.argv[3]) # 2 order of all filter
     task = sys.argv[4] # stand, sit
     prediction_model = sys.argv[5] # AO_vs_MRCPs
     artifact_remover = sys.argv[6] # ICA, rASR

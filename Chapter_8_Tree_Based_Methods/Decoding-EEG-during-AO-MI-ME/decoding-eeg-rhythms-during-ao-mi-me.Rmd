@@ -212,6 +212,16 @@ def aggregate_data(class_1_slided_data, class_2_slided_data):
 
 ```{r}
 # """ Create Train and Test Sets
+#
+#   Purpose
+#   -------
+#   This function will split the data into training and test sets such that one 
+#   trial of 22 observations is reserved for testing. There are 15 trials in 
+#   total. This data is expected to have been pre-processed with a butterworth 
+#   bandpass filter, downsampled to 250 Hz, and free from artifacts via 
+#   independent component analysis. This data will next need to be processed via
+#   a filter bank common spatial pattern before being modeled.
+#
 #   Parameters
 #   ----------
 #   x: A numpy array of pre-processed signal test and train data for binary 
@@ -226,22 +236,96 @@ def aggregate_data(class_1_slided_data, class_2_slided_data):
 #     situations for motor imagery. This data has not yet been through the final
 #     processing step involving a filter bank common spatial pattern.
 #   
+#    Returns
+#    -------
+#    X_train: A np array of pre-processed EEG signals. Consists of 14 trials. 
+#             The shape is trials by channels by time points where time points 
+#             is the window size of 2 seconds multiplied by the sample frequency
+#             of 250 Hz. Each trial is 22 observations in the first dimension.
+#             This data is anticipated to be used for training and validation.
+#
+#    y_train: A np array of truth values pertaining to class by phase. Values 
+#             are integers including 0 and 1.
+#
+#    X_test: A np array of pre-processed EEG signals. Consists of 14 trials. 
+#             The shape is trials by channels by time points where time points 
+#             is the window size of 2 seconds multiplied by the sample frequency
+#             of 250 Hz. Each trial is 22 observations in the first dimension.
+#             This data is anticipated to be used for testing.
+#
+#    y_test: A np array of truth values pertaining to class by phase. Values 
+#             are integers including 0 and 1.
 # """
-set.seed(115)
+set.seed(42)
 create_train_and_test_sets <- function(x, y){
-  py$train_index <- sample(c(TRUE, FALSE), nrow(x), replace = TRUE, prob = c((14/15), (1/15)))
+  py$train_index <- sample(nrow(x), size = 308)
+
+  py$test_index <- c(integer(nrow(y) * (1/15)))
+  index <- 1
+  for (i in seq(1, 330)){
+    if (!(i %in% py$train_index)){
+      py$test_index[index] <- i
+      index <- index + 1
+    } 
+  }
   
   py$X_train = x[py$train_index,,]
   py$y_train = y[py$train_index]
-  py$X_test = x[!py$train_index,,]
-  py$y_test = y[!py$train_index]
-  
+  py$X_test = x[py$test_index,,]
+  py$y_test = y[py$test_index]
 }
 ```
 
 ```{python}
 # """ Process with Filter Bank Common Spatial Pattern
 # 
+#     Purpose
+#     -------
+#     The filter bank common spatial patter is useful in detecting and 
+#     extracting features from different sets of filter banks. The extracted 
+#     signals of each bank of the EEG data are significantly diverse.
+#     These extracted signals are meant to capture more of the information 
+#     contained within the EEG data.
+#      
+#     Parameters
+#     ----------
+#     X_train: A np array of pre-processed EEG signals. Consists of 14 trials. 
+#             The shape is trials by channels by time points where time points 
+#             is the window size of 2 seconds multiplied by the sample frequency
+#             of 250 Hz. Each trial is 22 observations in the first dimension.
+#             This data is anticipated to be used for training and validation.
+#
+#     y_train: A np array of truth values pertaining to class by phase. Values 
+#             are integers including 0 and 1.
+#
+#     X_test: A np array of pre-processed EEG signals. Consists of 14 trials. 
+#             The shape is trials by channels by time points where time points 
+#             is the window size of 2 seconds multiplied by the sample frequency
+#             of 250 Hz. Each trial is 22 observations in the first dimension.
+#             This data is anticipated to be used for testing.
+#
+#     y_test: A np array of truth values pertaining to class by phase. Values 
+#             are integers including 0 and 1.
+#
+#     filter_order: Used to select the order of the butterworth filter. 
+#                   By default this value is 2 indicating a decrease of 12db per
+#                   step of the filter.
+#
+#     session: This is a selection variable used to select the filters with 
+#              respect to motor imagery and motor execution.
+#
+#     Return
+#     ------
+#     X_train_fbcsp: This is the training data that has been processed into 
+#                    multiple filter banks, filtered with a butterworth bandpass
+#                    filter, and processed using a common spatial pattern. This 
+#                    training data is ready to be used as training and 
+#                    validation data for modeling.
+#
+#     X_test_fbcsp: This is the testing data that has been processed into 
+#                    multiple filter banks, filtered with a butterworth bandpass
+#                    filter, and processed using a common spatial pattern. This 
+#                    test data is ready to be used as test data for modeling.
 #
 # """
 def process_with_filter_bank_common_spatial_pattern(X_train, y_train, X_test, y_test, filter_order=2, session='mi'):
@@ -292,9 +376,111 @@ def process_with_filter_bank_common_spatial_pattern(X_train, y_train, X_test, y_
     return [X_train_fbcsp, X_test_fbcsp]
 ```
 
+```{r}
+# """Fit a linear SVM Model
+# Purpose
+# -------
+# Fit a SVM models for four classes during the Motor imagery session. The phases are Resting vs. Action Observation for sit-to-stand and stand-to-sit situations,
+#  and Action Observation vs. Motor Imagery for sit-to-stand and stand-to-sit situations.
+#  
+# Parameters 
+# ----------
+# model_list: List used to store each of the 8 models created.
+# train_list: List of training data. Each item in the list represents a subject and the data represents a given session, pair of phases to classify, and situation. An example input is: mi_sit_R_AO_train_list
+# 
+# Results
+# -------
+# model_list: List of models. Each model is used to predict a phase for a particular individual where the first phase is 0 and the second phase is 1. For example, a model trained with mi_sit_R_AO_train_list will predict Resting as 0 and Action Observation as 1.
+# """
+fit_svm_model <- function(model_list, train_list){
+  for (i in seq(1, 8)){
+    model_list[[i]] <- tune(svm, y ~ ., data = train_list[[i]], kernel = "linear", ranges = list(cost = c(0.001, 0.01, 0.1, 1, 10, 25, 50, 100, 1000)))
+  }
+  return(model_list)
+}
+```
+
+```{r}
+# """Evaluate Results
+#       Purpose
+#       -------
+#       This function will create predictions for each subject generated from a 
+#       linear svm model, create a confusion matrix of those predictions, report
+#       the accuracy of the predictions, and ultimately calculate the mean and 
+#       standard error of the reported accuracies.
+#       
+#       Paramters
+#       ---------
+#       model_list: A list of models used to form predictions. Models are 
+#                   anticipated to be tuned via svm and withhold a best.model.
+#       
+#       test_list: A list of test observations used to make predictions and as a
+#                  ground truth for comparison. Contains both test dependent and 
+#                  independent variables.
+#
+#      selected_subject: An integer used to select the subject for which 
+#                        predictions are desired. When NULL, all subjects will 
+#                        be evaulated for prediction.
+#       
+#       Returns
+#       -------
+#       accuracy_collection: a collection used to store calculated accuracies. 
+#       
+#       Printed formatted output of the subject number, a confusion matrix of 
+#       prediction and truth values, the accuracy of each model per subject, and 
+#       the mean and standard error of the models accross all subjects.
+# """
+evaluate_results <- function(model_list, test_list, selected_subject=NULL){
+    if (is.null(selected_subject)){
+        prediction_list <- list()
+        accuracy_collection <- c(integer(length(model_list)))
+    }
+    for (i in seq(1, length(model_list))){
+      if(is.null(selected_subject)){
+        
+        prediction_list[[i]] <- predict(model_list[[i]]$best.model, test_list[[i]])
+
+        f_print(sprintf("Subject %0.0f:",i))
+        cat("\n")
+        formatted_pred <- (as.integer(prediction_list[[i]]) - 1)
+        truth <- (as.integer(test_list[[i]]$y) - 1)
+        table <- table(truth = truth, pred = formatted_pred)
+        print(table)
+        accuracy_collection[[i]] <- (table[1] + table[4]) / sum(table) * 100
+        f_print(sprintf("Accuracy: %0.3f%%", accuracy_collection[[i]]))
+        cat("\n\n")
+      } else {
+        if(i == selected_subject){
+          prediction_list <- list()
+          accuracy_collection <- c(integer(1))
+          prediction_list[[i]] <- predict(model_list[[i]]$best.model, test_list[[i]])
+          f_print(sprintf("Subject %0.0f:",i))
+          cat("\n")
+          formatted_pred <- (as.integer(prediction_list[[i]]) - 1)
+          truth <- (as.integer(test_list[[i]]$y) - 1)
+          table <- table(truth = truth, pred = formatted_pred)
+          print(table)
+          accuracy_collection[[i]] <- (table[1] + table[4]) / sum(table) * 100
+          f_print(sprintf("Accuracy: %0.3f%%", accuracy_collection[[i]]))
+          cat("\n\n")
+        } else {
+          next
+        }
+      }
+    }
+    if (is.null(selected_subject)){
+      mean_accuracy <- mean(accuracy_collection)
+      f_print(sprintf("Mean Accuracy: %0.3f%%.", mean_accuracy))
+      cat("\n")
+      standard_error <- sqrt(var(accuracy_collection))
+      f_print(sprintf("Standard Error: ±%0.3f%%.", standard_error))
+    }
+  return(accuracy_collection)
+}
+```
 
 ## Imports
-```{r}
+```{r results='hide'}
 # Imports
 import("sklearn")
 import("mne")
@@ -303,7 +489,7 @@ import("numpy", as = "np")
 source_scripts()
 ```
 
-# Motor Imagery
+# Motor Imagery & Motor Execution
 
 ## Create data structure to hold pre-processed data
 ```{python}
@@ -351,9 +537,52 @@ for i in range(0,8):
   processed_data[i]["mi"]["stand"]["AO"]["fbcsp"] = []
   processed_data[i]["mi"]["stand"]["performing"]["fbcsp"] = []
   
+  processed_data[i]["me"] = dict()
+  processed_data[i]["me"]["sit"] = dict()
+  processed_data[i]["me"]["stand"] = dict()
+  
+  processed_data[i]["me"]["sit"]["resting"] = dict()
+  processed_data[i]["me"]["sit"]["AO"] = dict()
+  processed_data[i]["me"]["sit"]["idle"] = dict()
+  processed_data[i]["me"]["sit"]["performing"] = dict()
+  
+  processed_data[i]["me"]["sit"]["resting"]["data"] = []
+  processed_data[i]["me"]["sit"]["AO"]["data"] = [] 
+  processed_data[i]["me"]["sit"]["idle"]["data"] = []
+  processed_data[i]["me"]["sit"]["performing"]["data"] = []
+  
+  processed_data[i]["me"]["sit"]["resting"]["slided"] = []
+  processed_data[i]["me"]["sit"]["AO"]["slided"] = [] 
+  processed_data[i]["me"]["sit"]["idle"]["slided"] = []
+  processed_data[i]["me"]["sit"]["performing"]["slided"] = []
+  
+  processed_data[i]["me"]["stand"]["resting"] = dict()
+  processed_data[i]["me"]["stand"]["AO"] = dict()
+  processed_data[i]["me"]["stand"]["idle"] = dict()
+  processed_data[i]["me"]["stand"]["performing"] = dict()
+
+  processed_data[i]["me"]["stand"]["resting"]["data"] = []
+  processed_data[i]["me"]["stand"]["AO"]["data"] = [] 
+  processed_data[i]["me"]["stand"]["idle"]["data"] = []
+  processed_data[i]["me"]["stand"]["performing"]["data"] = []
+  
+  processed_data[i]["me"]["stand"]["resting"]["slided"] = []
+  processed_data[i]["me"]["stand"]["AO"]["slided"] = [] 
+  processed_data[i]["me"]["stand"]["performing"]["slided"] = []
+  
+  processed_data[i]["me"]["sit"]["resting"]["fbcsp"] = []
+  processed_data[i]["me"]["sit"]["AO"]["fbcsp"] = []
+  processed_data[i]["me"]["sit"]["performing"]["fbcsp"] = []
+  
+  processed_data[i]["me"]["stand"]["resting"]["fbcsp"] = []
+  processed_data[i]["me"]["stand"]["AO"]["fbcsp"] = []
+  processed_data[i]["me"]["stand"]["performing"]["fbcsp"] = []
+  
 ```
 
 ## Preprocessing: Collect, Filter, Downsample, Remove Artifacts & Extract Phases
+
+
 ```{python results='hide'}
 
 ## Acquiring Pre-processed Per Phase Data For Each Subject
@@ -366,7 +595,7 @@ filter_methods = {'notch_filter': notch, 'butter_bandpass_filter': bandpass, 'ic
 
 subjects = ['S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'SO8']
 
-for i in range(0,8):
+for i in range(0,len(processed_data)-1):
   print("--------------------------------------------------------------------------")
   print(subjects[i])
   print("--------------------------------------------------------------------------")
@@ -415,10 +644,8 @@ for i in range(0, 8):
   processed_data[i]["mi"]["stand"]["performing"]["slided"] = create_sliding_window(processed_data[i]["mi"]["stand"]["performing"]["data"])
 ```
 
-
 ## Define Dependent and Independent Variables & MI classes
 ```{python}
-set.seed(115)
 X_mi_sit_R_AO = []
 y_mi_sit_R_AO = []
 
@@ -449,64 +676,6 @@ for i in range(0, 8):
   y_mi_stand_AO_MI.append(y_mi_stand_AO_MI_val)
 ```
 
-
-
-```{r}
-
-# dim(py$X_mi_sit_R_AO[[1]][1,,])
-
-# py$y_mi_sit_R_AO[[1]]
-
-# test_index <- -train_index
-
-# test_index
-# dim(py$X_mi_sit_R_AO[[1]][train_index,,])
-
-# py$y_mi_sit_R_AO[[1]][py$train_index]
-
-
-
-# sample(nrow(py$X_mi_sit_R_AO[[1]])*(14/15))
-
-
-# train_index <- sample(c(TRUE, FALSE), nrow(py$X_mi_sit_R_AO[[1]]), replace = TRUE, prob = c((14/15), (1/15)))
-# !train_index
-
-# dim(py$y_mi_sit_R_AO[[1]][!train_index])
-```
-
-
-```{python}
-# r.create_train_and_test_sets(X_mi_sit_R_AO[j], y_mi_sit_R_AO[j])
-```
-
-```{r}
-
-```
-
-
-```{python}
-set.seed(115)
-r.create_train_and_test_sets(X_mi_sit_R_AO[0], y_mi_sit_R_AO[0])
-```
-
-```{python}
-del y_test
-```
-
-
-```{r}
-py$y_test
-```
-
-
-```{python}
-# X_mi_sit_R_AO[0]
-# y_mi_sit_R_AO[0]
-```
-
-
-
 ## Create Training & Test Sets & Complete Processing using FBCSP
 ```{python results='hide'}
 X_train_arr_mi_sit_R_AO = []
@@ -518,17 +687,17 @@ X_train_arr_mi_sit_AO_MI = []
 y_train_arr_mi_sit_AO_MI = []
 X_test_arr_mi_sit_AO_MI = []
 y_test_arr_mi_sit_AO_MI = []
-      
+
 X_train_arr_mi_stand_R_AO = []
 y_train_arr_mi_stand_R_AO = []
 X_test_arr_mi_stand_R_AO = []
 y_test_arr_mi_stand_R_AO = []
-      
+
 X_train_arr_mi_stand_AO_MI = []
 y_train_arr_mi_stand_AO_MI = []
 X_test_arr_mi_stand_AO_MI = []
 y_test_arr_mi_stand_AO_MI = []
-      
+
 
 for i in range(0, 4):
   for j in range(0, 8):
@@ -539,7 +708,7 @@ for i in range(0, 4):
       y_train_arr_mi_sit_R_AO.append(y_train)
       X_test_arr_mi_sit_R_AO.append(data_fbcsp[1])
       y_test_arr_mi_sit_R_AO.append(y_test)
-      
+
     elif i == 1:
       r.create_train_and_test_sets(X_mi_sit_AO_MI[j], y_mi_sit_AO_MI[j])
       data_fbcsp = process_with_filter_bank_common_spatial_pattern(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, filter_order=filter_order, session='mi')
@@ -547,7 +716,7 @@ for i in range(0, 4):
       y_train_arr_mi_sit_AO_MI.append(y_train)
       X_test_arr_mi_sit_AO_MI.append(data_fbcsp[1])
       y_test_arr_mi_sit_AO_MI.append(y_test)
-      
+
     elif i == 2:
       r.create_train_and_test_sets(X_mi_stand_R_AO[j], y_mi_stand_R_AO[j])
       data_fbcsp = process_with_filter_bank_common_spatial_pattern(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, filter_order=filter_order, session='mi')
@@ -555,7 +724,7 @@ for i in range(0, 4):
       y_train_arr_mi_stand_R_AO.append(y_train)
       X_test_arr_mi_stand_R_AO.append(data_fbcsp[1])
       y_test_arr_mi_stand_R_AO.append(y_test)
-    
+
     elif i == 3:
       r.create_train_and_test_sets(X_mi_stand_AO_MI[j], y_mi_stand_AO_MI[j])
       data_fbcsp = process_with_filter_bank_common_spatial_pattern(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, filter_order=filter_order, session='mi')
@@ -563,56 +732,369 @@ for i in range(0, 4):
       y_train_arr_mi_stand_AO_MI.append(y_train)
       X_test_arr_mi_stand_AO_MI.append(data_fbcsp[1])
       y_test_arr_mi_stand_AO_MI.append(y_test)
-      
+
     else:
       print("Error: i not equal to 0, 1, 2, or 3")
-  
+
 ```
-
-
-```{python}
-# X_train_arr_mi_sit_AO_MI[0].shape
-# y_train_arr_mi_sit_AO_MI[0]
-
-# X_test_arr_mi_sit_AO_MI[0].shape
-
-for i in range(0, 8):
-  y_test_arr_mi_sit_AO_MI[i]
-```
-
-```{python}
-y_test_arr_mi_sit_AO_MI[0]
-```
-
 
 ### DataFrame of dependent and independent variables
-```{python}
-# X0, y0, X1, y1 where X0, X1 are class1 (i.e. rest) class2 (i.e. AO) processed EEG data
-# y0, y1 are truth values per class: 0 if class1 (i.e. rest) 1 if class2
-# Example:
-#        X0 = np.copy(AO_class_slided)
-#        X1 = np.copy(MI_class_slided)
-#
-#    y0 = np.zeros([X0.shape[0], X0.shape[1]])
-#    y1 = np.ones([X1.shape[0], X1.shape[1]])
-#    assert len(X0) == len(y0)
-#    assert len(X1) == len(y1)
+```{r}
+
+mi_sit_R_AO_train_list = list()
+mi_sit_R_AO_test_list = list()
+
+mi_sit_AO_MI_train_list = list()
+mi_sit_AO_MI_test_list = list()
+
+mi_stand_R_AO_train_list = list()
+mi_stand_R_AO_test_list = list()
+
+mi_stand_AO_MI_train_list = list()
+mi_stand_AO_MI_test_list = list()
+
+c_names <- c("fb1", "fb2", "fb3", "fb4", "fb5", "fb6", "fb7", "fb8", "fb9", "y")
+for (i in seq(1,8)){
+  mi_sit_R_AO_train <- data.frame(x_train = py$X_train_arr_mi_sit_R_AO[[i]], y_train = as.factor(py$y_train_arr_mi_sit_R_AO[[i]]))
+  mi_sit_R_AO_test <- data.frame(x_test = py$X_test_arr_mi_sit_R_AO[[i]], y_train = as.factor(py$y_test_arr_mi_sit_R_AO[[i]]))
+
+  mi_sit_AO_MI_train <- data.frame(x_train = py$X_train_arr_mi_sit_AO_MI[[i]], y_train = as.factor(py$y_train_arr_mi_sit_AO_MI[[i]]))
+  mi_sit_AO_MI_test <- data.frame(x_test = py$X_test_arr_mi_sit_AO_MI[[i]], y_train = as.factor(py$y_test_arr_mi_sit_AO_MI[[i]]))
+
+  mi_stand_R_AO_train <- data.frame(x_test = py$X_train_arr_mi_stand_R_AO[[i]], y_train = as.factor(py$y_train_arr_mi_stand_R_AO[[i]]))
+  mi_stand_R_AO_test <- data.frame(x_test = py$X_test_arr_mi_stand_R_AO[[i]], y_train = as.factor(py$y_test_arr_mi_stand_R_AO[[i]]))
+
+  mi_stand_AO_MI_train <- data.frame(x_train = py$X_train_arr_mi_stand_AO_MI[[i]], y_train = as.factor(py$y_train_arr_mi_stand_AO_MI[[i]]))
+  mi_stand_AO_MI_test <- data.frame(x_test = py$X_test_arr_mi_stand_AO_MI[[i]], y_train = as.factor(py$y_test_arr_mi_stand_AO_MI[[i]]))
+  
+  mi_sit_R_AO_train_list[[i]] <- mi_sit_R_AO_train
+  mi_sit_R_AO_test_list[[i]] <- mi_sit_R_AO_test
+
+  mi_sit_AO_MI_train_list[[i]] <- mi_sit_AO_MI_train
+  mi_sit_AO_MI_test_list[[i]] <- mi_sit_AO_MI_test
+
+  mi_stand_R_AO_train_list[[i]] <- mi_stand_AO_MI_train
+  mi_stand_R_AO_test_list[[i]] <- mi_stand_AO_MI_test
+
+  mi_stand_AO_MI_train_list[[i]] <- mi_stand_AO_MI_train
+  mi_stand_AO_MI_test_list[[i]] <- mi_stand_AO_MI_test
+  
+  colnames(mi_sit_R_AO_train_list[[i]]) <- c_names
+  colnames(mi_sit_R_AO_test_list[[i]]) <- c_names
+
+  colnames(mi_sit_AO_MI_train_list[[i]]) <- c_names
+  colnames(mi_sit_AO_MI_test_list[[i]]) <- c_names
+
+  colnames(mi_stand_R_AO_train_list[[i]]) <- c_names
+  colnames(mi_stand_R_AO_test_list[[i]]) <- c_names
+
+  colnames(mi_stand_AO_MI_train_list[[i]]) <- c_names
+  colnames(mi_stand_AO_MI_test_list[[i]]) <- c_names
+}
+
 ```
+
+```{r}
+# mi_sit_R_AO_train_list
+```
+
 
 
 ### Fit the data to models (logistic, SVM, DeepNN)
-```{python}
+### Validation data
+### SVM 
 
+```{r warning=FALSE}
+set.seed(42)
+svm_model_sit_R_vs_AO_list <- list()
+svm_model_sit_R_vs_AO_list <- fit_svm_model(svm_model_sit_R_vs_AO_list, mi_sit_R_AO_train_list)
+
+svm_model_sit_AO_vs_MI_list <- list()
+svm_model_sit_AO_vs_MI_list <- fit_svm_model(svm_model_sit_AO_vs_MI_list, mi_sit_AO_MI_train_list)
+
+svm_model_stand_R_vs_AO_list <- list()
+svm_model_stand_R_vs_AO_list <- fit_svm_model(svm_model_stand_R_vs_AO_list, mi_stand_R_AO_train_list)
+
+svm_model_stand_AO_vs_MI_list <- list()
+svm_model_stand_AO_vs_MI_list <- fit_svm_model(svm_model_stand_AO_vs_MI_list, mi_stand_AO_MI_train_list)
+```
+
+```{r}
+# svm_model_list_R_vs_AO[[1]]$best.model 
+svm_model_stand_AO_vs_MI_list[[1]]$best.model
 ```
 
 ### Evaluate results
-```{python}
+```{r}
+f_print(sprintf("Motor Imagery While Sitting: Detection of Resting vs Action Observation:"))
+cat("\n")
+svm_model_sit_R_vs_AO_accuracy_of_predictions_collection <- evaluate_results(svm_model_sit_R_vs_AO_list, mi_sit_R_AO_test_list)
+cat("\n\n")
+```
+
+
+```{r}
+f_print(sprintf("Motor Imagery While Sitting: Detection of Action Observation vs Motor Imagery:"))
+cat("\n")
+svm_model_sit_AO_vs_MI_accuracy_of_predictions_collection <- evaluate_results(svm_model_sit_AO_vs_MI_list, mi_sit_AO_MI_test_list)
+cat("\n\n")
+```
+
+
+```{r}
+f_print(sprintf("Motor Imagery While Standing: Detection of Resting vs Action Observation:"))
+cat("\n")
+svm_model_stand_R_vs_AO_accuracy_of_predictions_collection <- evaluate_results(svm_model_stand_R_vs_AO_list, mi_stand_R_AO_test_list)
+cat("\n\n")
+```
+
+
+```{r}
+f_print(sprintf("Motor Imagery While Standing: Detection of Action Observation vs Motor Imagery:"))
+cat("\n")
+svm_model_stand_AO_vs_MI_accuracy_of_predictions_collection <- evaluate_results(svm_model_stand_AO_vs_MI_list, mi_stand_AO_MI_test_list)
+cat("\n\n")
+```
+
+# Increasing Model Accuracy of Subject 2
+
+```{r include=FALSE}
+## Exploring the use of another subject's trained model applied to subject 2's data.
+## Is it possible to increase the model accuracy for a low quality model? Subject 2 & Subject 6.
+# Step 1 Use a functional model with higher accuracy on subjects 2's test data
+# Accuracy of model 2 on Subject 2's test data: Accuracy: 77.273%
+# Accuracy of model 8 sit-to-stand Resting vs Action Observation: Accuracy: 90.909%
+```
+
+
+```{r include=FALSE}
+### Subject 2's Model Accuracy on Test Data
+subject2_model_accuracy <- evaluate_results(svm_model_sit_R_vs_AO_list, mi_sit_R_AO_test_list, 2)
+```
+
+```{r include=FALSE}
+### Subject 8's Model Accuracy on Test Data
+# Subject 8's model accuracy
+subject_8_model_accuracy <- evaluate_results(svm_model_sit_R_vs_AO_list, mi_sit_R_AO_test_list, 8)
+```
+
+```{r include=FALSE}
+### Subject 8's model accuracy on subject 2's test data. 
+test_list <- list()
+test_model <- list()
+test_list[[2]] <- mi_sit_R_AO_test_list[[2]]
+test_model[[2]] <- svm_model_sit_R_vs_AO_list[[8]]
+subject_8_model_on_2_test_data <- evaluate_results(test_model, test_list, 2)
+# This method is ineffective.
+```
+
+```{r}
+set.seed(42)
+# Creating a training and validation set for subject 2
+train_set <- sample(nrow(mi_sit_R_AO_train_list[[2]]), size = nrow(mi_sit_R_AO_train_list[[2]])*0.8)
+validation_set <- c(integer(nrow(mi_sit_R_AO_train_list[[2]]))*0.8)
+index <- 1
+for (i in seq(1, length(train_set))) {
+  if(!(i %in% train_set)) {
+    validation_set[[index]] <- i
+    index <- index + 1
+  }  
+}
+
+mi_sit_R_AO_training <- mi_sit_R_AO_train_list[[2]][train_set,]
+mi_sit_R_AO_validation <- mi_sit_R_AO_train_list[[2]][validation_set,]
+```
+
+### Fitting a logistic regression GAM to Subject 2's data
+```{r}
+# Step 2: Explore Subject 2's data and find outliers, high-leverage, or non-linearities.
+
+set.seed(42)
+
+# Fitting a logistic regression GAM to Subject 2's data
+gam.lr <- gam(y ~., family = binomial, data = mi_sit_R_AO_training)
+
+gam.lr_prob <- predict(gam.lr, mi_sit_R_AO_validation, type = "response")
+gam.lr_pred <- rep(0, nrow(mi_sit_R_AO_validation))
+gam.lr_pred[gam.lr_prob > 0.5] <-1
+length(gam.lr_pred)
+length(mi_sit_R_AO_validation$y)
+table <- table(prediction = gam.lr_pred, truth = mi_sit_R_AO_validation$y)
+table
+accuracy <- (table[1] + table[4]) / sum(table) * 100
+f_print(sprintf("Model Accuracy: %0.3f%%.", accuracy))
 
 ```
 
-### Discuss Findings
-```{python}
+## Logistic Regression: Training & Validation
+```{r}
+mi_sit_R_AO_training <- mi_sit_R_AO_train_list[[2]][train_set,]
+mi_sit_R_AO_validation <- mi_sit_R_AO_train_list[[2]][validation_set,]
 
+glm.fit <- glm(y ~ ., data = mi_sit_R_AO_train_list[[2]][train_set, ], family = "binomial")
+glm.prob <- predict(glm.fit, mi_sit_R_AO_train_list[[2]][validation_set,], type = "response")
+glm.pred <- rep(0, nrow(mi_sit_R_AO_train_list[[2]][validation_set,]))
+glm.pred[glm.prob > 0.5] <- 1
+```
+
+```{r}
+glm.table <- table(prediction = glm.pred, truth = mi_sit_R_AO_train_list[[2]][validation_set,]$y)
+glm.table
+glm.accuracy <- (glm.table[1] + glm.table[4]) / sum(glm.table) * 100
+f_print(sprintf("Accuracy of Logistic Regression: %0.3f%%.", glm.accuracy))
+```
+### Detecting Outliers
+```{r}
+glm.fit <- glm(y ~ ., data = mi_sit_R_AO_train_list[[2]], family = "binomial")
+glm.rstudent <- rstudent(glm.fit)
+
+ggplot() +
+  geom_point(aes(
+    seq(1,length(glm.rstudent)), glm.rstudent,
+  ), color = "#1A0875") +
+  geom_hline(yintercept = 3, color = '#a60808') +
+  geom_hline(yintercept = -3, color = '#a60808') +
+  labs(title = "Studentized Residuals Vs. Fitted Values", subtitle = "Detecting outliers in the model", x = "Index", y = "Studentized residuals") + 
+  scale_y_continuous(breaks = c(-3, -2, -1, 0, 1, 2, 3)) + 
+  scale_x_continuous(breaks = NULL)
+f_print(sprintf("There are no detected outliers in the logistic regression fit on Subject 2's data."))
+```
+### Detecting and Removing High-Leverage Values
+```{r}
+# Identifying high-leverage point
+p <- ncol(glm.fit$model)
+n <- nrow(glm.fit$model)
+
+# High-Leverage: value > 3 * (p number of parameters) / (n number of observations)
+high_leverage_cutoff <- (3*p/n)
+
+# Identifying high-leverage values
+lm.hatvalues <- hatvalues(glm.fit)
+high_leverage_values <- lm.hatvalues[lm.hatvalues > high_leverage_cutoff]
+f_print(sprintf("There are multiple high-leverage values:"))
+cat("\n")
+high_leverage_values
+```
+
+```{r}
+high_leverage_values.names <- c(names(high_leverage_values))
+high_leverage_values.names <- as.integer(high_leverage_values.names)
+```
+
+```{r}
+mi_sit_R_AO_train_no_high_leverage <- mi_sit_R_AO_train_list[[2]] %>% mutate(row_number = row_number()) %>% select(row_number, everything())
+mi_sit_R_AO_train_no_high_leverage <- mi_sit_R_AO_train_no_high_leverage %>% filter(!(row_number %in% high_leverage_values.names)) %>% select(everything(), -row_number)
+```
+
+### Refitting a Logistic Regression Model
+```{r}
+glm.fit_no_high_leverage <- glm(y ~ ., data = mi_sit_R_AO_train_no_high_leverage, family = "binomial")
+glm.prob_no_high_leverage <- predict(glm.fit_no_high_leverage, mi_sit_R_AO_train_list[[2]][validation_set,], type = "response")
+glm.pred_no_high_leverage <- rep(0, nrow(mi_sit_R_AO_train_list[[2]][validation_set,]))
+glm.pred_no_high_leverage[glm.prob_no_high_leverage > 0.5] <- 1
+```
+
+```{r}
+glm.table_no_high_leverage <- table(prediction = glm.pred_no_high_leverage, truth = mi_sit_R_AO_train_list[[2]][validation_set,]$y)
+glm.table_no_high_leverage
+glm.accuracy_no_high_leverage <- (glm.table_no_high_leverage[1] + glm.table_no_high_leverage[4]) / sum(glm.table_no_high_leverage) * 100
+f_print(sprintf("Validation Accuracy of Logistic Regression with no high leverage: %0.3f%%.", glm.accuracy_no_high_leverage))
+```
+
+```{r}
+glm.prob_test <- predict(glm.fit, mi_sit_R_AO_test_list[[2]], type = "response")
+glm.pred_test <- rep(0, nrow(mi_sit_R_AO_test_list[[2]]))
+glm.pred_test[glm.prob_test > 0.5] <- 1
+```
+
+```{r}
+glm.table_test <- table(prediction = glm.pred_test, truth = mi_sit_R_AO_test_list[[2]]$y)
+glm.table_test
+glm.accuracy_test_no_high_leverage <- (glm.table_test[1] + glm.table_test[4]) / sum(glm.table_test) * 100
+f_print(sprintf("Accuracy of Logistic Regression: %0.3f%%.", glm.accuracy_test_no_high_leverage))
+```
+
+### Refitting Subject 2's SVM model
+```{r warning=FALSE}
+set.seed(42)
+subject_2_svm_no_high_leverage <- tune(svm, y ~ ., data = mi_sit_R_AO_train_no_high_leverage, kernel = "linear", ranges = list(cost = c(0.001, 0.01, 0.1, 1, 10, 25, 50, 100, 1000)))
+```
+
+```{r}
+set.seed(42)
+subject_2_svm_no_high_leverage.pred <- predict(subject_2_svm_no_high_leverage$best.model, mi_sit_R_AO_test_list[[2]])
+subject_2_svm_no_high_leverage.table <- table(subject_2_svm_no_high_leverage.pred, mi_sit_R_AO_test_list[[2]]$y)
+subject_2_svm_no_high_leverage.table
+subject_2_svm_no_high_leverage.accuracy <- (table[1] + table[4]) / sum(table) * 100
+subject_2_svm_no_high_leverage.accuracy
+```
+
+### Results
+```{r}
+f_print(sprintf("The validation accuracy of the logistic regression model on Subject 2's data increased model performance from the test-set accuracy of %0.3f%% to %0.3f%% after removing high-leverage values detected in Subject 2's training data. After refitting the svm without the high leverage observations, the accuracy of the svm predictions driven by the test set increased by %0.3f%% to %0.3f%%.", subject2_model_accuracy[[2]], glm.accuracy_no_high_leverage, subject_2_svm_no_high_leverage.accuracy - subject2_model_accuracy[[2]], subject_2_svm_no_high_leverage.accuracy))
+```
+
+
+```{r}
+## Deep Neural Network
+# Fitting a deep neural network
+# set.seed(42)
+# modellr <- keras_model_sequential() %>%
+#   layer_dense(input_shape = 784, units = 10, activation = "softmax")
+# summary(modellr)
+```
+
+
+```{r}
+# dim(mi_sit_R_AO_training)
+```
+
+```{r}
+# mi_sit_R_AO_x_train <- mi_sit_R_AO_train_list[[2]] %>% select(everything(), -y)
+# mi_sit_R_AO_y_train <- mi_sit_R_AO_train_list[[2]]$y
+```
+
+```{python}
+# mi_sit_R_AO_x_train_formatted = r.mi_sit_R_AO_x_train
+# mi_sit_R_AO_y_train_formatted = r.mi_sit_R_AO_y_train
+```
+
+```{r}
+# py$mi_sit_R_AO_x_train_formatted
+```
+
+```{r}
+# modellr <- keras_model_sequential() %>%
+#   layer_dense(units = 10, activation = "relu") %>%
+#   layer_dense(units = 1, activation = "softmax")
+```
+
+
+```{r}
+# modellr %>% compile(loss = "categorical_crossentropy", optimizer = optimizer_rmsprop(), metrics = c("accuracy"))
+```
+
+
+```{r}
+# modellr %>% fit(py$mi_sit_R_AO_x_train_formatted$fb1, py$mi_sit_R_AO_y_train_formatted, epochs = 30, batch_size = 128, validation_split = 0.2)
+```
+
+
+```{r}
+# Can what is done to help subject 2 also be used to help subject 6?
+# Subject 2
+```
+
+
+
+```{python}
+### Discuss Findings & Table Results (TPR, FPR, FNR, ROC curve)
+```
+
+
+```{r}
+# ME
+# Apply boosting, bagging, random forests, and BART to a data set of your choice. Be sure to fit the models on a training set and to evaluate their performance on a test set. How accurate are the results compared to simple methods like linear or logistic regression? Which of these approaches yields the best performance?
 ```
 
 

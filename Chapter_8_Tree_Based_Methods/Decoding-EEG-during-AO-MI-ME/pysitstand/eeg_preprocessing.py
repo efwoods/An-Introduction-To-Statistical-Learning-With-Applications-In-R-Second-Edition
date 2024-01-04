@@ -34,7 +34,7 @@ def peform_highpass_filter(data, lowcut, sfreq, order):
             data_finished[i,:,:] = highpass_filter(data[i,:,:], lowcut, sfreq, order)
         return data_finished
     else:
-        print("Error dimesion") 
+        print("Error dimension") 
 
 def peform_notch_filter(data, f0, fs, Q):
     if len(data.shape) == 3:
