@@ -434,17 +434,23 @@ evaluate_results <- function(model_list, test_list, selected_subject=NULL){
     if (is.null(selected_subject)){
         prediction_list <- list()
         accuracy_collection <- c(integer(length(model_list)))
+        true_positive_rate_collection <- c(integer(length(model_list)))
+        false_positive_rate_collection <- c(integer(length(model_list)))
+        false_negative_rate_collection <- c(integer(length(model_list)))
     }
     for (i in seq(1, length(model_list))){
       if(is.null(selected_subject)){
         
         prediction_list[[i]] <- predict(model_list[[i]]$best.model, test_list[[i]])
 
-        f_print(sprintf("Subject %0.0f:",i))
+        f_print(sprintf("Subject %0.0f:", i))
         cat("\n")
         formatted_pred <- (as.integer(prediction_list[[i]]) - 1)
         truth <- (as.integer(test_list[[i]]$y) - 1)
         table <- table(truth = truth, pred = formatted_pred)
+        
+        table_collection[[i]] <- table
+        
         print(table)
         accuracy_collection[[i]] <- (table[1] + table[4]) / sum(table) * 100
         f_print(sprintf("Accuracy: %0.3f%%", accuracy_collection[[i]]))
@@ -453,15 +459,31 @@ evaluate_results <- function(model_list, test_list, selected_subject=NULL){
         if(i == selected_subject){
           prediction_list <- list()
           accuracy_collection <- c(integer(1))
+          true_positive_rate_collection <- c(integer(1))
+          false_positive_rate_collection <- c(integer(1))
+          false_negative_rate_collection <- c(integer(1))
+        
           prediction_list[[i]] <- predict(model_list[[i]]$best.model, test_list[[i]])
           f_print(sprintf("Subject %0.0f:",i))
           cat("\n")
           formatted_pred <- (as.integer(prediction_list[[i]]) - 1)
           truth <- (as.integer(test_list[[i]]$y) - 1)
           table <- table(truth = truth, pred = formatted_pred)
+          
           print(table)
           accuracy_collection[[i]] <- (table[1] + table[4]) / sum(table) * 100
+          
+          true_positive_rate_collection[[i]] <- (table[4]) / (table[4] + table[2]) * 100
+          false_positive_rate_collection[[i]] <- table[2] / (table[4] + table[1]) * 100
+          false_negative_rate_collection[[i]] <- table[1] / (table[1] + table[4]) * 100
+          
           f_print(sprintf("Accuracy: %0.3f%%", accuracy_collection[[i]]))
+          cat("\n")
+          f_print(sprintf("True Positive Rate: %0.3f%%", true_positive_rate_collection[[i]])) 
+          cat("\n")
+          f_print(sprintf("False Positive Rate: %0.3f%%", false_positive_rate_collection[[i]]))
+          cat("\n")
+          f_print(sprintf("False Negative Rate: %0.3f%%", false_negative_rate_collection[[i]]))
           cat("\n\n")
         } else {
           next
@@ -469,11 +491,41 @@ evaluate_results <- function(model_list, test_list, selected_subject=NULL){
       }
     }
     if (is.null(selected_subject)){
+      true_positive_rate_collection[[i]] <- (table[4]) / (table[4] + table[2]) * 100
+      false_positive_rate_collection[[i]] <- table[2] / (table[4] + table[1]) * 100
+      false_negative_rate_collection[[i]] <- table[1] / (table[1] + table[4]) * 100
+      
       mean_accuracy <- mean(accuracy_collection)
       f_print(sprintf("Mean Accuracy: %0.3f%%.", mean_accuracy))
       cat("\n")
-      standard_error <- sqrt(var(accuracy_collection))
-      f_print(sprintf("Standard Error: ±%0.3f%%.", standard_error))
+      
+      acc_standard_error <- sqrt(var(accuracy_collection))
+      f_print(sprintf("Standard Error: ±%0.3f%%.", acc_standard_error))
+      cat("\n")
+      
+      mean_true_positive_rate <- mean(true_positive_rate_collection)
+      f_print(sprintf("Mean TPR: %0.3f%%.", mean_true_positive_rate))
+      cat("\n")
+      
+      TPR_standard_error <- sqrt(var(true_positive_rate_collection))
+      f_print(sprintf("TPR Standard Error: ±%0.3f%%.", TPR_standard_error))
+      cat("\n")
+
+      mean_false_positive_rate <- mean(false_positive_rate_collection)
+      f_print(sprintf("Mean FPR: %0.3f%%.", mean_false_positive_rate))
+      cat("\n")
+      
+      FPR_standard_error <- sqrt(var(false_positive_rate_collection))
+      f_print(sprintf("FPR Standard Error: ±%0.3f%%.", FPR_standard_error))
+      cat("\n")
+
+      mean_false_negative_rate <- mean(false_negative_rate_collection)
+      f_print(sprintf("Mean FNR: %0.3f%%.", mean_false_negative_rate))
+      cat("\n")
+      
+      FNR_standard_error <- sqrt(var(false_negative_rate_collection))
+      f_print(sprintf("FNR Standard Error: ±%0.3f%%.", FNR_standard_error))
+      cat("\n")
     }
   return(accuracy_collection)
 }
@@ -490,7 +542,6 @@ source_scripts()
 ```
 
 # Motor Imagery & Motor Execution
-
 ## Create data structure to hold pre-processed data
 ```{python}
 processed_data = []
@@ -794,16 +845,10 @@ for (i in seq(1,8)){
 
 ```
 
-```{r}
-# mi_sit_R_AO_train_list
-```
-
-
 
 ### Fit the data to models (logistic, SVM, DeepNN)
 ### Validation data
 ### SVM 
-
 ```{r warning=FALSE}
 set.seed(42)
 svm_model_sit_R_vs_AO_list <- list()
@@ -824,14 +869,18 @@ svm_model_stand_AO_vs_MI_list <- fit_svm_model(svm_model_stand_AO_vs_MI_list, mi
 svm_model_stand_AO_vs_MI_list[[1]]$best.model
 ```
 
+```{r}
+
+///
+```
+
 ### Evaluate results
 ```{r}
 f_print(sprintf("Motor Imagery While Sitting: Detection of Resting vs Action Observation:"))
-cat("\n")
+cat("\n") ###???
 svm_model_sit_R_vs_AO_accuracy_of_predictions_collection <- evaluate_results(svm_model_sit_R_vs_AO_list, mi_sit_R_AO_test_list)
 cat("\n\n")
 ```
-
 
 ```{r}
 f_print(sprintf("Motor Imagery While Sitting: Detection of Action Observation vs Motor Imagery:"))
@@ -857,7 +906,6 @@ cat("\n\n")
 ```
 
 # Increasing Model Accuracy of Subject 2
-
 ```{r include=FALSE}
 ## Exploring the use of another subject's trained model applied to subject 2's data.
 ## Is it possible to increase the model accuracy for a low quality model? Subject 2 & Subject 6.
@@ -867,15 +915,17 @@ cat("\n\n")
 ```
 
 
-```{r include=FALSE}
+```{r}
 ### Subject 2's Model Accuracy on Test Data
 subject2_model_accuracy <- evaluate_results(svm_model_sit_R_vs_AO_list, mi_sit_R_AO_test_list, 2)
+subject2_model_accuracy[[2]]
 ```
 
-```{r include=FALSE}
+```{r}
 ### Subject 8's Model Accuracy on Test Data
 # Subject 8's model accuracy
-subject_8_model_accuracy <- evaluate_results(svm_model_sit_R_vs_AO_list, mi_sit_R_AO_test_list, 8)
+subject_8_model_accuracy <- evaluate_results(svm_model_sit_R_vs_AO_list, mi_sit_R_AO_test_list, 8) 
+subject_8_model_accuracy[[8]]
 ```
 
 ```{r include=FALSE}
@@ -906,7 +956,7 @@ mi_sit_R_AO_validation <- mi_sit_R_AO_train_list[[2]][validation_set,]
 ```
 
 ### Fitting a logistic regression GAM to Subject 2's data
-d# Step 2: Explore Subject 2's data and find outliers, high-leverage, or non-linearities.
+# Step 2: Explore Subject 2's data and find outliers, high-leverage, or non-linearities.
 ```{r}
 set.seed(42)
 
@@ -942,6 +992,7 @@ glm.table
 glm.accuracy <- (glm.table[1] + glm.table[4]) / sum(glm.table) * 100
 f_print(sprintf("Accuracy of Logistic Regression: %0.3f%%.", glm.accuracy))
 ```
+
 ### Detecting Outliers
 ```{r}
 glm.fit <- glm(y ~ ., data = mi_sit_R_AO_train_list[[2]], family = "binomial")
@@ -958,8 +1009,10 @@ ggplot() +
   scale_x_continuous(breaks = NULL)
 f_print(sprintf("There are no detected outliers in the logistic regression fit on Subject 2's data."))
 ```
+
 ### Detecting and Removing High-Leverage Values
 ```{r}
+set.seed(42)
 # Identifying high-leverage point
 p <- ncol(glm.fit$model)
 n <- nrow(glm.fit$model)
@@ -1010,7 +1063,7 @@ glm.pred_test[glm.prob_test > 0.5] <- 1
 glm.table_test <- table(prediction = glm.pred_test, truth = mi_sit_R_AO_test_list[[2]]$y)
 glm.table_test
 glm.accuracy_test_no_high_leverage <- (glm.table_test[1] + glm.table_test[4]) / sum(glm.table_test) * 100
-f_print(sprintf("Accuracy of Logistic Regression: %0.3f%%.", glm.accuracy_test_no_high_leverage))
+f_print(sprintf("Accuracy of Logistic Regression on Subject 2's Test Data after removing high-leverage: %0.3f%%.", glm.accuracy_test_no_high_leverage))
 ```
 
 ### Refitting Subject 2's SVM model
@@ -1019,10 +1072,11 @@ set.seed(42)
 subject_2_svm_no_high_leverage <- tune(svm, y ~ ., data = mi_sit_R_AO_train_no_high_leverage, kernel = "linear", ranges = list(cost = c(0.001, 0.01, 0.1, 1, 10, 25, 50, 100, 1000)))
 ```
 
+
 ```{r}
 set.seed(42)
 subject_2_svm_no_high_leverage.pred <- predict(subject_2_svm_no_high_leverage$best.model, mi_sit_R_AO_test_list[[2]])
-subject_2_svm_no_high_leverage.table <- table(subject_2_svm_no_high_leverage.pred, mi_sit_R_AO_test_list[[2]]$y)
+subject_2_svm_no_high_leverage.table <- table(prediction = subject_2_svm_no_high_leverage.pred, truth = mi_sit_R_AO_test_list[[2]]$y)
 subject_2_svm_no_high_leverage.table
 subject_2_svm_no_high_leverage.accuracy <- (table[1] + table[4]) / sum(table) * 100
 subject_2_svm_no_high_leverage.accuracy
@@ -1033,72 +1087,85 @@ subject_2_svm_no_high_leverage.accuracy
 f_print(sprintf("The validation accuracy of the logistic regression model on Subject 2's data increased model performance from the test-set accuracy of %0.3f%% to %0.3f%% after removing high-leverage values detected in Subject 2's training data. After refitting the svm without the high leverage observations, the accuracy of the svm predictions driven by the test set increased by %0.3f%% to %0.3f%%.", subject2_model_accuracy[[2]], glm.accuracy_no_high_leverage, subject_2_svm_no_high_leverage.accuracy - subject2_model_accuracy[[2]], subject_2_svm_no_high_leverage.accuracy))
 ```
 
-
 ```{r}
-## Deep Neural Network
-# Fitting a deep neural network
-# set.seed(42)
-# modellr <- keras_model_sequential() %>%
-#   layer_dense(input_shape = 784, units = 10, activation = "softmax")
-# summary(modellr)
-```
-
-
-```{r}
-# dim(mi_sit_R_AO_training)
+mi_sit_AO_MI_train_list[[1]]
 ```
 
 ```{r}
-# mi_sit_R_AO_x_train <- mi_sit_R_AO_train_list[[2]] %>% select(everything(), -y)
-# mi_sit_R_AO_y_train <- mi_sit_R_AO_train_list[[2]]$y
+mi_sit_R_AO_x_train <- mi_sit_R_AO_train_list[[2]] %>% select(everything(), -y)
+mi_sit_R_AO_y_train <- mi_sit_R_AO_train_list[[2]]$y
 ```
 
 ```{python}
-# mi_sit_R_AO_x_train_formatted = r.mi_sit_R_AO_x_train
-# mi_sit_R_AO_y_train_formatted = r.mi_sit_R_AO_y_train
+mi_sit_R_AO_x_train_formatted = r.mi_sit_R_AO_x_train
+mi_sit_R_AO_y_train_formatted = r.mi_sit_R_AO_y_train
 ```
 
 ```{r}
-# py$mi_sit_R_AO_x_train_formatted
+py$mi_sit_R_AO_x_train_formatted
 ```
 
 ```{r}
-# modellr <- keras_model_sequential() %>%
-#   layer_dense(units = 10, activation = "relu") %>%
-#   layer_dense(units = 1, activation = "softmax")
+mi_sit_R_AO_x_train_nn <- cbind(py$mi_sit_R_AO_x_train_formatted$fb1, py$mi_sit_R_AO_x_train_formatted$fb2, py$mi_sit_R_AO_x_train_formatted$fb3, py$mi_sit_R_AO_x_train_formatted$fb4, py$mi_sit_R_AO_x_train_formatted$fb5, py$mi_sit_R_AO_x_train_formatted$fb6, py$mi_sit_R_AO_x_train_formatted$fb7, py$mi_sit_R_AO_x_train_formatted$fb8, py$mi_sit_R_AO_x_train_formatted$fb9)
+```
+
+
+
+```{r}
+mi_sit_R_AO_y_train_nn <- cbind(as.double(py$mi_sit_R_AO_y_train_formatted))
 ```
 
 
 ```{r}
-# modellr %>% compile(loss = "categorical_crossentropy", optimizer = optimizer_rmsprop(), metrics = c("accuracy"))
+dim(mi_sit_R_AO_x_train_nn)
 ```
 
 
 ```{r}
-# modellr %>% fit(py$mi_sit_R_AO_x_train_formatted$fb1, py$mi_sit_R_AO_y_train_formatted, epochs = 30, batch_size = 128, validation_split = 0.2)
+modellr <- keras_model_sequential() %>%
+  layer_dense(input_shape = c(9), units = 10) %>%
+  layer_dense(units = 1, activation = "sigmoid")
+modellr %>% compile(loss = "categorical_cros", optimizer = optimizer_rmsprop(), metrics = c("accuracy"))
+modellr %>% fit(mi_sit_R_AO_x_train_nn, mi_sit_R_AO_y_train_nn, epochs = 30, batch_size = , validation_split = 0.2)
 ```
 
+```{r}
+```
+
+
+```{r}
+predict(modellr, mi_sit_R_AO_train_no_high_leverage[[2]][validation_set, ])
+```
+
+```{r}
+# mi_sit_R_AO_x_train_nn
+```
+
+```{r}
+# mi_sit_R_AO_y_train_nn
+```
+
+```{r}
+data <- matrix(py$mi_sit_R_AO_x_train_formatted, byrow = TRUE)
+# data
+(data[[1,1]])
+# py$mi_sit_R_AO_x_train_formatted$fb1
+```
 
 ```{r}
 # Can what is done to help subject 2 also be used to help subject 6?
 # Subject 2
 ```
 
-
-
 ```{python}
 ### Discuss Findings & Table Results (TPR, FPR, FNR, ROC curve)
 ```
-
 
 ```{r}
 # ME
 # Apply boosting, bagging, random forests, and BART to a data set of your choice. Be sure to fit the models on a training set and to evaluate their performance on a test set. How accurate are the results compared to simple methods like linear or logistic regression? Which of these approaches yields the best performance?
 ```
 
-
-
 ```{r}
 # FPR, TPR, FNR 
 ```
-

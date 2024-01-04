@@ -167,6 +167,11 @@ lm.hatvalues <- hatvalues(lm.fit)
 high_leverage_values <- lm.hatvalues[lm.hatvalues > high_leverage_cutoff]
 ```
 
+```{r}
+high_leverage_values
+```
+
+
 
 ```{r echo=FALSE}
 # High Leverage 
