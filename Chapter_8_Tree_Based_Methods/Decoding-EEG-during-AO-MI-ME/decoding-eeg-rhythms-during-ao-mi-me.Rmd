@@ -906,9 +906,8 @@ mi_sit_R_AO_validation <- mi_sit_R_AO_train_list[[2]][validation_set,]
 ```
 
 ### Fitting a logistic regression GAM to Subject 2's data
+d# Step 2: Explore Subject 2's data and find outliers, high-leverage, or non-linearities.
 ```{r}
-# Step 2: Explore Subject 2's data and find outliers, high-leverage, or non-linearities.
-
 set.seed(42)
 
 # Fitting a logistic regression GAM to Subject 2's data
@@ -1098,4 +1097,8 @@ f_print(sprintf("The validation accuracy of the logistic regression model on Sub
 ```
 
 
+
+```{r}
+# FPR, TPR, FNR 
+```
 
