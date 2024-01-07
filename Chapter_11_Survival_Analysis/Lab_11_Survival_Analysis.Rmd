@@ -1,0 +1,249 @@
+---
+title: "Lab 10 Deep Learning Exercises"
+author: "Evan Woods"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(fig.width = 6)
+knitr::opts_chunk$set(fig.asp = 0.618)
+knitr::opts_chunk$set(out.width = "70%")
+knitr::opts_chunk$set(fig.align = "center")
+knitr::opts_chunk$set(
+  comment = ""
+)
+```
+
+```{r message=FALSE, include=FALSE}
+if(!require("MASS")) install.packages("MASS")
+if(!require("ISLR2")) install.packages("ISLR2")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("HH")) install.packages("HH") # VIF
+if(!require("e1071")) install.packages("e1071") # naiveBayes
+if(!require("class")) install.packages("class") # knn
+if(!require("formulaic")) install.packages("formulaic")
+if(!require("caTools")) install.packages("caTools")
+if(!require("caret")) install.packages("caret")
+if(!require("boot")) install.packages("boot")
+if(!require("leaps")) install.packages("leaps") # regsubsets
+if(!require("glmnet")) install.packages("glmnet") # Ridge and Lasso Regression
+if(!require("pls")) install.packages("pls") # Partial Least Squares & Principal Component Regression
+if(!require("splines")) install.packages("splines")
+if(!require("gam")) install.packages("gam")
+if(!require("akima")) install.packages("akima")
+if(!require("tree")) install.packages("tree") # Classification and Regression Trees
+if(!require("randomForest")) install.packages("randomForest")
+if(!require("gbm")) install.packages("gbm") # Boosted Trees
+if(!require("BART")) install.packages("BART")
+if(!require("reticulate")) install.packages("reticulate") # Use python objects in R
+if(!require("ROCR")) install.packages("ROCR")
+if(!require("keras")) install.packages("keras") # Install keras for deep learning
+if(!require("jpeg")) install.packages("jpeg")
+if(!require("imager")) install.packages("imager")
+if(!require("coxed")) install.packages("coxed)")
+
+library(coxed)
+library(imager)
+library(keras)
+reticulate::use_condaenv(condaenv = "r-tensorflow")
+library(ROCR)
+library(reticulate)
+library(BART)
+library(gbm)
+library(randomForest)
+library(tree)
+library(akima)
+library(gam)
+library(splines)
+library(glmnet)
+library(pls)
+library(leaps)
+library(formulaic)
+library(class)
+library(e1071)
+library(HH)
+library(MASS)
+library(ISLR2)
+library(tidyverse)
+library(caTools)
+library(caret)
+library(boot)
+library(jpeg)
+```
+
+```{r output=FALSE, results = 'hide', message=FALSE}
+# keras::install_keras(method = "conda", python_version = "3.10")
+```
+
+```{r include=FALSE}
+custom_darkblue = "#1A0875"
+custom_lightblue = "#34ABEB"
+custom_red = "#a60808"
+```
+
+```{r include=FALSE}
+f_print <- function(string){
+  cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
+}
+```
+
+## Brain Cancer Data
+```{r}
+names(BrainCancer)
+```
+
+```{r}
+attach(BrainCancer)
+table(sex)
+table(diagnosis)
+table(status)
+```
+
+```{r}
+library(survival)
+fit.surv <- survfit(Surv(time, status) ~ 1)
+plot(fit.surv, xlab = "Months", ylab = "Estimated Probability of Survival")
+```
+
+```{r}
+fit.sex <- survfit(Surv(time, status) ~ sex)
+plot(fit.sex, xlab = "Months", ylab = "Estimated Probability of Survival", col = c(2,4))
+legend("bottomleft", levels(sex), col = c(2,4), lty = 1)
+logrank.test <- survdiff(Surv(time, status) ~ sex)
+logrank.test
+```
+```{r}
+fit.cox <- coxph(Surv(time, status) ~ sex)
+summary(fit.cox)
+```
+
+```{r}
+fit.cox <- coxph(Surv(time, status) ~ sex)
+summary(fit.cox)
+```
+
+```{r}
+summary(fit.cox)$logtest[1]
+summary(fit.cox)$waldtest[1]
+summary(fit.cox)$sctest[1]
+```
+
+```{r}
+logrank.test$chisq
+```
+
+```{r}
+fit.all <- coxph(Surv(time, status) ~ sex + diagnosis + loc + ki + gtv + stereo)
+fit.all
+```
+
+```{r}
+modaldata <- data.frame(
+  diagnosis = levels(diagnosis),
+  sex = rep("Female", 4),
+  loc = rep("Supratentorial", 4),
+  ki = rep(mean(ki), 4),
+  gtv = rep(mean(gtv), 4),
+  stereo = rep("SRT", 4)
+)
+```
+
+```{r}
+survplots <- survfit(fit.all, newdata = modaldata)
+plot(survplots, xlab = "Months", ylab = "Survival Probability", col = 2:5)
+legend("bottomleft", levels(diagnosis), col = 2:5, lty = 1)
+```
+
+## Publication Data
+```{r}
+fit.posres <- survfit(Surv(time, status) ~ posres, data = Publication)
+plot(fit.posres, xlab = "Months", ylab = "Probability of Not Being Published", col = 3:4)
+legend("topright", c("Negative Result", "Positive Result"), col = 3:4, lty = 1)
+```
+
+```{r}
+fit.pub <- coxph(Surv(time, status) ~ posres, data = Publication)
+fit.pub
+```
+
+```{r}
+logrank.test <- survdiff(Surv(time, status) ~ posres, data = Publication)
+logrank.test
+```
+
+```{r}
+fit.pub2 <- coxph(Surv(time, status) ~ . -mech, data = Publication)
+fit.pub2
+```
+
+## Call Center Data
+```{r}
+set.seed(4)
+N <- 2000
+Operators <- sample(5:15, N, replace = T)
+Center <- sample(c("A", "B", "C"), N, replace = T)
+Time <- sample(c("Morn.", "After.", "Even."), N, replace = T)
+X <- model.matrix( ~ Operators + Center + Time)[, -1]
+```
+
+```{r}
+X[1:5, ]
+```
+
+```{r}
+true.beta <- c(0.04, -0.3, 0, 0.2, -0.2)
+h.fn <- function(x) return(0.00001 * x)
+```
+
+```{r}
+queuing <-sim.survdata(N = N, T = 1000, X = X, beta = true.beta, hazard.fun = h.fn)
+names(queuing)
+```
+
+```{r}
+head(queuing$data)
+mean(queuing$data$failed)
+```
+
+```{r}
+par(mfrow = c(1, 2))
+fit.Center <- survfit(Surv(y, failed) ~ Center, data = queuing$data)
+plot(fit.Center, xlab = "Seconds", ylab = "Probability of Still Being on Hold", col = c(2, 4, 5))
+legend("topright", c("Call Center A", "Call Center B", "Call Center C"), col = c(2, 4, 5), lty = 1)
+```
+
+
+```{r}
+fit.Time <- survfit(Surv(y, failed) ~ Time, data = queuing$data)
+plot(fit.Time, xlab = "Seconds", ylab = "Probability of Still Being on Hold", col = c(2, 4, 5))
+legend("topright", c("Morning", "Afternoon", "evening"), 
+       col = c(5, 2, 4), lty = 1)
+```
+
+
+
+```{r}
+survdiff(Surv(y, failed) ~ Center, data = queuing$data)
+```
+
+
+```{r}
+plot(fit.Time, xlab = "Seconds", ylab = "Probability of Still Being on Hold", col = c(2, 4, 5))
+legend("topright", c("Morning", "Afternoon", "Evening"), col = c(5, 2, 4), lty = 1)
+```
+
+```{r}
+survdiff(Surv(y, failed) ~ Center, data = queuing$data)
+survdiff(Surv(y, failed) ~ Time, data = queuing$data)
+```
+
+
+```{r}
+fit.queuing <- coxph(Surv(y, failed) ~ ., data = queuing$data)
+fit.queuing
+```

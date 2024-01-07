@@ -102,7 +102,7 @@ if __name__ == "__main__":
     for x in sys.argv:
         print("Argument: ", x)
     
-    subjects = [ 'S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'S08']
+    subjects = ['S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'S08']
 
     if task == 'stand':
         save_name = 'sit_to_stand_me'
@@ -208,7 +208,6 @@ if __name__ == "__main__":
                 recall_0, recall_1, recall,
                 precision_0, precision_1, precision,
                 sen, spec]
-
 
             predict_result.append([y_true, y_pred])
             X_csp_com.append(X_test_csp)
