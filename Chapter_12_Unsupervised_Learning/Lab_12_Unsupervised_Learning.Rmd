@@ -1,0 +1,431 @@
+---
+title: "Lab 12 Unsupervised Learning"
+author: "Evan Woods"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+# knitr::opts_chunk$set(fig.width = 6)
+# knitr::opts_chunk$set(fig.asp = 0.618)
+# knitr::opts_chunk$set(out.width = "70%")
+# knitr::opts_chunk$set(fig.align = "center")
+# knitr::opts_chunk$set(
+#   comment = ""
+# )
+```
+
+```{r message=FALSE, include=FALSE}
+if(!require("MASS")) install.packages("MASS")
+if(!require("ISLR2")) install.packages("ISLR2")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("HH")) install.packages("HH") # VIF
+if(!require("e1071")) install.packages("e1071") # naiveBayes
+if(!require("class")) install.packages("class") # knn
+if(!require("formulaic")) install.packages("formulaic")
+if(!require("caTools")) install.packages("caTools")
+if(!require("caret")) install.packages("caret")
+if(!require("boot")) install.packages("boot")
+if(!require("leaps")) install.packages("leaps") # regsubsets
+if(!require("glmnet")) install.packages("glmnet") # Ridge and Lasso Regression
+if(!require("pls")) install.packages("pls") # Partial Least Squares & Principal Component Regression
+if(!require("splines")) install.packages("splines")
+if(!require("gam")) install.packages("gam")
+if(!require("akima")) install.packages("akima")
+if(!require("tree")) install.packages("tree") # Classification and Regression Trees
+if(!require("randomForest")) install.packages("randomForest")
+if(!require("gbm")) install.packages("gbm") # Boosted Trees
+if(!require("BART")) install.packages("BART")
+if(!require("reticulate")) install.packages("reticulate") # Use python objects in R
+if(!require("ROCR")) install.packages("ROCR")
+if(!require("keras")) install.packages("keras") # Install keras for deep learning
+if(!require("jpeg")) install.packages("jpeg")
+if(!require("imager")) install.packages("imager")
+if(!require("survival")) install.packages("survival")
+
+library(survival)
+library(imager)
+library(keras)
+# reticulate::use_condaenv(condaenv = "r-tensorflow")
+library(ROCR)
+library(reticulate)
+library(BART)
+library(gbm)
+library(randomForest)
+library(tree)
+library(akima)
+library(gam)
+library(splines)
+library(glmnet)
+library(pls)
+library(leaps)
+library(formulaic)
+library(class)
+library(e1071)
+library(HH)
+library(MASS)
+library(ISLR2)
+library(tidyverse)
+library(caTools)
+library(caret)
+library(boot)
+library(jpeg)
+```
+
+```{r output=FALSE, results = 'hide', message=FALSE}
+# keras::install_keras(method = "conda", python_version = "3.10")
+```
+
+```{r include=FALSE}
+custom_darkblue = "#1A0875"
+custom_lightblue = "#34ABEB"
+custom_red = "#a60808"
+```
+
+```{r include=FALSE}
+f_print <- function(string){
+  cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
+}
+```
+
+## Principal Component Analysis
+```{r}
+states <- row.names(USArrests)
+states
+```
+
+```{r}
+names(USArrests)
+apply(USArrests, 2, mean)
+```
+
+```{r}
+apply(USArrests, 2, var)
+```
+```{r}
+pr.out <- prcomp(USArrests, scale = TRUE)
+names(pr.out)
+```
+
+```{r}
+# Means of USArrests before PCA
+pr.out$center
+```
+
+```{r}
+# SE of USArrests before PCA
+pr.out$scale
+```
+
+```{r}
+# The Principal component loadings
+pr.out$rotation
+```
+
+```{r}
+# Principal component score vectors
+dim(pr.out$x)
+```
+
+```{r}
+# Plotting the first two principal components
+biplot(pr.out, scale = 0)
+```
+
+```{r}
+pr.out$rotation = -pr.out$rotation
+pr.out$x = -pr.out$x
+biplot(pr.out, scale = 0)
+```
+
+```{r}
+pr.out$sdev
+```
+
+```{r}
+pr.var <- pr.out$sdev^2
+pr.var
+```
+
+```{r}
+# Proportion of variance expalined by each principal component
+pve <- pr.var / sum(pr.var)
+pve
+```
+
+```{r}
+par(mfrow = c(1, 2))
+plot(pve, xlab = "Principal Component", ylab = "Proportion of Variance Explained", ylim = c(0, 1), type = "b")
+```
+
+```{r}
+plot(cumsum(pve), xlab = "Principal Component", ylab = "Cumulative Proportion of Variance Explained", ylim = c(0, 1), type = "b")
+```
+
+```{r}
+a <- c(1, 2, 8, -3)
+cumsum(a)
+```
+
+
+## Matrix Completion
+```{r}
+X <- data.matrix(scale(USArrests))
+pcob <- prcomp(X)
+summary(pcob)
+```
+
+```{r}
+sX <- svd(X)
+names(sX)
+round(sX$v, 3)
+```
+
+```{r}
+pcob$rotation
+```
+
+```{r}
+# Matrix of standardized scores: sX$u
+# Standard deviations: sX$d
+t(sX$d * t(sX$u))
+```
+
+```{r}
+pcob$x
+```
+
+```{r}
+# Creating Missing Values
+nomit <- 20
+set.seed(15)
+ina <- sample(seq(50, nomit))
+inb <- sample(1:4, nomit, replace = TRUE)
+Xna <- X
+index.na <- cbind(ina, inb)
+Xna[index.na] <- NA
+```
+
+```{r}
+# Singular value decomposition;
+# Matrix U is the equivalent to loading the matrix X from principal components
+fit.svd <- function(X, M = 1) {
+  svdob <- svd(X)
+  with(svdob, 
+       u[, 1:M, drop = FALSE] %*%
+         (d[1:M] * t(v[, 1:M, drop = FALSE]))
+       )
+}
+```
+
+```{r}
+Xhat <- Xna
+xbar <- colMeans(Xna, na.rm = TRUE)
+Xhat[index.na] <- xbar[inb]
+```
+
+```{r}
+thresh <- 1e-7
+rel_err <- 1
+iter <- 0
+ismiss <- is.na(Xna)
+mssold <- mean((scale(Xna, xbar, FALSE)[!ismiss])^2)
+mss0 <- mean(Xna[!ismiss]^2)
+```
+
+```{r}
+while(rel_err > thresh) {
+  iter <- iter + 1
+  # Step 2(a)
+  Xapp <- fit.svd(Xhat, M = 1)
+  # Step 2(b)
+  Xhat[ismiss] <- Xapp[ismiss]
+  #Step 2(c)
+  mss <- mean(((Xna - Xapp)[!ismiss])^2)
+  rel_err <- (mssold - mss) / mss0
+  mssold <- mss
+  cat("Iter:", iter, "MSS:", mss, "Rel.Err:", rel_err, "\n")
+}
+```
+```{r}
+cor(Xapp[ismiss], X[ismiss])
+```
+
+## K-Means Clustering
+```{r}
+set.seed(2)
+x <- matrix(rnorm(50 * 2), ncol = 2)
+x[1:25, 1] <- x[1:25, 1] + 3
+x[1:25, 2] <- x[1:25, 2] - 4
+km.out <- kmeans(x, 2, nstart = 20)
+```
+
+```{r}
+km.out$cluster
+```
+
+```{r}
+par(mfrow = c(1, 2))
+plot(x, col = (km.out$cluster + 1), 
+     main = "K-Means Clustering Results with K = 2",
+     xlab = "", ylab = "", pch = 20, cex = 2)
+```
+
+```{r}
+set.seed(4)
+km.out <- kmeans(x, 3, nstart = 20)
+km.out
+```
+
+```{r}
+plot(x, col = (km.out$cluster + 1), main = "K-Means Clustering Results with K = 3", xlab = "", ylab = "", pch = 20, cex = 2)
+```
+
+```{r}
+set.seed(4)
+km.out <- kmeans(x, 3, nstart = 1)
+km.out$tot.withinss
+km.out <- kmeans(x, 3, nstart = 20)
+km.out$tot.withinss
+```
+
+# Hierarchical Clustering
+```{r}
+hc.complete <- hclust(dist(x), method = "complete")
+hc.average <- hclust(dist(x), method = "average")
+hc.single <- hclust(dist(x), method = "single")
+```
+
+```{r}
+par(mfrow = c(1, 3))
+plot(hc.complete, main = "Complete Linkage", xlab = "", sub = "", cex = 0.9)
+plot(hc.average, main = "Average Linkage", 
+     xlab = "", sub = "", cex = 0.9)
+plot(hc.single, main = "Single Linkage", xlab = "", sub = "", cex = 0.9)
+```
+
+
+
+```{r}
+cutree(hc.complete, 2)
+cutree(hc.average, 2)
+cutree(hc.single, 2)
+cutree(hc.single, 4)
+```
+
+```{r}
+xsc <- scale(x)
+plot(hclust(dist(xsc), method = "complete"), main = "Hierarchical Clustering with Scaled Features")
+```
+
+```{r}
+x <- matrix(rnorm(30 * 3), ncol = 3)
+dd <- as.dist(1 - cor(t(x)))
+plot(hclust(dd, method = "complete"), 
+     main = "Complete Linkage with Correlation-Based Distance", 
+     xlab = "", sub = "")
+```
+## NCI160 Data Example
+```{r}
+library(ISLR2)
+nci.labs <- NCI60$labs
+nci.data <- NCI60$data
+```
+
+```{r}
+dim(nci.data)
+```
+
+```{r}
+nci.labs[1:4]
+```
+
+
+```{r}
+table(nci.labs)
+```
+
+```{r}
+pr.out <- prcomp(nci.data, scale = TRUE)
+Cols <- function(vec) {
+  cols <- rainbow(length(unique(vec)))
+  return(cols[as.numeric(as.factor(vec))])
+}
+```
+
+```{r}
+par(mfrow = c(1, 2))
+plot(pr.out$x[, 1:2], col = Cols(nci.labs), pch = 19, xlab = "Z1", ylab = "Z2")
+plot(pr.out$x[, c(1, 3)], col = Cols(nci.labs), pch = 19, xlab = "Z1", ylab = "Z3")
+```
+
+```{r}
+summary(pr.out)
+```
+
+```{r}
+plot(pr.out)
+```
+
+
+
+```{r}
+pve <- 100 * pr.out$sdev^2 / sum(pr.out$sdev^2)
+par(mfrow = c(1, 2))
+plot(pve, type = "o", ylab = "PVE", xlab = "Principal Component", col = "blue")
+plot(cumsum(pve), type = "o", ylab = "Cumulative PVE", xlab = "Principal Component", col = "brown3")
+```
+
+```{r}
+pve <- 100 * pr.out$sdev^2 / sum(pr.out$sdev^2)
+par(mfrow = c(1, 2))
+plot(pve, type = "o", ylab = "PVE", xlab = "Principal Component", col = "blue")
+plot(cumsum(pve), type = "o", ylab = "Cumulative PVE", xlab = "Principal Component", col = "brown3")
+```
+
+```{r}
+sd.data <- scale(nci.data)
+```
+
+```{r}
+par(mfrow = c(1, 3))
+data.dist <- dist(sd.data)
+plot(hclust(data.dist), xlab = "", sub = "", ylab = "", labels = nci.labs, main = "Complete Linkage")
+plot(hclust(data.dist, method = "average"), labels = nci.labs, main = "Average Linkage", xlab = "", sub = "", ylab = "")
+plot(hclust(data.dist, method = "single"), labels = nci.labs, main = "Single LInkage", xlab = "", sub = "", ylab = "")
+```
+
+```{r}
+hc.out <- hclust(dist(sd.data))
+hc.clusters <- cutree(hc.out, 4)
+table(hc.clusters, nci.labs)
+```
+
+```{r}
+par(mfrow = c(1, 1))
+plot(hc.out, labels = nci.labs)
+abline(h = 139, col = "red")
+```
+
+```{r}
+hc.out
+```
+
+```{r}
+set.seed(2)
+km.out <- kmeans(sd.data, 4, nstart = 20)
+km.clusters <- km.out$cluster
+table(km.clusters, hc.clusters)
+
+```
+
+```{r}
+hc.out <- hclust(dist(pr.out$x[, 1:5]))
+plot(hc.out, labels = nci.labs, main = "Hier. Clust. on First Five Score Vectors")
+table(cutree(hc.out, 4), nci.labs)
+```
+
