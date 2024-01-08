@@ -247,3 +247,4 @@ survdiff(Surv(y, failed) ~ Time, data = queuing$data)
 fit.queuing <- coxph(Surv(y, failed) ~ ., data = queuing$data)
 fit.queuing
 ```
+
