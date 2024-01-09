@@ -1,10 +1,9 @@
 ---
-title: "Lab 12 Unsupervised Learning Exercises"
+title: "Lab 11 Survival Analysis (Python)"
 author: "Evan Woods"
 date: "`r Sys.Date()`"
 output: github_document
 ---
-
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -45,12 +44,12 @@ if(!require("ROCR")) install.packages("ROCR")
 if(!require("keras")) install.packages("keras") # Install keras for deep learning
 if(!require("jpeg")) install.packages("jpeg")
 if(!require("imager")) install.packages("imager")
-if(!require("survival")) install.packages("survival")
+if(!require("coxed")) install.packages("coxed)")
 
-library(survival)
+library(coxed)
 library(imager)
 library(keras)
-# reticulate::use_condaenv(condaenv = "r-tensorflow")
+reticulate::use_condaenv(condaenv = "r-tensorflow")
 library(ROCR)
 library(reticulate)
 library(BART)
@@ -92,10 +91,46 @@ f_print <- function(string){
 }
 ```
 
-## Applied
-* **Question 7**: In this chapter, we mentioned the use of correlation-based distance and Euclidean distance as dissimilarity measures for hierarchical clustering. It turns out that these two measures are almost equivalent: if each observation has been centered to have mean zero and standard deviation one, and if we let r_ij denote the correlation between the ith and jth observations, then the quantity 1 - r_ij is proportional to the squared Euclidean distance between the ith and jth observations. On the USArrests data, show that this proportionality holds.
+```{python}
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import subplots
+import numpy as np
+import pandas as pd
+from ISLP.models import ModelSpec as MS
+from ISLP import load_data
+```
 
 ```{python}
-
+from lifelines import \
+     (KaplanMeierFitter,
+      CoxPHFitter)
+from lifelines.statistics import \
+     (logrank_test,
+      multivariate_logrank_test)
+from ISLP.survival import sim_time
 ```
+
+```{python}
+BrainCancer = load_data('BrainCancer')
+```
+
+```{python}
+BrainCancer.columns
+```
+
+```{python}
+fig, ax = subplots(figsize=(8,8))
+km = KaplanMeierFitter(alpha = 1)
+km_brain = km.fit(BrainCancer['time'], BrainCancer['status'])
+km_brain.plot(label="KaplanMeierEstimate", ax = ax)
+plt.show()
+```
+
+```{python}
+fig, ax = subplots(figsize=(8,8))
+km = KaplanMeierFitter()
+km_brain = km.fit(BrainCancer['time'], BrainCancer['status'])
+km_brain.plot(label='Kaplan Meier estimate', ax=ax)
+```
+
 
