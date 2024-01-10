@@ -1,0 +1,156 @@
+---
+title: "Lab 12 Unsupervised Learning Exercises (Python)"
+author: "Evan Woods"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+# knitr::opts_chunk$set(fig.width = 6)
+# knitr::opts_chunk$set(fig.asp = 0.618)
+# knitr::opts_chunk$set(out.width = "70%")
+# knitr::opts_chunk$set(fig.align = "center")
+# knitr::opts_chunk$set(
+#   comment = ""
+# )
+```
+
+```{r message=FALSE, include=FALSE}
+if(!require("MASS")) install.packages("MASS")
+if(!require("ISLR2")) install.packages("ISLR2")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("HH")) install.packages("HH") # VIF
+if(!require("e1071")) install.packages("e1071") # naiveBayes
+if(!require("class")) install.packages("class") # knn
+if(!require("formulaic")) install.packages("formulaic")
+if(!require("caTools")) install.packages("caTools")
+if(!require("caret")) install.packages("caret")
+if(!require("boot")) install.packages("boot")
+if(!require("leaps")) install.packages("leaps") # regsubsets
+if(!require("glmnet")) install.packages("glmnet") # Ridge and Lasso Regression
+if(!require("pls")) install.packages("pls") # Partial Least Squares & Principal Component Regression
+if(!require("splines")) install.packages("splines")
+if(!require("gam")) install.packages("gam")
+if(!require("akima")) install.packages("akima")
+if(!require("tree")) install.packages("tree") # Classification and Regression Trees
+if(!require("randomForest")) install.packages("randomForest")
+if(!require("gbm")) install.packages("gbm") # Boosted Trees
+if(!require("BART")) install.packages("BART")
+if(!require("reticulate")) install.packages("reticulate") # Use python objects in R
+if(!require("ROCR")) install.packages("ROCR")
+if(!require("keras")) install.packages("keras") # Install keras for deep learning
+if(!require("jpeg")) install.packages("jpeg")
+if(!require("imager")) install.packages("imager")
+if(!require("survival")) install.packages("survival")
+
+library(survival)
+library(imager)
+library(keras)
+reticulate::use_condaenv(condaenv = "r-tensorflow")
+library(ROCR)
+library(reticulate)
+library(BART)
+library(gbm)
+library(randomForest)
+library(tree)
+library(akima)
+library(gam)
+library(splines)
+library(glmnet)
+library(pls)
+library(leaps)
+library(formulaic)
+library(class)
+library(e1071)
+library(HH)
+library(MASS)
+library(ISLR2)
+library(tidyverse)
+library(caTools)
+library(caret)
+library(boot)
+library(jpeg)
+```
+
+```{r output=FALSE, results = 'hide', message=FALSE}
+# keras::install_keras(method = "conda", python_version = "3.10")
+```
+
+```{r include=FALSE}
+custom_darkblue = "#1A0875"
+custom_lightblue = "#34ABEB"
+custom_red = "#a60808"
+```
+
+```{r include=FALSE}
+f_print <- function(string){
+  cat(str_wrap(string = string, width = 80, indent = 0, exdent = 0, whitespace_only = TRUE))
+}
+```
+
+```{python}
+from sklearn.metrics import pairwise_distances
+import numpy as np
+```
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from statsmodels.datasets import get_rdataset
+from sklearn.preprocessing import StandardScaler
+from ISLP import load_data
+```
+
+```{python}
+USArrests = get_rdataset("USArrests").data
+USArrests.columns
+```
+
+
+```{python}
+USArrests['UrbanPop']
+```
+
+
+## Applied
+* **Question 7**: In this chapter, we mentioned the use of correlation-based distance and Euclidean distance as dissimilarity measures for hierarchical clustering. It turns out that these two measures are almost equivalent: if each observation has been centered to have mean zero and standard deviation one, and if we let r_ij denote the correlation between the ith and jth observations, then the quantity 1-r_ij is proportional to the squared Euclidean distance between the ith and jth observations.
+On the USArrests data, show that this proportionality holds.
+  * **Answer**:
+```{python}
+# Center each observation has a mean zero and standard deviation one
+scaler = StandardScaler()
+# Transforming to have a mean of zero and a standard deviation of one
+USArrests_transform = scaler.fit_transform(USArrests)
+# Mean 0 
+np.mean(USArrests_transform)
+# Standard Deviation of 1
+np.std(USArrests_transform)
+
+1 - np.corrcoef(USArrests_transform)[0,1]
+pairwise_distances(USArrests_transform)[0,1]
+```
+
+```{python}
+np.corrcoef()
+# 1 - correlation between the ith & jth observations = pairwise_distances(ith, jth)
+# pairwise_distances(i, j)
+```
+  
+
+* **Question 8**: In Section 12.2.3, a formula for calculating PVE was given in Equation 12.10. We also saw that the PVE can be obtained using the explained_variance_ratio_ attribute of a fitted PCA() estimator. On the USArrests data, calculate PVE in two ways: (a) Using the explained_variance_ratio_ output of the fitted PCA() estimator, as was done in Section 12.2.3. (b) By applying Equation 12.10 directly. The loadings are stored as the components_ attribute of the fitted PCA() estimator. Use those loadings in Equation 12.10 to obtain the PVE.
+  * **Answer**:
+```{python}
+
+```
+  
+* **Question 9**: Consider the USArrests data. We will now perform hierarchical clustering on the states. (a) Using hierarchical clustering with complete linkage and Euclidean distance, cluster the states. (b) Cut the dendrogram at a height that results in three distinct clusters. Which states belong to which clusters? (c) Hierarchically cluster the states using complete linkage and Euclidean distance, _after_ _scaling_ _the_ _variables_ _to_ _have_ _standard_ _deviation_ _one_. (d) What effect does scaling the variables have on the hierarchical clustering obtained? In your opinion, should the variables be scaled before the inter-observation dissimilarities are computed? Provide a justification for your answer.
+  * **Answer**:
+```{python}
+
+```
+  
+  
