@@ -10,6 +10,4 @@ My Work on "An Introduction to Statistical Learning with Applications in R Secon
 - [Lab 8: Tree-Based Methods](Chapter_8_Tree_Based_Methods/Lab_8_Decision_Trees_Exercises.md)
 - [Lab 9: Support Vector Machines](Chapter_9_Support_Vector_Machines/Lab_9_Support_Vector_Machines_Exercises.md)
 - [Lab 10: Deep Learning](Chapter_10_Deep_Learning/Lab_10_Deep_Learning_Exercises.md)
-- [Lab 11: Survival Analysis]
-- [Lab 12: Unsupervised Learning]
-- [Lab 13: Hypothesis Testing]
+- [Lab 11: Survival Analysis](Chapter_11_Survival_Analysis/Lab_11_Survival_Analysis_Exercises.md)
