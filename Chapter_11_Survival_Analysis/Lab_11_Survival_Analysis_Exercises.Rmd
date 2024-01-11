@@ -92,11 +92,11 @@ f_print <- function(string){
 ```
 
 ## Applied
-### Question 10 (Python):
+### Question 10:
 This exercise focuses on the brain tumor data, which is included in the ISLR2 R library.
 
 * **Question 10-a**: Plot the Kaplan-Meier survival curve with ±1 standard error bands, using the survfit() function in the survival package.
-  * **Answer**:
+  * **Answer (Python)**:
 ```{r}
 # attach(BrainCancer)
 # fit.surv <- survfit(Surv(time, status) ~ 1)
@@ -143,13 +143,13 @@ fit.surv_a <- survfit(Surv(boot) ~ 1)
 ```
 
 ```{r}
-fit.surv_a$std.err
+# fit.surv_a$std.err
 ```
 
 ```{r}
+f_print(sprintf("A bootstrapped sample of size 88:"))
 plot(fit.surv_a)
 ```
-
 
 ```{r}
 boot <- list()
@@ -157,19 +157,18 @@ fit.surv <- list()
 ```
 
 ```{r}
-boot[[1]] <- sample(c(time, status), size = 88)
-fit.surv[[1]] <- survfit(Surv(boot[[1]]) ~ 1)
-fit.surv[[1]]$std.err
-plot(fit.surv[[1]])
+# boot[[1]] <- sample(c(time, status), size = 88)
+# fit.surv[[1]] <- survfit(Surv(boot[[1]]) ~ 1)
+# fit.surv[[1]]$std.err
+# plot(fit.surv[[1]])
 ```
 
 ```{r}
-for (i in seq(1, 200)) {
-  boot[[i]] <- sample(c(time, status), size = 88, replace = TRUE)
-  fit.surv[[i]] <- survfit(Surv(boot[[i]]) ~ 1)
-}
+# for (i in seq(1, 200)) {
+#   boot[[i]] <- sample(c(time, status), size = 88, replace = TRUE)
+#   fit.surv[[i]] <- survfit(Surv(boot[[i]]) ~ 1)
+# }
 ```
-
 
 * **Question 10-c**: Fit a Cox proportional hazards model that uses all of the predictors to predict survival. Summarize the main findings. 
   * **Answer**:
@@ -187,18 +186,16 @@ fit.Ki
 plot(fit.Ki)
 ```
 
-### Question 11:
-This example makes use of the data in Table 11.4.
 
-* **Question 11-a**: Create two groups of observations. In Group 1, X < 2, whereas in Group 2, X >= 2. Plot the Kaplan-Meier survival curves corresponding to the two groups. Be sure to label the curves so that it is clear which curve corresponds to which group. By eye, does there appear to be a difference between the two groups' survival curves?
-  * **Answer**:
-```{r}
+```{r include=FALSE}
+### Question 11:
+# This example makes use of the data in Table 11.4.
+# 
+# * **Question 11-a**: Create two groups of observations. In Group 1, X < 2, whereas in Group 2, X >= 2. Plot the Kaplan-Meier survival curves corresponding to the two groups. Be sure to label the curves so that it is clear which curve corresponds to which group. By eye, does there appear to be a difference between the two groups' survival curves?
+#   * **Answer**:
+
 # group_1 <- seq(0,1.99, by = 0.01)
 # group_2 <- seq(2, 3.99, by = 0.01)
-```
-
-```{r}
-
 ```
 
 

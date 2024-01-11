@@ -334,8 +334,9 @@ kmeans20 = KMeans(n_clusters=3,
 kmeans1.inertia_, kmeans20.inertia_
 ```
 
-## Agglomerative Clustering
+
 ```{python}
+## Agglomerative Clustering
 HClust = AgglomerativeClustering
 hc_comp = HClust(distance_threshold=0,
                  n_clusters=None,

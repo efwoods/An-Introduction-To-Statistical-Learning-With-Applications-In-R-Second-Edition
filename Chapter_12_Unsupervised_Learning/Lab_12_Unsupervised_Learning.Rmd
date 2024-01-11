@@ -94,66 +94,79 @@ f_print <- function(string){
 ## Principal Component Analysis
 ```{r}
 states <- row.names(USArrests)
-states
+# states
 ```
 
 ```{r}
-names(USArrests)
+# names(USArrests)
+f_print(sprintf("Mean of USArrests Categories:"))
+cat("\n")
 apply(USArrests, 2, mean)
 ```
 
 ```{r}
+f_print(sprintf("Variance of USArrests Categories:"))
+cat("\n")
 apply(USArrests, 2, var)
 ```
 ```{r}
 pr.out <- prcomp(USArrests, scale = TRUE)
-names(pr.out)
+# names(pr.out)
 ```
 
 ```{r}
 # Means of USArrests before PCA
-pr.out$center
+# pr.out$center
 ```
 
 ```{r}
 # SE of USArrests before PCA
+f_print(sprintf("Standard Error of USArrests before PCA:"))
+cat("\n")
 pr.out$scale
 ```
 
 ```{r}
 # The Principal component loadings
+f_print(sprintf("Principal Component Loadings:"))
+cat("\n")
 pr.out$rotation
 ```
 
 ```{r}
 # Principal component score vectors
-dim(pr.out$x)
+# dim(pr.out$x)
 ```
 
 ```{r}
 # Plotting the first two principal components
-biplot(pr.out, scale = 0)
+biplot(pr.out, scale = 0, main = "First Two Principal Components of USArrests")
 ```
 
+```{r}
+pr.out$rotation
+```
 ```{r}
 pr.out$rotation = -pr.out$rotation
 pr.out$x = -pr.out$x
-biplot(pr.out, scale = 0)
+biplot(pr.out, scale = 0, main = "First Two Components of USArrests After Rotations")
 ```
 
 ```{r}
-pr.out$sdev
+# pr.out$sdev
 ```
 
 ```{r}
 pr.var <- pr.out$sdev^2
-pr.var
+# pr.var
 ```
 
 ```{r}
-# Proportion of variance expalined by each principal component
+# Proportion of variance explained by each principal component
+# f_print(sprintf("Proportion of variance explained by each principal component:"))
+cat("\n")
 pve <- pr.var / sum(pr.var)
-pve
+# pve
 ```
 
 ```{r}
@@ -167,7 +180,7 @@ plot(cumsum(pve), xlab = "Principal Component", ylab = "Cumulative Proportion of
 
 ```{r}
 a <- c(1, 2, 8, -3)
-cumsum(a)
+# cumsum(a)
 ```
 
 
@@ -191,11 +204,11 @@ pcob$rotation
 ```{r}
 # Matrix of standardized scores: sX$u
 # Standard deviations: sX$d
-t(sX$d * t(sX$u))
+# t(sX$d * t(sX$u))
 ```
 
 ```{r}
-pcob$x
+# pcob$x
 ```
 
 ```{r}
@@ -310,10 +323,10 @@ plot(hc.single, main = "Single Linkage", xlab = "", sub = "", cex = 0.9)
 
 
 ```{r}
-cutree(hc.complete, 2)
-cutree(hc.average, 2)
-cutree(hc.single, 2)
-cutree(hc.single, 4)
+# cutree(hc.complete, 2)
+# cutree(hc.average, 2)
+# cutree(hc.single, 2)
+# cutree(hc.single, 4)
 ```
 
 ```{r}
@@ -476,12 +489,12 @@ USArrests_scaled = scaler.fit_transform(USArrests)
 pcaUS = PCA()
 ```
 
-```{python}
+```{python, results = 'hide'}
 pcaUS.fit(USArrests_scaled)
 ```
 
 ```{python}
-pcaUS.mean_
+# pcaUS.mean_
 ```
 
 ```{python}
@@ -489,7 +502,7 @@ scores = pcaUS.transform(USArrests_scaled)
 ```
 
 ```{python}
-pcaUS.components_
+# pcaUS.components_
 ```
 
 ```{python}
@@ -507,4 +520,7 @@ for k in range(pcaUS.components_.shape[1]):
 plt.show()
 ```
 
+```{r}
+
+```
 
