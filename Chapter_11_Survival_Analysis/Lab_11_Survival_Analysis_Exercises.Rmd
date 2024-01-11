@@ -193,10 +193,13 @@ This example makes use of the data in Table 11.4.
 * **Question 11-a**: Create two groups of observations. In Group 1, X < 2, whereas in Group 2, X >= 2. Plot the Kaplan-Meier survival curves corresponding to the two groups. Be sure to label the curves so that it is clear which curve corresponds to which group. By eye, does there appear to be a difference between the two groups' survival curves?
   * **Answer**:
 ```{r}
-group_1 <- seq(0,1.99, by = 0.01)
-group_2 <- seq(2, 3.99, by = 0.01)
+# group_1 <- seq(0,1.99, by = 0.01)
+# group_2 <- seq(2, 3.99, by = 0.01)
 ```
 
+```{r}
+
+```
 
 
 
