@@ -1,0 +1,117 @@
+## Tensorflow for R
+```{r}
+# Functional API: Training & Evaluation with the built in methods
+```
+
+```{r}
+inputs <- layer_input(shape = (784), name = "digits")
+x <- inputs %>%
+  layer_dense(units = 64, activation = "relu", name = "dense_1") %>%
+  layer_dense(units = 64, activation = "relu", name = "dense_2")
+outputs <- x %>%
+  layer_dense(units = 10, activation = "softmax", name = "predictions")
+
+model <- keras_model(inputs = inputs, outputs = outputs)
+```
+
+```{r}
+c(c(x_train, y_train), c(x_test, y_test)) %<-% dataset_mnist()
+x_train <- array_reshape(x_train, c(nrow(x_train), 784))
+x_test <- array_reshape(x_test, c(nrow(x_test), 784))
+```
+
+```{r}
+# dim(x_train)
+```
+
+```{r}
+# y_train
+# dim(x_test)
+# dim(x_val)
+# x_val <- array_reshape(x_val, c(nrow(x_val), 784))
+```
+
+```{r}
+x_train <- x_train / 255
+x_test <- x_test / 255
+```
+
+```{r}
+# Reserve 10000 samples for validation
+x_val <- tail(x_train, 10000)
+y_val <- tail(y_train, 10000)
+
+x_train <- head(x_train, 50000)
+y_train <- head(y_train, 50000)
+```
+
+```{r}
+# dim(x_val)
+# Specify the training configuration: optimizer, loss, metrics
+model %>% compile(
+  optimizer = optimizer_rmsprop(), 
+  loss = loss_sparse_categorical_crossentropy(), 
+  metrics = list(metric_sparse_categorical_accuracy()) 
+)
+```
+
+```{r}
+history <- model %>% fit(
+  x_train, 
+  y_train, 
+  batch_size = 64, 
+  epochs = 2, 
+  validation_data = list(x_val, y_val),
+)
+```
+
+```{r}
+history
+```
+
+```{r}
+results <- model %>% evaluate(x_test, y_test, batch_size = 128)
+cat("test loss, test acc:", results)
+```
+
+```{r}
+predictions <- predict(model, x_test[1:3, ])
+dim(predictions)
+```
+
+```{r}
+model %>% compile(
+  optimizer = "rmsprop", 
+  loss = "sparse_categorical_crossentropy", 
+  metrics = list("sparse_categorical_accuracy")
+)
+```
+
+```{r}
+get_uncompiled_model <- function() {
+inputs <- layer_input(shape = (784), name = "digits")
+  x <- inputs %>%
+    layer_dense(units = 64, activation = "relu", name = "dense_1") %>%
+    layer_dense(units = 64, activation = "relu", name = "dense_2")
+  outputs <- x %>%
+    layer_dense(units = 10, activation = "softmax", name = "predictions")
+
+  model <- keras_model(inputs = inputs, outputs = outputs)
+  model
+}
+
+get_compiled_model <- function() {
+  model %>% compile(
+    optimizer = "rmsprop", 
+    loss = "sparse_categorical_crossentropy", 
+    metrics = list("sparse_categorical_accu")
+  )
+  model
+}
+
+```
+
+```{r}
+
+```
+

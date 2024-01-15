@@ -81,9 +81,9 @@ library(jpeg)
 
 ```{r include=FALSE}
 # Check tensorflow GPU configuration
-# tf$config$list_physical_devices("GPU")
-# R.version$arch
-# tf$constant("Hello Tensorflow!")
+tf$config$list_physical_devices("GPU")
+R.version$arch
+tf$constant("Hello Tensorflow!")
 ```
 
 ```{r include=FALSE}
@@ -917,15 +917,10 @@ cat("\n\n")
 f_print(sprintf("The highest mean accuracy of the classifiers is: %0.3f%% with a standard error of %0.3f%%.",mean_accuracies_of_mi_models[which.max(mean_accuracies_of_mi_models)], se_of_mi_models[which.max(mean_accuracies_of_mi_models)]))
 cat("\n\n")
 ```
+
 ```{r}
 svm_model_sit_R_vs_AO_list[4]
 ```
-
-
-```{r}
-
-```
-
 
 ```{r}
 model_list_to_select <- which.max(mean_accuracies_of_mi_models)
@@ -1133,62 +1128,80 @@ f_print(sprintf("The validation accuracy of the logistic regression model on the
 ```
 
 
-
-```{r}
 ### Deep Learning Neural Network
-# mi_sit_R_AO_x_train <- mi_sit_R_AO_train_list[[subject_with_lowest_model]] %>% select(everything(), -y)
-# mi_sit_R_AO_y_train <- mi_sit_R_AO_train_list[[subject_with_lowest_model]]$y
+```{r}
+mi_sit_R_AO_x_train <- mi_sit_R_AO_train_list[[subject_with_lowest_model]] %>% select(everything(), -y)
+mi_sit_R_AO_y_train <- mi_sit_R_AO_train_list[[subject_with_lowest_model]]$y
 ```
 
 ```{python}
-# mi_sit_R_AO_x_train_formatted = r.mi_sit_R_AO_x_train
-# mi_sit_R_AO_y_train_formatted = r.mi_sit_R_AO_y_train
+mi_sit_R_AO_x_train_formatted = r.mi_sit_R_AO_x_train
+mi_sit_R_AO_y_train_formatted = r.mi_sit_R_AO_y_train
 ```
 
 ```{r}
-# mi_sit_R_AO_x_train_nn <- cbind(py$mi_sit_R_AO_x_train_formatted$fb1, py$mi_sit_R_AO_x_train_formatted$fb2, py$mi_sit_R_AO_x_train_formatted$fb3, py$mi_sit_R_AO_x_train_formatted$fb4, py$mi_sit_R_AO_x_train_formatted$fb5, py$mi_sit_R_AO_x_train_formatted$fb6, py$mi_sit_R_AO_x_train_formatted$fb7, py$mi_sit_R_AO_x_train_formatted$fb8, py$mi_sit_R_AO_x_train_formatted$fb9)
+mi_sit_R_AO_x_train_nn <- cbind(py$mi_sit_R_AO_x_train_formatted$fb1, py$mi_sit_R_AO_x_train_formatted$fb2, py$mi_sit_R_AO_x_train_formatted$fb3, py$mi_sit_R_AO_x_train_formatted$fb4, py$mi_sit_R_AO_x_train_formatted$fb5, py$mi_sit_R_AO_x_train_formatted$fb6, py$mi_sit_R_AO_x_train_formatted$fb7, py$mi_sit_R_AO_x_train_formatted$fb8, py$mi_sit_R_AO_x_train_formatted$fb9)
 ```
 
 ```{r}
-# mi_sit_R_AO_y_train_nn <- cbind(as.double(py$mi_sit_R_AO_y_train_formatted))
+mi_sit_R_AO_y_train_nn <- cbind(as.double(py$mi_sit_R_AO_y_train_formatted))
+```
+
+
+```{r}
+# mi_sit_R_AO_x_train_nn
 ```
 
 ```{r}
-# modellr <- keras_model_sequential() %>%
-#   layer_dense(input_shape = c(9), units = 10) %>%
-#   layer_dense(units = 1, activation = "sigmoid")
-# modellr %>% compile(loss = "mse", optimizer = optimizer_rmsprop(), metrics = c("accuracy"))
-# modellr %>% fit(mi_sit_R_AO_x_train_nn, mi_sit_R_AO_y_train_nn, epochs = 30, batch_size = , validation_split = 0.2, verbose = 0)
+# mi_sit_R_AO_y_train_nn
 ```
 
 ```{r}
-# set.seed(42)
-# modellr.prob <- predict(modellr, mi_sit_R_AO_x_train_nn[validation_set, ], type = "response")
-# modellr.pred <- rep(0, nrow(mi_sit_R_AO_x_train_nn[validation_set, ]))
-# modellr.pred[modellr.prob > 0.5] <- 1
+# dim(mi_sit_R_AO_x_train_nn)
+```
+
+```{r}
+# train on the data not on the features. 
+set.seed(42)
+modellr <- keras_model_sequential() %>%
+  layer_dense(input_shape = c(9), units = 50, activation = "tanh") %>%
+  layer_dropout(0.2) %>%
+  layer_batch_normalization() %>%
+  layer_dense(units = 1, activation = "sigmoid")
+modellr %>% compile(loss = "mse", optimizer = optimizer_rmsprop(), metrics = c("accuracy"))
+modellr %>% fit(mi_sit_R_AO_x_train_nn, mi_sit_R_AO_y_train_nn, epochs = 7, batch_size = , validation_split = 0.2, callbacks = callback_early_stopping(monitor = "val_loss", min_delta = 0, patience = 0, verbose = 1, mode = c("auto", "min", "max"), baseline = NULL, restore_best_weights = FALSE))
+```
+
+```{r}
+set.seed(42)
+modellr.prob <- predict(modellr, mi_sit_R_AO_x_train_nn[validation_set, ], type = "response")
+modellr.pred <- rep(0, nrow(mi_sit_R_AO_x_train_nn[validation_set, ]))
+modellr.pred[modellr.prob > 0.5] <- 1
 ```
 
 ```{r results='hide'}
-# set.seed(42)
-# modellr.table <- table(pred = modellr.pred, truth = mi_sit_R_AO_y_train_nn[validation_set])
-# modellr.table
-# modellr.accuracy <- (modellr.table[1] + modellr.table[4]) / sum(modellr.table) * 100
-# modellr.accuracy
+set.seed(42)
+modellr.table <- table(pred = modellr.pred, truth = mi_sit_R_AO_y_train_nn[validation_set])
+modellr.table
+modellr.accuracy <- (modellr.table[1] + modellr.table[4]) / sum(modellr.table) * 100
+modellr.accuracy
 ```
 
 ```{r}
-# mi_sit_AO_MI_test_list_x_nn <- cbind(mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb1, mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb2, mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb3, mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb4, mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb5, mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb6, mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb7, mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb8, mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb9)
+mi_sit_AO_MI_test_list_x_nn <- cbind(mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb1, mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb2, mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb3, mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb4, mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb5, mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb6, mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb7, mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb8, mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$fb9)
 ```
 
 ```{r}
-# mi_sit_AO_MI_test_list_y_nn <- (as.integer(mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$y) - 1)
+mi_sit_AO_MI_test_list_y_nn <- (as.integer(mi_sit_AO_MI_test_list[[subject_with_lowest_model]]$y) - 1)
 ```
 
 ```{r}
-# set.seed(42)
-# modellr.prob <- predict(modellr, mi_sit_AO_MI_test_list_x_nn, type = "response")
-# modellr.pred <- rep(0, length(mi_sit_AO_MI_test_list_y_nn))
-# modellr.pred[modellr.prob > 0.5] <- 1
-# table <- table(pred = modellr.pred, truth = mi_sit_AO_MI_test_list_y_nn)
-# (table[1] + table[4]) / sum(table) * 100
+set.seed(42)
+modellr.prob <- predict(modellr, mi_sit_AO_MI_test_list_x_nn, type = "response")
+modellr.pred <- rep(0, length(mi_sit_AO_MI_test_list_y_nn))
+modellr.pred[modellr.prob > 0.5] <- 1
+table <- table(pred = modellr.pred, truth = mi_sit_AO_MI_test_list_y_nn)
+(table[1] + table[4]) / sum(table) * 100
 ```
+
+
