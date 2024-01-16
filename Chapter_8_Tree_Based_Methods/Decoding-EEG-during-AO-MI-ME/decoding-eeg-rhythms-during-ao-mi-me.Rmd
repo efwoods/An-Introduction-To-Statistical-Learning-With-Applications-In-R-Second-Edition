@@ -1164,12 +1164,12 @@ mi_sit_R_AO_y_train_nn <- cbind(as.double(py$mi_sit_R_AO_y_train_formatted))
 # train on the data not on the features. 
 set.seed(42)
 modellr <- keras_model_sequential() %>%
-  layer_dense(input_shape = c(9), units = 50, activation = "tanh") %>%
-  layer_dropout(0.2) %>%
+  layer_dense(input_shape = c(9), units = 100, activation = "tanh") %>%
+  layer_dropout(0.1) %>%
   layer_batch_normalization() %>%
   layer_dense(units = 1, activation = "sigmoid")
 modellr %>% compile(loss = "mse", optimizer = optimizer_rmsprop(), metrics = c("accuracy"))
-modellr %>% fit(mi_sit_R_AO_x_train_nn, mi_sit_R_AO_y_train_nn, epochs = 7, batch_size = , validation_split = 0.2, callbacks = callback_early_stopping(monitor = "val_loss", min_delta = 0, patience = 0, verbose = 1, mode = c("auto", "min", "max"), baseline = NULL, restore_best_weights = FALSE))
+modellr %>% fit(mi_sit_R_AO_x_train_nn, mi_sit_R_AO_y_train_nn, epochs = 100, batch_size = , validation_split = 0.2, callbacks = callback_early_stopping(monitor = "val_loss", min_delta = 0, patience = 0, verbose = 0, mode = c("auto", "min", "max"), baseline = NULL, restore_best_weights = FALSE))
 ```
 
 ```{r}
